@@ -5,6 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function sortByName<T>(items: T[], getName: (item: T) => string) {
+  return [...items].sort((left, right) =>
+    getName(left).localeCompare(getName(right)),
+  )
+}
+
 export function pluralize(
   count: number,
   singular: string,

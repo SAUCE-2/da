@@ -1,5 +1,6 @@
 import type { AuditQuery } from '@/lib/audit-api'
+import { sortByName } from '@/lib/utils'
 
 export function sortQueries(queries: AuditQuery[]) {
-  return [...queries].sort((left, right) => left.name.localeCompare(right.name))
+  return sortByName(queries, (query) => query.name)
 }

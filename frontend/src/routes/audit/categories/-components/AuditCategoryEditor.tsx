@@ -1,5 +1,3 @@
-import type { FormEvent } from 'react'
-
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Field,
@@ -26,10 +24,8 @@ export function AuditCategoryEditor() {
     errorMessage,
     form,
     isSaving,
-    handleSubmit,
     handleDelete,
     handleBack,
-    setForm,
   } = useAuditCategoryWorkspace()
 
   if (isNotFound) {
@@ -47,12 +43,15 @@ export function AuditCategoryEditor() {
   const description =
     'Categories are metadata only and can be assigned to audit queries from the query editor.'
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    handleSubmit(event)
-  }
-
   return (
-    <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        void form.handleSubmit()
+      }}
+      className="flex min-h-0 flex-1 flex-col"
+    >
       {errorMessage ? (
         <Alert variant="destructive" className="mx-6 mt-3">
           <AlertDescription>{errorMessage}</AlertDescription>
@@ -83,28 +82,36 @@ export function AuditCategoryEditor() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <AuditEditorSection title="Details">
           <FieldGroup className="grid gap-4">
-            <Field>
-              <FieldLabel>Name</FieldLabel>
-              <Input
-                value={form.name}
-                onChange={(event) =>
-                  setForm({ ...form, name: event.target.value })
-                }
-                placeholder="Audit category name"
-              />
-            </Field>
+            <form.Field
+              name="name"
+              children={(field) => (
+                <Field>
+                  <FieldLabel>Name</FieldLabel>
+                  <Input
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="Audit category name"
+                  />
+                </Field>
+              )}
+            />
 
-            <Field>
-              <FieldLabel>Description</FieldLabel>
-              <Textarea
-                value={form.description}
-                onChange={(event) =>
-                  setForm({ ...form, description: event.target.value })
-                }
-                className="min-h-28"
-                placeholder="What kind of audit queries belong here"
-              />
-            </Field>
+            <form.Field
+              name="description"
+              children={(field) => (
+                <Field>
+                  <FieldLabel>Description</FieldLabel>
+                  <Textarea
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    className="min-h-28"
+                    placeholder="What kind of audit queries belong here"
+                  />
+                </Field>
+              )}
+            />
           </FieldGroup>
         </AuditEditorSection>
 

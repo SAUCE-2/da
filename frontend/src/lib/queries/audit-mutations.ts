@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import {
@@ -40,7 +41,10 @@ function buildOptimisticQuery(request: AuditQueryRequest): AuditQuery {
   }
 }
 
-function applyRequestToQuery(query: AuditQuery, request: AuditQueryRequest): AuditQuery {
+function applyRequestToQuery(
+  query: AuditQuery,
+  request: AuditQueryRequest,
+): AuditQuery {
   return {
     ...query,
     name: request.name,
@@ -61,142 +65,186 @@ function buildOptimisticCategory(request: AuditCategoryRequest): AuditCategory {
   }
 }
 
-export async function persistAuditQuery(
-  id: number | null,
-  request: AuditQueryRequest,
-): Promise<AuditQuery> {
-  const listKey = auditQueryKeys.list()
-  const previous = queryClient.getQueryData<AuditQuery[]>(listKey)
+type PersistQueryVariables = {
+  id: number | null
+  request: AuditQueryRequest
+}
 
-  try {
-    if (id === null) {
-      const optimistic = buildOptimisticQuery(request)
-      queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) => [
-        ...current,
-        optimistic,
-      ])
+type PersistCategoryVariables = {
+  id: number | null
+  request: AuditCategoryRequest
+}
 
-      const saved = await createAuditQuery(request)
-      queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) =>
-        current.map((query) => (query.id === OPTIMISTIC_ID ? saved : query)),
-      )
+export function usePersistAuditQuery() {
+  return useMutation({
+    mutationFn: ({ id, request }: PersistQueryVariables) =>
+      id === null
+        ? createAuditQuery(request)
+        : updateAuditQuery(id, request),
+    onMutate: async ({ id, request }) => {
+      const listKey = auditQueryKeys.list()
+      await queryClient.cancelQueries({ queryKey: listKey })
+      const previous = queryClient.getQueryData<AuditQuery[]>(listKey)
+
+      if (id === null) {
+        const optimistic = buildOptimisticQuery(request)
+        queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) => [
+          ...current,
+          optimistic,
+        ])
+      } else {
+        queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) =>
+          current.map((query) =>
+            query.id === id ? applyRequestToQuery(query, request) : query,
+          ),
+        )
+      }
+
+      return { previous }
+    },
+    onSuccess: (saved, { id }) => {
+      const listKey = auditQueryKeys.list()
+
+      if (id === null) {
+        queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) =>
+          current.map((query) => (query.id === OPTIMISTIC_ID ? saved : query)),
+        )
+      } else {
+        queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) =>
+          current.map((query) => (query.id === id ? saved : query)),
+        )
+      }
 
       toast.success('Audit query saved.')
-      return saved
-    }
-
-    queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) =>
-      current.map((query) =>
-        query.id === id ? applyRequestToQuery(query, request) : query,
-      ),
-    )
-
-    const saved = await updateAuditQuery(id, request)
-    queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) =>
-      current.map((query) => (query.id === id ? saved : query)),
-    )
-
-    toast.success('Audit query saved.')
-    return saved
-  } catch (error) {
-    queryClient.setQueryData(listKey, previous)
-    toast.error(getErrorMessage(error, 'Unable to save audit query.'))
-    throw error
-  } finally {
-    await refreshAuditMetadata()
-  }
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(auditQueryKeys.list(), context.previous)
+      }
+      toast.error(getErrorMessage(error, 'Unable to save audit query.'))
+    },
+    onSettled: () => {
+      void refreshAuditMetadata()
+    },
+  })
 }
 
-export async function removeAuditQuery(id: number) {
-  const listKey = auditQueryKeys.list()
-  const previous = queryClient.getQueryData<AuditQuery[]>(listKey)
+export function useRemoveAuditQuery() {
+  return useMutation({
+    mutationFn: deleteAuditQuery,
+    onMutate: async (id) => {
+      const listKey = auditQueryKeys.list()
+      await queryClient.cancelQueries({ queryKey: listKey })
+      const previous = queryClient.getQueryData<AuditQuery[]>(listKey)
 
-  try {
-    queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) =>
-      current.filter((query) => query.id !== id),
-    )
-
-    await deleteAuditQuery(id)
-    toast.success('Audit query deleted.')
-  } catch (error) {
-    queryClient.setQueryData(listKey, previous)
-    toast.error(getErrorMessage(error, 'Unable to delete audit query.'))
-    throw error
-  } finally {
-    await refreshAuditMetadata()
-  }
-}
-
-export async function persistAuditCategory(
-  id: number | null,
-  request: AuditCategoryRequest,
-): Promise<AuditCategory> {
-  const listKey = auditCategoryKeys.list()
-  const previous = queryClient.getQueryData<AuditCategory[]>(listKey)
-
-  try {
-    if (id === null) {
-      const optimistic = buildOptimisticCategory(request)
-      queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) => [
-        ...current,
-        optimistic,
-      ])
-
-      const saved = await createAuditCategory(request)
-      queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) =>
-        current.map((category) =>
-          category.id === OPTIMISTIC_ID ? saved : category,
-        ),
+      queryClient.setQueryData<AuditQuery[]>(listKey, (current = []) =>
+        current.filter((query) => query.id !== id),
       )
 
-      toast.success('Audit category saved.')
-      return saved
-    }
-
-    queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) =>
-      current.map((category) =>
-        category.id === id
-          ? {
-              ...category,
-              name: request.name,
-              description: request.description || null,
-            }
-          : category,
-      ),
-    )
-
-    const saved = await updateAuditCategory(id, request)
-    queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) =>
-      current.map((category) => (category.id === id ? saved : category)),
-    )
-
-    toast.success('Audit category saved.')
-    return saved
-  } catch (error) {
-    queryClient.setQueryData(listKey, previous)
-    toast.error(getErrorMessage(error, 'Unable to save category.'))
-    throw error
-  } finally {
-    await refreshAuditMetadata()
-  }
+      return { previous }
+    },
+    onSuccess: () => {
+      toast.success('Audit query deleted.')
+    },
+    onError: (error, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(auditQueryKeys.list(), context.previous)
+      }
+      toast.error(getErrorMessage(error, 'Unable to delete audit query.'))
+    },
+    onSettled: () => {
+      void refreshAuditMetadata()
+    },
+  })
 }
 
-export async function removeAuditCategory(id: number) {
-  const listKey = auditCategoryKeys.list()
-  const previous = queryClient.getQueryData<AuditCategory[]>(listKey)
+export function usePersistAuditCategory() {
+  return useMutation({
+    mutationFn: ({ id, request }: PersistCategoryVariables) =>
+      id === null
+        ? createAuditCategory(request)
+        : updateAuditCategory(id, request),
+    onMutate: async ({ id, request }) => {
+      const listKey = auditCategoryKeys.list()
+      await queryClient.cancelQueries({ queryKey: listKey })
+      const previous = queryClient.getQueryData<AuditCategory[]>(listKey)
 
-  try {
-    queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) =>
-      current.filter((category) => category.id !== id),
-    )
+      if (id === null) {
+        const optimistic = buildOptimisticCategory(request)
+        queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) => [
+          ...current,
+          optimistic,
+        ])
+      } else {
+        queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) =>
+          current.map((category) =>
+            category.id === id
+              ? {
+                  ...category,
+                  name: request.name,
+                  description: request.description || null,
+                }
+              : category,
+          ),
+        )
+      }
 
-    await deleteAuditCategory(id)
-    toast.success('Audit category deleted.')
-  } catch (error) {
-    queryClient.setQueryData(listKey, previous)
-    toast.error(getErrorMessage(error, 'Unable to delete category.'))
-    throw error
-  } finally {
-    await refreshAuditMetadata()
-  }
+      return { previous }
+    },
+    onSuccess: (saved, { id }) => {
+      const listKey = auditCategoryKeys.list()
+
+      if (id === null) {
+        queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) =>
+          current.map((category) =>
+            category.id === OPTIMISTIC_ID ? saved : category,
+          ),
+        )
+      } else {
+        queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) =>
+          current.map((category) => (category.id === id ? saved : category)),
+        )
+      }
+
+      toast.success('Audit category saved.')
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(auditCategoryKeys.list(), context.previous)
+      }
+      toast.error(getErrorMessage(error, 'Unable to save category.'))
+    },
+    onSettled: () => {
+      void refreshAuditMetadata()
+    },
+  })
+}
+
+export function useRemoveAuditCategory() {
+  return useMutation({
+    mutationFn: deleteAuditCategory,
+    onMutate: async (id) => {
+      const listKey = auditCategoryKeys.list()
+      await queryClient.cancelQueries({ queryKey: listKey })
+      const previous = queryClient.getQueryData<AuditCategory[]>(listKey)
+
+      queryClient.setQueryData<AuditCategory[]>(listKey, (current = []) =>
+        current.filter((category) => category.id !== id),
+      )
+
+      return { previous }
+    },
+    onSuccess: () => {
+      toast.success('Audit category deleted.')
+    },
+    onError: (error, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(auditCategoryKeys.list(), context.previous)
+      }
+      toast.error(getErrorMessage(error, 'Unable to delete category.'))
+    },
+    onSettled: () => {
+      void refreshAuditMetadata()
+    },
+  })
 }

@@ -1,27 +1,31 @@
+import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 
+import {
+  auditCategoryRequestSchema,
+  formatZodError,
+} from '@/lib/audit-api'
 import { auditCategoriesListOptions } from '@/lib/queries/audit-categories'
 import {
   OPTIMISTIC_ID,
-  persistAuditCategory,
-  removeAuditCategory,
+  usePersistAuditCategory,
+  useRemoveAuditCategory,
 } from '@/lib/queries/audit-mutations'
 
 import {
-  buildRequest,
   createBlankForm,
   toFormState,
-  type CategoryFormState,
 } from './category-form'
 import { useCategoryWorkspaceSelection } from './category-workspace-context'
 import { useCategoryQueryCounts } from './use-category-query-counts'
 
 export function useAuditCategoryWorkspace() {
   const { selectedCategoryId, selectCategory } = useCategoryWorkspaceSelection()
-  const [form, setForm] = useState<CategoryFormState>(() => createBlankForm())
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
+
+  const persistCategory = usePersistAuditCategory()
+  const removeCategory = useRemoveAuditCategory()
 
   const { data: categories = [] } = useQuery(auditCategoriesListOptions())
   const getQueryCount = useCategoryQueryCounts()
@@ -36,55 +40,54 @@ export function useAuditCategoryWorkspace() {
     selectedCategoryId !== OPTIMISTIC_ID &&
     selectedCategory === null
 
+  const form = useForm({
+    defaultValues: createBlankForm(),
+    validators: {
+      onSubmit: ({ value }) => {
+        const result = auditCategoryRequestSchema.safeParse(value)
+        if (!result.success) {
+          return formatZodError(result.error)
+        }
+        return undefined
+      },
+    },
+    onSubmit: async ({ value }) => {
+      const request = auditCategoryRequestSchema.parse(value)
+      setErrorMessage(null)
+
+      const wasCreate = selectedCategoryId === null
+      const savingId = selectedCategoryId
+
+      if (wasCreate) {
+        selectCategory(OPTIMISTIC_ID)
+      }
+
+      try {
+        const saved = await persistCategory.mutateAsync({ id: savingId, request })
+        if (wasCreate) {
+          selectCategory(saved.id)
+        }
+        form.reset(toFormState(saved))
+      } catch {
+        if (wasCreate) {
+          selectCategory(null)
+        }
+      }
+    },
+  })
+
   useEffect(() => {
     if (selectedCategoryId === null) {
-      setForm(createBlankForm())
+      form.reset(createBlankForm())
       setErrorMessage(null)
       return
     }
 
     if (selectedCategory) {
-      setForm(toFormState(selectedCategory))
+      form.reset(toFormState(selectedCategory))
       setErrorMessage(null)
     }
-  }, [selectedCategoryId, selectedCategory])
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const { request, error } = buildRequest(form)
-
-    if (!request) {
-      setErrorMessage(error ?? 'Unable to save category.')
-      return
-    }
-
-    setErrorMessage(null)
-
-    const wasCreate = selectedCategoryId === null
-    const savingId = selectedCategoryId
-
-    setIsSaving(true)
-    void persistAuditCategory(savingId, request)
-      .then((saved) => {
-        if (wasCreate) {
-          selectCategory(saved.id)
-        }
-        setForm(toFormState(saved))
-      })
-      .catch(() => {
-        if (wasCreate) {
-          selectCategory(null)
-        }
-      })
-      .finally(() => {
-        setIsSaving(false)
-      })
-
-    if (wasCreate) {
-      selectCategory(OPTIMISTIC_ID)
-    }
-  }
+  }, [selectedCategoryId, selectedCategory, form])
 
   function handleDelete() {
     if (selectedCategoryId === null) {
@@ -94,7 +97,7 @@ export function useAuditCategoryWorkspace() {
     const deletedId = selectedCategoryId
     setErrorMessage(null)
     selectCategory(null)
-    void removeAuditCategory(deletedId)
+    removeCategory.mutate(deletedId)
   }
 
   function handleBack() {
@@ -107,11 +110,9 @@ export function useAuditCategoryWorkspace() {
     selectedQueryCount,
     isNotFound,
     form,
-    isSaving,
+    isSaving: persistCategory.isPending,
     errorMessage,
-    handleSubmit,
     handleDelete,
     handleBack,
-    setForm,
   }
 }

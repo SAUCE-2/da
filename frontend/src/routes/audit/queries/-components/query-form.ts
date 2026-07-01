@@ -1,9 +1,4 @@
-import {
-  auditQueryRequestSchema,
-  formatZodError,
-  type AuditQuery,
-  type AuditQueryRequest,
-} from '@/lib/audit-api'
+import type { AuditQuery } from '@/lib/audit-api'
 
 export type ClientSection = {
   clientId: string
@@ -21,8 +16,7 @@ export type QueryFormState = {
   sections: ClientSection[]
 }
 
-const createClientId = () =>
-  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+const createClientId = () => crypto.randomUUID()
 
 export function createBlankSection(sortOrder: number): ClientSection {
   return {
@@ -60,11 +54,8 @@ export function toFormState(query: AuditQuery): QueryFormState {
   }
 }
 
-export function buildRequest(form: QueryFormState): {
-  request?: AuditQueryRequest
-  error?: string
-} {
-  const sections = form.sections.map((section, index) => ({
+export function toAuditQueryRequest(value: QueryFormState) {
+  const sections = value.sections.map((section, index) => ({
     name: section.name,
     sqlFragment: section.sqlFragment,
     sortOrder: Number.isFinite(section.sortOrder)
@@ -73,19 +64,13 @@ export function buildRequest(form: QueryFormState): {
     defaultEnabled: section.defaultEnabled,
   }))
 
-  const result = auditQueryRequestSchema.safeParse({
-    name: form.name,
-    description: form.description,
-    active: form.active,
+  return {
+    name: value.name,
+    description: value.description,
+    active: value.active,
     sections,
-    categoryIds: form.categoryIds,
-  })
-
-  if (!result.success) {
-    return { error: formatZodError(result.error) }
+    categoryIds: value.categoryIds,
   }
-
-  return { request: result.data }
 }
 
 export function reindexSections(sections: ClientSection[]) {

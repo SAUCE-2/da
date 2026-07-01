@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { useMemo } from 'react'
 
+import { ThemeProvider } from 'next-themes'
+
 import { AppSidebar } from '@/components/app-sidebar'
-import { ThemeProvider } from '@/components/theme-provider'
 import { Badge } from '@/components/ui/badge'
 import {
   SidebarInset,
@@ -36,7 +37,12 @@ function RootComponent() {
         : 'outline'
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="theme">
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      storageKey="theme"
+    >
       <TooltipProvider>
         <SidebarProvider>
           <AppSidebar sections={navSections} />

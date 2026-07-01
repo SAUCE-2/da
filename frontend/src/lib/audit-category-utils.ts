@@ -1,9 +1,8 @@
 import type { AuditCategory, AuditQuery } from '@/lib/audit-api'
+import { sortByName } from '@/lib/utils'
 
 export function sortCategories(categories: AuditCategory[]) {
-  return [...categories].sort((left, right) =>
-    left.name.localeCompare(right.name),
-  )
+  return sortByName(categories, (category) => category.name)
 }
 
 export function buildDerivedQueryCounts(queries: AuditQuery[]) {

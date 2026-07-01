@@ -1,3 +1,5 @@
+import { useStore } from '@tanstack/react-form'
+
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -17,26 +19,23 @@ import { Input } from '@/components/ui/input'
 
 import { AuditEditorSection } from '../../-components/AuditEditorSection'
 import { SqlFragmentTextarea } from './SqlFragmentTextarea'
-import type { ClientSection } from './query-form'
+import type { QueryWorkspaceForm } from './use-audit-query-workspace'
 
 type QuerySectionsEditorProps = {
-  sections: ClientSection[]
+  form: QueryWorkspaceForm
   onAddSection: () => void
   onRemoveSection: (clientId: string) => void
   onMoveSection: (clientId: string, direction: -1 | 1) => void
-  onUpdateSection: (
-    clientId: string,
-    updates: Partial<Omit<ClientSection, 'clientId'>>,
-  ) => void
 }
 
 export function QuerySectionsEditor({
-  sections,
+  form,
   onAddSection,
   onRemoveSection,
   onMoveSection,
-  onUpdateSection,
 }: QuerySectionsEditorProps) {
+  const sections = useStore(form.store, (state) => state.values.sections)
+
   return (
     <AuditEditorSection
       title="Query sections"
@@ -91,58 +90,74 @@ export function QuerySectionsEditor({
               </CardHeader>
               <CardContent>
                 <FieldGroup className="grid gap-4 lg:grid-cols-[1fr_120px]">
-                  <Field>
-                    <FieldLabel>Section name</FieldLabel>
-                    <Input
-                      value={section.name}
-                      onChange={(event) =>
-                        onUpdateSection(section.clientId, {
-                          name: event.target.value,
-                        })
-                      }
-                      placeholder="Section name"
-                    />
-                  </Field>
+                  <form.Field
+                    name={`sections[${index}].name`}
+                    children={(field) => (
+                      <Field>
+                        <FieldLabel>Section name</FieldLabel>
+                        <Input
+                          value={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          onBlur={field.handleBlur}
+                          placeholder="Section name"
+                        />
+                      </Field>
+                    )}
+                  />
 
-                  <Field>
-                    <FieldLabel>Sort order</FieldLabel>
-                    <Input
-                      type="number"
-                      value={section.sortOrder}
-                      onChange={(event) =>
-                        onUpdateSection(section.clientId, {
-                          sortOrder: Number(event.target.value),
-                        })
-                      }
-                    />
-                  </Field>
+                  <form.Field
+                    name={`sections[${index}].sortOrder`}
+                    children={(field) => (
+                      <Field>
+                        <FieldLabel>Sort order</FieldLabel>
+                        <Input
+                          type="number"
+                          value={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(Number(event.target.value))
+                          }
+                          onBlur={field.handleBlur}
+                        />
+                      </Field>
+                    )}
+                  />
 
-                  <Field orientation="horizontal" className="lg:col-span-2">
-                    <Switch
-                      id={defaultEnabledId}
-                      checked={section.defaultEnabled}
-                      onCheckedChange={(checked) =>
-                        onUpdateSection(section.clientId, {
-                          defaultEnabled: checked,
-                        })
-                      }
-                    />
-                    <FieldLabel htmlFor={defaultEnabledId}>
-                      Enabled in default preview
-                    </FieldLabel>
-                  </Field>
+                  <form.Field
+                    name={`sections[${index}].defaultEnabled`}
+                    children={(field) => (
+                      <Field orientation="horizontal" className="lg:col-span-2">
+                        <Switch
+                          id={defaultEnabledId}
+                          checked={field.state.value}
+                          onCheckedChange={(checked) =>
+                            field.handleChange(checked)
+                          }
+                        />
+                        <FieldLabel htmlFor={defaultEnabledId}>
+                          Enabled in default preview
+                        </FieldLabel>
+                      </Field>
+                    )}
+                  />
 
-                  <Field className="min-h-0 lg:col-span-2">
-                    <FieldLabel>SQL fragment</FieldLabel>
-                    <SqlFragmentTextarea
-                      value={section.sqlFragment}
-                      onChange={(sqlFragment) =>
-                        onUpdateSection(section.clientId, { sqlFragment })
-                      }
-                      className="min-h-48 font-mono"
-                      placeholder="Enter this section's SQL fragment"
-                    />
-                  </Field>
+                  <form.Field
+                    name={`sections[${index}].sqlFragment`}
+                    children={(field) => (
+                      <Field className="min-h-0 lg:col-span-2">
+                        <FieldLabel>SQL fragment</FieldLabel>
+                        <SqlFragmentTextarea
+                          value={field.state.value}
+                          onChange={(sqlFragment) =>
+                            field.handleChange(sqlFragment)
+                          }
+                          className="min-h-48 font-mono"
+                          placeholder="Enter this section's SQL fragment"
+                        />
+                      </Field>
+                    )}
+                  />
                 </FieldGroup>
               </CardContent>
             </Card>

@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react'
+import { useStore } from '@tanstack/react-form'
 
 import { FormattedSqlDisplay } from '@/components/formatted-sql-display'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -43,16 +43,15 @@ export function AuditQueryEditor() {
     isDirty,
     isSaving,
     isPreviewLoading,
-    handleSubmit,
     handleDelete,
     handleBack,
-    markFormChanged,
     toggleCategory,
     addSection,
     removeSection,
     moveSection,
-    updateSection,
   } = useAuditQueryWorkspace()
+
+  const categoryIds = useStore(form.store, (state) => state.values.categoryIds)
 
   if (isNotFound) {
     return (
@@ -68,12 +67,15 @@ export function AuditQueryEditor() {
   const description =
     'Store metadata and ordered SQL sections. Execution stays out of scope for this phase.'
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    handleSubmit(event)
-  }
-
   return (
-    <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        void form.handleSubmit()
+      }}
+      className="flex min-h-0 flex-1 flex-col"
+    >
       {errorMessage ? (
         <Alert variant="destructive" className="mx-6 mt-3">
           <AlertDescription>{errorMessage}</AlertDescription>
@@ -102,39 +104,50 @@ export function AuditQueryEditor() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <AuditEditorSection title="Details">
           <FieldGroup className="grid gap-4 lg:grid-cols-2">
-            <Field>
-              <FieldLabel>Name</FieldLabel>
-              <Input
-                value={form.name}
-                onChange={(event) =>
-                  markFormChanged({ ...form, name: event.target.value })
-                }
-                placeholder="Audit query name"
-              />
-            </Field>
+            <form.Field
+              name="name"
+              children={(field) => (
+                <Field>
+                  <FieldLabel>Name</FieldLabel>
+                  <Input
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="Audit query name"
+                  />
+                </Field>
+              )}
+            />
 
-            <Field orientation="horizontal">
-              <Switch
-                id="query-active"
-                checked={form.active}
-                onCheckedChange={(checked) =>
-                  markFormChanged({ ...form, active: checked })
-                }
-              />
-              <FieldLabel htmlFor="query-active">Active by default</FieldLabel>
-            </Field>
+            <form.Field
+              name="active"
+              children={(field) => (
+                <Field orientation="horizontal">
+                  <Switch
+                    id="query-active"
+                    checked={field.state.value}
+                    onCheckedChange={(checked) => field.handleChange(checked)}
+                  />
+                  <FieldLabel htmlFor="query-active">Active by default</FieldLabel>
+                </Field>
+              )}
+            />
 
-            <Field className="lg:col-span-2">
-              <FieldLabel>Description</FieldLabel>
-              <Textarea
-                value={form.description}
-                onChange={(event) =>
-                  markFormChanged({ ...form, description: event.target.value })
-                }
-                className="min-h-20"
-                placeholder="What this query checks and when it should be used"
-              />
-            </Field>
+            <form.Field
+              name="description"
+              children={(field) => (
+                <Field className="lg:col-span-2">
+                  <FieldLabel>Description</FieldLabel>
+                  <Textarea
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    className="min-h-20"
+                    placeholder="What this query checks and when it should be used"
+                  />
+                </Field>
+              )}
+            />
           </FieldGroup>
         </AuditEditorSection>
 
@@ -166,7 +179,7 @@ export function AuditQueryEditor() {
                     <Field key={category.id} orientation="horizontal">
                       <Checkbox
                         id={categoryId}
-                        checked={form.categoryIds.includes(category.id)}
+                        checked={categoryIds.includes(category.id)}
                         onCheckedChange={() => toggleCategory(category.id)}
                       />
                       <FieldContent>
@@ -190,11 +203,10 @@ export function AuditQueryEditor() {
         <Separator />
 
         <QuerySectionsEditor
-          sections={form.sections}
+          form={form}
           onAddSection={addSection}
           onRemoveSection={removeSection}
           onMoveSection={moveSection}
-          onUpdateSection={updateSection}
         />
 
         <Separator />

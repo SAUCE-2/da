@@ -1,12 +1,17 @@
+import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 
+import {
+  auditQueryRequestSchema,
+  formatZodError,
+} from '@/lib/audit-api'
 import { getErrorMessage } from '@/lib/get-error-message'
 import { auditCategoriesListOptions } from '@/lib/queries/audit-categories'
 import {
   OPTIMISTIC_ID,
-  persistAuditQuery,
-  removeAuditQuery,
+  usePersistAuditQuery,
+  useRemoveAuditQuery,
 } from '@/lib/queries/audit-mutations'
 import {
   auditQueriesListOptions,
@@ -14,21 +19,20 @@ import {
 } from '@/lib/queries/audit-queries'
 
 import {
-  buildRequest,
   createBlankForm,
   createBlankSection,
   reindexSections,
+  toAuditQueryRequest,
   toFormState,
-  type QueryFormState,
 } from './query-form'
 import { useQueryWorkspaceSelection } from './query-workspace-context'
 
 export function useAuditQueryWorkspace() {
   const { selectedQueryId, selectQuery } = useQueryWorkspaceSelection()
-  const [form, setForm] = useState<QueryFormState>(() => createBlankForm())
-  const [isDirty, setIsDirty] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
+
+  const persistQuery = usePersistAuditQuery()
+  const removeQuery = useRemoveAuditQuery()
 
   const { data: queries = [] } = useQuery(auditQueriesListOptions())
   const { data: categories = [] } = useQuery(auditCategoriesListOptions())
@@ -44,64 +48,58 @@ export function useAuditQueryWorkspace() {
     ? getErrorMessage(previewQuery.error, 'Unable to load SQL preview.')
     : null
 
+  const form = useForm({
+    defaultValues: createBlankForm(),
+    validators: {
+      onSubmit: ({ value }) => {
+        const result = auditQueryRequestSchema.safeParse(
+          toAuditQueryRequest(value),
+        )
+        if (!result.success) {
+          return formatZodError(result.error)
+        }
+        return undefined
+      },
+    },
+    onSubmit: async ({ value }) => {
+      const request = auditQueryRequestSchema.parse(toAuditQueryRequest(value))
+      setErrorMessage(null)
+
+      const wasCreate = selectedQueryId === null
+      const savingId = selectedQueryId
+
+      if (wasCreate) {
+        selectQuery(OPTIMISTIC_ID)
+      }
+
+      try {
+        const saved = await persistQuery.mutateAsync({ id: savingId, request })
+        if (wasCreate) {
+          selectQuery(saved.id)
+        }
+        form.reset(toFormState(saved))
+      } catch {
+        if (wasCreate) {
+          selectQuery(null)
+        }
+      }
+    },
+  })
+
+  const isDirty = useStore(form.store, (state) => state.isDirty)
+
   useEffect(() => {
     if (selectedQueryId === null) {
-      setForm(createBlankForm())
-      setIsDirty(false)
+      form.reset(createBlankForm())
       setErrorMessage(null)
       return
     }
 
     if (selectedQuery) {
-      setForm(toFormState(selectedQuery))
-      setIsDirty(false)
+      form.reset(toFormState(selectedQuery))
       setErrorMessage(null)
     }
-  }, [selectedQueryId, selectedQuery])
-
-  function markFormChanged(nextForm: QueryFormState) {
-    setForm(nextForm)
-    setIsDirty(true)
-    setErrorMessage(null)
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const { request, error } = buildRequest(form)
-
-    if (!request) {
-      setErrorMessage(error ?? 'Unable to save query.')
-      return
-    }
-
-    setErrorMessage(null)
-
-    const wasCreate = selectedQueryId === null
-    const savingId = selectedQueryId
-
-    setIsSaving(true)
-    void persistAuditQuery(savingId, request)
-      .then((saved) => {
-        if (wasCreate) {
-          selectQuery(saved.id)
-        }
-        setForm(toFormState(saved))
-        setIsDirty(false)
-      })
-      .catch(() => {
-        if (wasCreate) {
-          selectQuery(null)
-        }
-      })
-      .finally(() => {
-        setIsSaving(false)
-      })
-
-    if (wasCreate) {
-      selectQuery(OPTIMISTIC_ID)
-    }
-  }
+  }, [selectedQueryId, selectedQuery, form])
 
   function handleDelete() {
     if (selectedQueryId === null) {
@@ -111,83 +109,67 @@ export function useAuditQueryWorkspace() {
     const deletedId = selectedQueryId
     setErrorMessage(null)
     selectQuery(null)
-    void removeAuditQuery(deletedId)
+    removeQuery.mutate(deletedId)
   }
 
   function handleBack() {
     selectQuery(null)
   }
 
-  function updateSection(
-    clientId: string,
-    updates: Partial<Omit<QueryFormState['sections'][number], 'clientId'>>,
-  ) {
-    markFormChanged({
-      ...form,
-      sections: form.sections.map((section) =>
-        section.clientId === clientId ? { ...section, ...updates } : section,
-      ),
-    })
+  function toggleCategory(categoryId: number) {
+    const categoryIds = form.getFieldValue('categoryIds')
+    const nextCategoryIds = categoryIds.includes(categoryId)
+      ? categoryIds.filter((id) => id !== categoryId)
+      : [...categoryIds, categoryId]
+
+    form.setFieldValue('categoryIds', nextCategoryIds)
   }
 
   function addSection() {
-    const lastSortOrder = form.sections.at(-1)?.sortOrder ?? 0
-
-    markFormChanged({
-      ...form,
-      sections: [...form.sections, createBlankSection(lastSortOrder + 10)],
-    })
+    const sections = form.getFieldValue('sections')
+    const lastSortOrder = sections.at(-1)?.sortOrder ?? 0
+    form.setFieldValue('sections', [
+      ...sections,
+      createBlankSection(lastSortOrder + 10),
+    ])
   }
 
   function removeSection(clientId: string) {
-    const nextSections = form.sections.filter(
-      (section) => section.clientId !== clientId,
+    const sections = form.getFieldValue('sections')
+    const nextSections = reindexSections(
+      sections.filter((section) => section.clientId !== clientId),
     )
-    const { error } = buildRequest({
-      ...form,
-      sections: reindexSections(nextSections),
-    })
+    const result = auditQueryRequestSchema.safeParse(
+      toAuditQueryRequest({
+        ...form.state.values,
+        sections: nextSections,
+      }),
+    )
 
-    if (error) {
-      setErrorMessage(error)
+    if (!result.success) {
+      setErrorMessage(formatZodError(result.error))
       return
     }
 
-    markFormChanged({
-      ...form,
-      sections: reindexSections(nextSections),
-    })
+    setErrorMessage(null)
+    form.setFieldValue('sections', nextSections)
   }
 
   function moveSection(clientId: string, direction: -1 | 1) {
-    const currentIndex = form.sections.findIndex(
+    const sections = form.getFieldValue('sections')
+    const currentIndex = sections.findIndex(
       (section) => section.clientId === clientId,
     )
     const nextIndex = currentIndex + direction
 
-    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= form.sections.length) {
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= sections.length) {
       return
     }
 
-    const nextSections = [...form.sections]
+    const nextSections = [...sections]
     const [section] = nextSections.splice(currentIndex, 1)
     nextSections.splice(nextIndex, 0, section)
-
-    markFormChanged({
-      ...form,
-      sections: reindexSections(nextSections),
-    })
-  }
-
-  function toggleCategory(categoryId: number) {
-    const nextCategoryIds = form.categoryIds.includes(categoryId)
-      ? form.categoryIds.filter((id) => id !== categoryId)
-      : [...form.categoryIds, categoryId]
-
-    markFormChanged({
-      ...form,
-      categoryIds: nextCategoryIds,
-    })
+    form.setFieldValue('sections', reindexSections(nextSections))
   }
 
   return {
@@ -198,17 +180,16 @@ export function useAuditQueryWorkspace() {
     categories,
     preview: previewQuery.data ?? null,
     isDirty,
-    isSaving,
+    isSaving: persistQuery.isPending,
     isPreviewLoading: previewQuery.isFetching,
     errorMessage: errorMessage ?? previewErrorMessage,
-    handleSubmit,
     handleDelete,
     handleBack,
-    markFormChanged,
     toggleCategory,
     addSection,
     removeSection,
     moveSection,
-    updateSection,
   }
 }
+
+export type QueryWorkspaceForm = ReturnType<typeof useAuditQueryWorkspace>['form']

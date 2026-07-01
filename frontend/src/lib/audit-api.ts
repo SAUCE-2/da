@@ -153,3 +153,11 @@ export function deleteAuditCategory(id: number) {
     method: 'DELETE',
   })
 }
+
+export type HealthResponse = {
+  status?: string
+}
+
+export function getBackendHealth() {
+  return apiRequest<HealthResponse>('/api/health')
+}
