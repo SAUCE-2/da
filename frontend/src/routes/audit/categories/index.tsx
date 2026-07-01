@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { AuditCategoryDetailPage } from './-components/AuditCategoryDetailPage'
+import { AuditCategoryEditor } from './-components/AuditCategoryEditor'
 
 export const Route = createFileRoute('/audit/categories/')({
-  component: () => <AuditCategoryDetailPage selectedCategoryId={null} />,
+  component: AuditCategoryEditor,
 })

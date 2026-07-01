@@ -1,19 +1,7 @@
 import type { FormEvent } from 'react'
-import { Link } from '@tanstack/react-router'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+import { FormattedSqlDisplay } from '@/components/formatted-sql-display'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -34,133 +22,55 @@ import {
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import type { AuditCategory, AuditQueryPreview } from '@/lib/audit-api'
 
+import { AuditEditorActions } from '../../-components/AuditEditorActions'
 import { AuditEditorHeader } from '../../-components/AuditEditorHeader'
 import { AuditEditorSection } from '../../-components/AuditEditorSection'
+import { AuditEntityNotFound } from '../../-components/AuditEntityNotFound'
 import { QuerySectionsEditor } from './QuerySectionsEditor'
-import { SqlPreview } from './SqlPreview'
-import type { ClientSection, QueryFormState } from './query-form'
+import { useAuditQueryWorkspace } from './use-audit-query-workspace'
 
-type AuditQueryEditorProps = {
-  selectedQueryId: number | null
-  selectedQueryName: string | null
-  isNotFound: boolean
-  errorMessage: string | null
-  form: QueryFormState
-  categories: AuditCategory[]
-  preview: AuditQueryPreview | null
-  isDirty: boolean
-  isSaving: boolean
-  isPreviewLoading: boolean
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void
-  onDelete: () => void
-  onFormChange: (form: QueryFormState) => void
-  onToggleCategory: (categoryId: number) => void
-  onAddSection: () => void
-  onRemoveSection: (clientId: string) => void
-  onMoveSection: (clientId: string, direction: -1 | 1) => void
-  onUpdateSection: (
-    clientId: string,
-    updates: Partial<Omit<ClientSection, 'clientId'>>,
-  ) => void
-}
+export function AuditQueryEditor() {
+  const {
+    selectedQueryId,
+    selectedQueryName,
+    isNotFound,
+    errorMessage,
+    form,
+    categories,
+    preview,
+    isDirty,
+    isSaving,
+    isPreviewLoading,
+    handleSubmit,
+    handleDelete,
+    handleBack,
+    markFormChanged,
+    toggleCategory,
+    addSection,
+    removeSection,
+    moveSection,
+    updateSection,
+  } = useAuditQueryWorkspace()
 
-function EditorActions({
-  selectedQueryId,
-  selectedQueryName,
-  isSaving,
-  onDelete,
-}: {
-  selectedQueryId: number | null
-  selectedQueryName: string | null
-  isSaving: boolean
-  onDelete: () => void
-}) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {selectedQueryId !== null ? (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button type="button" variant="destructive" disabled={isSaving}>
-              Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete audit query?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete &quot;
-                {selectedQueryName ?? 'this query'}&quot;.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isSaving}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                variant="destructive"
-                onClick={onDelete}
-                disabled={isSaving}
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      ) : null}
-      <Button type="submit" disabled={isSaving}>
-        {isSaving ? (
-          <>
-            <Spinner data-icon="inline-start" />
-            Saving...
-          </>
-        ) : (
-          'Save query'
-        )}
-      </Button>
-    </div>
-  )
-}
-
-export function AuditQueryEditor({
-  selectedQueryId,
-  selectedQueryName,
-  isNotFound,
-  errorMessage,
-  form,
-  categories,
-  preview,
-  isDirty,
-  isSaving,
-  isPreviewLoading,
-  onSubmit,
-  onDelete,
-  onFormChange,
-  onToggleCategory,
-  onAddSection,
-  onRemoveSection,
-  onMoveSection,
-  onUpdateSection,
-}: AuditQueryEditorProps) {
   if (isNotFound) {
     return (
-      <div className="flex flex-col gap-3 p-6">
-        <Alert variant="destructive">
-          <AlertDescription>
-            This audit query does not exist or may have been deleted.
-          </AlertDescription>
-        </Alert>
-        <Button type="button" size="sm" className="w-fit" asChild>
-          <Link to="/audit/queries">Back to queries</Link>
-        </Button>
-      </div>
+      <AuditEntityNotFound
+        message="This audit query does not exist or may have been deleted."
+        backLabel="Back to queries"
+        onBack={handleBack}
+      />
     )
   }
 
   const title = selectedQueryId === null ? 'Create query' : 'Edit query'
   const description =
     'Store metadata and ordered SQL sections. Execution stays out of scope for this phase.'
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    handleSubmit(event)
+  }
 
   return (
     <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
@@ -173,11 +83,18 @@ export function AuditQueryEditor({
         title={title}
         description={description}
         actions={
-          <EditorActions
-            selectedQueryId={selectedQueryId}
-            selectedQueryName={selectedQueryName}
+          <AuditEditorActions
+            entityId={selectedQueryId}
+            saveLabel="Save query"
             isSaving={isSaving}
-            onDelete={onDelete}
+            onDelete={handleDelete}
+            deleteTitle="Delete audit query?"
+            deleteDescription={
+              <>
+                This will permanently delete &quot;
+                {selectedQueryName ?? 'this query'}&quot;.
+              </>
+            }
           />
         }
       />
@@ -190,7 +107,7 @@ export function AuditQueryEditor({
               <Input
                 value={form.name}
                 onChange={(event) =>
-                  onFormChange({ ...form, name: event.target.value })
+                  markFormChanged({ ...form, name: event.target.value })
                 }
                 placeholder="Audit query name"
               />
@@ -201,7 +118,7 @@ export function AuditQueryEditor({
                 id="query-active"
                 checked={form.active}
                 onCheckedChange={(checked) =>
-                  onFormChange({ ...form, active: checked })
+                  markFormChanged({ ...form, active: checked })
                 }
               />
               <FieldLabel htmlFor="query-active">Active by default</FieldLabel>
@@ -212,7 +129,7 @@ export function AuditQueryEditor({
               <Textarea
                 value={form.description}
                 onChange={(event) =>
-                  onFormChange({ ...form, description: event.target.value })
+                  markFormChanged({ ...form, description: event.target.value })
                 }
                 className="min-h-20"
                 placeholder="What this query checks and when it should be used"
@@ -250,7 +167,7 @@ export function AuditQueryEditor({
                       <Checkbox
                         id={categoryId}
                         checked={form.categoryIds.includes(category.id)}
-                        onCheckedChange={() => onToggleCategory(category.id)}
+                        onCheckedChange={() => toggleCategory(category.id)}
                       />
                       <FieldContent>
                         <FieldLabel htmlFor={categoryId}>
@@ -274,10 +191,10 @@ export function AuditQueryEditor({
 
         <QuerySectionsEditor
           sections={form.sections}
-          onAddSection={onAddSection}
-          onRemoveSection={onRemoveSection}
-          onMoveSection={onMoveSection}
-          onUpdateSection={onUpdateSection}
+          onAddSection={addSection}
+          onRemoveSection={removeSection}
+          onMoveSection={moveSection}
+          onUpdateSection={updateSection}
         />
 
         <Separator />
@@ -302,7 +219,10 @@ export function AuditQueryEditor({
               <Skeleton className="h-4 w-4/6" />
             </div>
           ) : preview?.id === selectedQueryId ? (
-            <SqlPreview sql={preview.sql} />
+            <FormattedSqlDisplay
+              sql={preview.sql}
+              emptyMessage="-- No default-enabled sections to render."
+            />
           ) : (
             <Empty className="border-0 p-4">
               <EmptyHeader>

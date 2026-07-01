@@ -1,46 +1,24 @@
-import { TagIcon } from '@phosphor-icons/react'
-import { useQueryErrorResetBoundary } from '@tanstack/react-query'
-import { useLiveQuery } from '@tanstack/react-db'
-import {
-  createFileRoute,
-  Outlet,
-  useMatch,
-  useRouter,
-} from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { TagIcon } from '@phosphor-icons/react/Tag'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 import { AuditMasterDetailLayout } from '@/components/layout/audit-master-detail-layout'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import {
-  auditCategoriesCollection,
-  auditQueriesCollection,
-} from '@/lib/db/audit-collections'
-import type { AuditCategory, AuditQuery } from '@/lib/audit-api'
 import { auditCategoriesListOptions } from '@/lib/queries/audit-categories'
 import { auditQueriesListOptions } from '@/lib/queries/audit-queries'
 
+import { AuditRouteQueryError } from '../-components/AuditRouteQueryError'
 import { AuditCategoryList } from './-components/AuditCategoryList'
-import { buildDerivedQueryCounts, getCategoryQueryCount } from './-components/category-form'
+import {
+  CategoryWorkspaceProvider,
+  useCategoryWorkspaceSelection,
+} from './-components/category-workspace-context'
+import { useCategoryQueryCounts } from './-components/use-category-query-counts'
 
-function AuditCategoriesLayout() {
-  const match = useMatch({
-    from: '/audit/categories/$categoryId',
-    shouldThrow: false,
-  })
-  const selectedCategoryId = match?.params.categoryId
-    ? Number(match.params.categoryId)
-    : null
+function AuditCategoriesLayoutContent() {
+  const { selectedCategoryId, selectCategory } = useCategoryWorkspaceSelection()
+  const getQueryCount = useCategoryQueryCounts()
 
-  const { data: categoryRows = [] } = useLiveQuery((q) =>
-    q.from({ category: auditCategoriesCollection }),
-  )
-  const { data: queryRows = [] } = useLiveQuery((q) =>
-    q.from({ query: auditQueriesCollection }),
-  )
-  const categories = categoryRows as unknown as AuditCategory[]
-  const queries = queryRows as unknown as AuditQuery[]
-  const derivedCounts = buildDerivedQueryCounts(queries)
+  const { data: categories = [] } = useQuery(auditCategoriesListOptions())
 
   return (
     <AuditMasterDetailLayout
@@ -48,9 +26,8 @@ function AuditCategoriesLayout() {
         <AuditCategoryList
           categories={categories}
           selectedCategoryId={selectedCategoryId}
-          getQueryCount={(category) =>
-            getCategoryQueryCount(category, derivedCounts)
-          }
+          getQueryCount={getQueryCount}
+          onNew={() => selectCategory(null)}
         />
       }
       detail={<Outlet />}
@@ -58,25 +35,11 @@ function AuditCategoriesLayout() {
   )
 }
 
-function AuditCategoriesError({ error }: { error: Error }) {
-  const router = useRouter()
-  const queryErrorResetBoundary = useQueryErrorResetBoundary()
-
-  useEffect(() => {
-    queryErrorResetBoundary.reset()
-  }, [queryErrorResetBoundary])
-
+function AuditCategoriesLayout() {
   return (
-    <div className="flex flex-col gap-3 p-6">
-      <Alert variant="destructive">
-        <AlertDescription>
-          {error.message || 'Unable to load audit categories.'}
-        </AlertDescription>
-      </Alert>
-      <Button type="button" size="sm" onClick={() => void router.invalidate()}>
-        Retry
-      </Button>
-    </div>
+    <CategoryWorkspaceProvider>
+      <AuditCategoriesLayoutContent />
+    </CategoryWorkspaceProvider>
   )
 }
 
@@ -87,7 +50,12 @@ export const Route = createFileRoute('/audit/categories')({
       context.queryClient.ensureQueryData(auditQueriesListOptions()),
     ]),
   component: AuditCategoriesLayout,
-  errorComponent: AuditCategoriesError,
+  errorComponent: ({ error }) => (
+    <AuditRouteQueryError
+      error={error}
+      fallbackMessage="Unable to load audit categories."
+    />
+  ),
   staticData: {
     nav: {
       id: 'audit.categories',

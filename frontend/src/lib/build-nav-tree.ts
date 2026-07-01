@@ -1,5 +1,5 @@
 import type { AnyRoute } from '@tanstack/react-router'
-import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react/lib'
 
 export type NavItem = {
   id: string

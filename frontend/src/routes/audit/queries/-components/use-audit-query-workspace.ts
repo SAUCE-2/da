@@ -1,17 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
-import { useLiveQuery } from '@tanstack/react-db'
-import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useState, type FormEvent } from 'react'
 
 import { getErrorMessage } from '@/lib/get-error-message'
-import type { AuditCategory, AuditQuery } from '@/lib/audit-api'
+import { auditCategoriesListOptions } from '@/lib/queries/audit-categories'
 import {
-  auditCategoriesCollection,
-  auditQueriesCollection,
+  OPTIMISTIC_ID,
   persistAuditQuery,
   removeAuditQuery,
-} from '@/lib/db/audit-collections'
-import { auditQueryPreviewOptions } from '@/lib/queries/audit-queries'
+} from '@/lib/queries/audit-mutations'
+import {
+  auditQueriesListOptions,
+  auditQueryPreviewOptions,
+} from '@/lib/queries/audit-queries'
 
 import {
   buildRequest,
@@ -21,27 +21,25 @@ import {
   toFormState,
   type QueryFormState,
 } from './query-form'
+import { useQueryWorkspaceSelection } from './query-workspace-context'
 
-export function useAuditQueryWorkspace(selectedQueryId: number | null) {
-  const navigate = useNavigate()
+export function useAuditQueryWorkspace() {
+  const { selectedQueryId, selectQuery } = useQueryWorkspaceSelection()
   const [form, setForm] = useState<QueryFormState>(() => createBlankForm())
   const [isDirty, setIsDirty] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
-  const { data: queryRows = [] } = useLiveQuery((q) =>
-    q.from({ query: auditQueriesCollection }),
-  )
-  const { data: categoryRows = [] } = useLiveQuery((q) =>
-    q.from({ category: auditCategoriesCollection }),
-  )
-  const queries = queryRows as unknown as AuditQuery[]
-  const categories = categoryRows as unknown as AuditCategory[]
+  const { data: queries = [] } = useQuery(auditQueriesListOptions())
+  const { data: categories = [] } = useQuery(auditCategoriesListOptions())
   const previewQuery = useQuery(auditQueryPreviewOptions(selectedQueryId))
 
   const selectedQuery =
     queries.find((query) => query.id === selectedQueryId) ?? null
-  const isNotFound = selectedQueryId !== null && selectedQuery === null
+  const isNotFound =
+    selectedQueryId !== null &&
+    selectedQueryId !== OPTIMISTIC_ID &&
+    selectedQuery === null
   const previewErrorMessage = previewQuery.isError
     ? getErrorMessage(previewQuery.error, 'Unable to load SQL preview.')
     : null
@@ -67,7 +65,7 @@ export function useAuditQueryWorkspace(selectedQueryId: number | null) {
     setErrorMessage(null)
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const { request, error } = buildRequest(form)
@@ -78,43 +76,46 @@ export function useAuditQueryWorkspace(selectedQueryId: number | null) {
     }
 
     setErrorMessage(null)
+
+    const wasCreate = selectedQueryId === null
+    const savingId = selectedQueryId
+
     setIsSaving(true)
+    void persistAuditQuery(savingId, request)
+      .then((saved) => {
+        if (wasCreate) {
+          selectQuery(saved.id)
+        }
+        setForm(toFormState(saved))
+        setIsDirty(false)
+      })
+      .catch(() => {
+        if (wasCreate) {
+          selectQuery(null)
+        }
+      })
+      .finally(() => {
+        setIsSaving(false)
+      })
 
-    try {
-      const savedQuery = await persistAuditQuery(selectedQueryId, request)
-
-      setForm(toFormState(savedQuery))
-      setIsDirty(false)
-
-      if (selectedQueryId === null) {
-        await navigate({
-          to: '/audit/queries/$queryId',
-          params: { queryId: savedQuery.id },
-        })
-      }
-    } catch {
-      // Collection helpers own the toast; keep the form state intact for correction.
-    } finally {
-      setIsSaving(false)
+    if (wasCreate) {
+      selectQuery(OPTIMISTIC_ID)
     }
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (selectedQueryId === null) {
       return
     }
 
+    const deletedId = selectedQueryId
     setErrorMessage(null)
-    setIsSaving(true)
+    selectQuery(null)
+    void removeAuditQuery(deletedId)
+  }
 
-    try {
-      await removeAuditQuery(selectedQueryId)
-      await navigate({ to: '/audit/queries' })
-    } catch {
-      // Collection helpers own the toast; keep the selected query visible.
-    } finally {
-      setIsSaving(false)
-    }
+  function handleBack() {
+    selectQuery(null)
   }
 
   function updateSection(
@@ -202,6 +203,7 @@ export function useAuditQueryWorkspace(selectedQueryId: number | null) {
     errorMessage: errorMessage ?? previewErrorMessage,
     handleSubmit,
     handleDelete,
+    handleBack,
     markFormChanged,
     toggleCategory,
     addSection,

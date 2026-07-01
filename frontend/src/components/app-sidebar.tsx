@@ -1,12 +1,10 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import {
-  CaretRightIcon,
-  CircleIcon,
-  ClipboardTextIcon,
-  SidebarSimpleIcon,
-  SquaresFourIcon,
-} from '@phosphor-icons/react'
-import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
+import { CaretRightIcon } from '@phosphor-icons/react/CaretRight'
+import { CircleIcon } from '@phosphor-icons/react/Circle'
+import { ClipboardTextIcon } from '@phosphor-icons/react/ClipboardText'
+import { SidebarSimpleIcon } from '@phosphor-icons/react/SidebarSimple'
+import { SquaresFourIcon } from '@phosphor-icons/react/SquaresFour'
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react/lib'
 
 import {
   Collapsible,

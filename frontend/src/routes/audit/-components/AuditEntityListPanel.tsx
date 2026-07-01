@@ -22,6 +22,7 @@ type AuditEntityListPanelProps = {
   totalCount: number
   newLinkTo: string
   newLinkLabel: string
+  onNew?: () => void
   emptyMessage: string
   children: ReactNode
 }
@@ -31,6 +32,7 @@ export function AuditEntityListPanel({
   totalCount,
   newLinkTo,
   newLinkLabel,
+  onNew,
   emptyMessage,
   children,
 }: AuditEntityListPanelProps) {
@@ -45,7 +47,9 @@ export function AuditEntityListPanel({
             </Badge>
           </div>
           <Button type="button" size="sm" asChild>
-            <Link to={newLinkTo}>{newLinkLabel}</Link>
+            <Link to={newLinkTo} onClick={() => onNew?.()}>
+              {newLinkLabel}
+            </Link>
           </Button>
         </div>
       </SidebarHeader>

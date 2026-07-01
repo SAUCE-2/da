@@ -1,23 +1,20 @@
-import { Link } from '@tanstack/react-router'
-
 import { Badge } from '@/components/ui/badge'
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar'
 import type { AuditQuery } from '@/lib/audit-api'
+import { sortQueries } from '@/lib/audit-query-utils'
 
+import { AuditEntityListItem } from '../../-components/AuditEntityListItem'
 import { AuditEntityListPanel } from '../../-components/AuditEntityListPanel'
-import { sortQueries } from './query-form'
 
 type AuditQueryListProps = {
   queries: AuditQuery[]
   selectedQueryId: number | null
+  onNew: () => void
 }
 
 export function AuditQueryList({
   queries,
   selectedQueryId,
+  onNew,
 }: AuditQueryListProps) {
   const sortedQueries = sortQueries(queries)
 
@@ -26,40 +23,28 @@ export function AuditQueryList({
       title="Queries"
       totalCount={queries.length}
       newLinkTo="/audit/queries"
+      onNew={onNew}
       newLinkLabel="New query"
       emptyMessage="Create one to start building reusable metadata."
     >
-      {sortedQueries.map((query) => {
-        const isActive = query.id === selectedQueryId
-
-        return (
-          <SidebarMenuItem key={query.id}>
-            <SidebarMenuButton
-              asChild
-              isActive={isActive}
-              className="h-auto flex-col items-start gap-1 py-3"
+      {sortedQueries.map((query) => (
+        <AuditEntityListItem
+          key={query.id}
+          to="/audit/queries/$queryId"
+          params={{ queryId: query.id }}
+          title={query.name}
+          description={query.description || 'No description'}
+          isActive={query.id === selectedQueryId}
+          badge={
+            <Badge
+              variant={query.active ? 'secondary' : 'outline'}
+              className="shrink-0"
             >
-              <Link
-                to="/audit/queries/$queryId"
-                params={{ queryId: query.id }}
-              >
-                <span className="flex w-full items-start justify-between gap-3">
-                  <span className="leading-snug">{query.name}</span>
-                  <Badge
-                    variant={query.active ? 'secondary' : 'outline'}
-                    className="shrink-0"
-                  >
-                    {query.active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </span>
-                <span className="line-clamp-2 text-sm font-normal text-muted-foreground">
-                  {query.description || 'No description'}
-                </span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        )
-      })}
+              {query.active ? 'Active' : 'Inactive'}
+            </Badge>
+          }
+        />
+      ))}
     </AuditEntityListPanel>
   )
 }

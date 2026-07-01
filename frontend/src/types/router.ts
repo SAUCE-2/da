@@ -1,5 +1,5 @@
 import '@tanstack/react-router'
-import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react/lib'
 
 type VisibleRouteNavMetadata = {
   id: string

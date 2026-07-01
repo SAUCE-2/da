@@ -3,6 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { getAuditQueryPreview, listAuditQueries } from '@/lib/audit-api'
 
 import { auditQueryKeys } from './audit-keys'
+import { OPTIMISTIC_ID } from './audit-mutations'
 
 export const auditQueriesListOptions = () =>
   queryOptions({
@@ -21,6 +22,6 @@ export const auditQueryPreviewOptions = (id: number | null) =>
 
       return getAuditQueryPreview(id)
     },
-    enabled: id !== null,
+    enabled: id !== null && id !== OPTIMISTIC_ID,
     staleTime: 0,
   })

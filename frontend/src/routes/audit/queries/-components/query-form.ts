@@ -88,10 +88,6 @@ export function buildRequest(form: QueryFormState): {
   return { request: result.data }
 }
 
-export function sortQueries(queries: AuditQuery[]) {
-  return [...queries].sort((left, right) => left.name.localeCompare(right.name))
-}
-
 export function reindexSections(sections: ClientSection[]) {
   return sections.map((section, index) => ({
     ...section,

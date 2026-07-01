@@ -23,8 +23,4 @@ export default defineConfig({
       '/api': 'http://localhost:8080',
     },
   },
-  optimizeDeps: {
-    // Vite 8 pre-bundles the full phosphor barrel (~50k lines) and fails import analysis.
-    exclude: ['@phosphor-icons/react'],
-  },
 })

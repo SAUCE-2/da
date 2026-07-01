@@ -1,67 +1,42 @@
-import { FileMagnifyingGlassIcon } from '@phosphor-icons/react'
-import { useQueryErrorResetBoundary } from '@tanstack/react-query'
-import { useLiveQuery } from '@tanstack/react-db'
-import {
-  createFileRoute,
-  Outlet,
-  useMatch,
-  useRouter,
-} from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { FileMagnifyingGlassIcon } from '@phosphor-icons/react/FileMagnifyingGlass'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 import { AuditMasterDetailLayout } from '@/components/layout/audit-master-detail-layout'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { auditQueriesCollection } from '@/lib/db/audit-collections'
-import type { AuditQuery } from '@/lib/audit-api'
 import { auditCategoriesListOptions } from '@/lib/queries/audit-categories'
 import { auditQueriesListOptions } from '@/lib/queries/audit-queries'
 
+import { AuditRouteQueryError } from '../-components/AuditRouteQueryError'
 import { AuditQueryList } from './-components/AuditQueryList'
+import {
+  QueryWorkspaceProvider,
+  useQueryWorkspaceSelection,
+} from './-components/query-workspace-context'
 
-function AuditQueriesLayout() {
-  const match = useMatch({
-    from: '/audit/queries/$queryId',
-    shouldThrow: false,
-  })
-  const selectedQueryId = match?.params.queryId
-    ? Number(match.params.queryId)
-    : null
+function AuditQueriesLayoutContent() {
+  const { selectedQueryId, selectQuery } = useQueryWorkspaceSelection()
 
-  const { data = [] } = useLiveQuery((q) =>
-    q.from({ query: auditQueriesCollection }),
-  )
-  const queries = data as unknown as AuditQuery[]
+  const { data: queries = [] } = useQuery(auditQueriesListOptions())
 
   return (
     <AuditMasterDetailLayout
       list={
-        <AuditQueryList queries={queries} selectedQueryId={selectedQueryId} />
+        <AuditQueryList
+          queries={queries}
+          selectedQueryId={selectedQueryId}
+          onNew={() => selectQuery(null)}
+        />
       }
       detail={<Outlet />}
     />
   )
 }
 
-function AuditQueriesError({ error }: { error: Error }) {
-  const router = useRouter()
-  const queryErrorResetBoundary = useQueryErrorResetBoundary()
-
-  useEffect(() => {
-    queryErrorResetBoundary.reset()
-  }, [queryErrorResetBoundary])
-
+function AuditQueriesLayout() {
   return (
-    <div className="flex flex-col gap-3 p-6">
-      <Alert variant="destructive">
-        <AlertDescription>
-          {error.message || 'Unable to load audit queries.'}
-        </AlertDescription>
-      </Alert>
-      <Button type="button" size="sm" onClick={() => void router.invalidate()}>
-        Retry
-      </Button>
-    </div>
+    <QueryWorkspaceProvider>
+      <AuditQueriesLayoutContent />
+    </QueryWorkspaceProvider>
   )
 }
 
@@ -72,7 +47,12 @@ export const Route = createFileRoute('/audit/queries')({
       context.queryClient.ensureQueryData(auditCategoriesListOptions()),
     ]),
   component: AuditQueriesLayout,
-  errorComponent: AuditQueriesError,
+  errorComponent: ({ error }) => (
+    <AuditRouteQueryError
+      error={error}
+      fallbackMessage="Unable to load audit queries."
+    />
+  ),
   staticData: {
     nav: {
       id: 'audit.queries',

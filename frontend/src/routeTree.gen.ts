@@ -9,28 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProjectsRouteImport } from './routes/projects'
-import { Route as EnvironmentsRouteImport } from './routes/environments'
 import { Route as AuditRouteRouteImport } from './routes/audit/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuditQueriesRouteRouteImport } from './routes/audit/queries/route'
 import { Route as AuditCategoriesRouteRouteImport } from './routes/audit/categories/route'
-import { Route as AuditSuitesIndexRouteImport } from './routes/audit/suites/index'
 import { Route as AuditQueriesIndexRouteImport } from './routes/audit/queries/index'
 import { Route as AuditCategoriesIndexRouteImport } from './routes/audit/categories/index'
 import { Route as AuditQueriesQueryIdRouteImport } from './routes/audit/queries/$queryId'
 import { Route as AuditCategoriesCategoryIdRouteImport } from './routes/audit/categories/$categoryId'
 
-const ProjectsRoute = ProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EnvironmentsRoute = EnvironmentsRouteImport.update({
-  id: '/environments',
-  path: '/environments',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuditRouteRoute = AuditRouteRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -49,11 +36,6 @@ const AuditQueriesRouteRoute = AuditQueriesRouteRouteImport.update({
 const AuditCategoriesRouteRoute = AuditCategoriesRouteRouteImport.update({
   id: '/categories',
   path: '/categories',
-  getParentRoute: () => AuditRouteRoute,
-} as any)
-const AuditSuitesIndexRoute = AuditSuitesIndexRouteImport.update({
-  id: '/suites/',
-  path: '/suites/',
   getParentRoute: () => AuditRouteRoute,
 } as any)
 const AuditQueriesIndexRoute = AuditQueriesIndexRouteImport.update({
@@ -81,104 +63,70 @@ const AuditCategoriesCategoryIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/audit': typeof AuditRouteRouteWithChildren
-  '/environments': typeof EnvironmentsRoute
-  '/projects': typeof ProjectsRoute
   '/audit/categories': typeof AuditCategoriesRouteRouteWithChildren
   '/audit/queries': typeof AuditQueriesRouteRouteWithChildren
   '/audit/categories/$categoryId': typeof AuditCategoriesCategoryIdRoute
   '/audit/queries/$queryId': typeof AuditQueriesQueryIdRoute
   '/audit/categories/': typeof AuditCategoriesIndexRoute
   '/audit/queries/': typeof AuditQueriesIndexRoute
-  '/audit/suites/': typeof AuditSuitesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audit': typeof AuditRouteRouteWithChildren
-  '/environments': typeof EnvironmentsRoute
-  '/projects': typeof ProjectsRoute
   '/audit/categories/$categoryId': typeof AuditCategoriesCategoryIdRoute
   '/audit/queries/$queryId': typeof AuditQueriesQueryIdRoute
   '/audit/categories': typeof AuditCategoriesIndexRoute
   '/audit/queries': typeof AuditQueriesIndexRoute
-  '/audit/suites': typeof AuditSuitesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/audit': typeof AuditRouteRouteWithChildren
-  '/environments': typeof EnvironmentsRoute
-  '/projects': typeof ProjectsRoute
   '/audit/categories': typeof AuditCategoriesRouteRouteWithChildren
   '/audit/queries': typeof AuditQueriesRouteRouteWithChildren
   '/audit/categories/$categoryId': typeof AuditCategoriesCategoryIdRoute
   '/audit/queries/$queryId': typeof AuditQueriesQueryIdRoute
   '/audit/categories/': typeof AuditCategoriesIndexRoute
   '/audit/queries/': typeof AuditQueriesIndexRoute
-  '/audit/suites/': typeof AuditSuitesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/audit'
-    | '/environments'
-    | '/projects'
     | '/audit/categories'
     | '/audit/queries'
     | '/audit/categories/$categoryId'
     | '/audit/queries/$queryId'
     | '/audit/categories/'
     | '/audit/queries/'
-    | '/audit/suites/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/audit'
-    | '/environments'
-    | '/projects'
     | '/audit/categories/$categoryId'
     | '/audit/queries/$queryId'
     | '/audit/categories'
     | '/audit/queries'
-    | '/audit/suites'
   id:
     | '__root__'
     | '/'
     | '/audit'
-    | '/environments'
-    | '/projects'
     | '/audit/categories'
     | '/audit/queries'
     | '/audit/categories/$categoryId'
     | '/audit/queries/$queryId'
     | '/audit/categories/'
     | '/audit/queries/'
-    | '/audit/suites/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditRouteRoute: typeof AuditRouteRouteWithChildren
-  EnvironmentsRoute: typeof EnvironmentsRoute
-  ProjectsRoute: typeof ProjectsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/projects': {
-      id: '/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof ProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/environments': {
-      id: '/environments'
-      path: '/environments'
-      fullPath: '/environments'
-      preLoaderRoute: typeof EnvironmentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/audit': {
       id: '/audit'
       path: '/audit'
@@ -205,13 +153,6 @@ declare module '@tanstack/react-router' {
       path: '/categories'
       fullPath: '/audit/categories'
       preLoaderRoute: typeof AuditCategoriesRouteRouteImport
-      parentRoute: typeof AuditRouteRoute
-    }
-    '/audit/suites/': {
-      id: '/audit/suites/'
-      path: '/suites'
-      fullPath: '/audit/suites/'
-      preLoaderRoute: typeof AuditSuitesIndexRouteImport
       parentRoute: typeof AuditRouteRoute
     }
     '/audit/queries/': {
@@ -274,13 +215,11 @@ const AuditQueriesRouteRouteWithChildren =
 interface AuditRouteRouteChildren {
   AuditCategoriesRouteRoute: typeof AuditCategoriesRouteRouteWithChildren
   AuditQueriesRouteRoute: typeof AuditQueriesRouteRouteWithChildren
-  AuditSuitesIndexRoute: typeof AuditSuitesIndexRoute
 }
 
 const AuditRouteRouteChildren: AuditRouteRouteChildren = {
   AuditCategoriesRouteRoute: AuditCategoriesRouteRouteWithChildren,
   AuditQueriesRouteRoute: AuditQueriesRouteRouteWithChildren,
-  AuditSuitesIndexRoute: AuditSuitesIndexRoute,
 }
 
 const AuditRouteRouteWithChildren = AuditRouteRoute._addFileChildren(
@@ -290,8 +229,6 @@ const AuditRouteRouteWithChildren = AuditRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditRouteRoute: AuditRouteRouteWithChildren,
-  EnvironmentsRoute: EnvironmentsRoute,
-  ProjectsRoute: ProjectsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
