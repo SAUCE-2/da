@@ -1,0 +1,9 @@
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/audit/categories/$categoryId')({
+  component: RouteComponent,
+})
+
+function RouteComponent() {
+  return <div>Hello "/audit/categories/$categoryId"!</div>
+}
