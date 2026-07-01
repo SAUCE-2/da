@@ -6,25 +6,38 @@ import {
   type ReactNode,
 } from 'react'
 import { useMatch, useNavigate } from '@tanstack/react-router'
+import type { ResolveParams } from '@tanstack/router-core'
+import type { FileRouteTypes } from '@/routeTree.gen'
+
+type RouteId = FileRouteTypes['id']
+type RouteTo = FileRouteTypes['to']
 
 type AuditWorkspaceContextValue = {
   selectedId: number | null
   selectEntity: (id: number | null) => void
 }
 
-type AuditWorkspaceConfig = {
-  detailRoute: string
-  indexRoute: string
-  paramName: string
+type AuditWorkspaceConfig<
+  TDetailRoute extends RouteId,
+  TIndexRoute extends RouteTo,
+  TParamName extends keyof ResolveParams<TDetailRoute>,
+> = {
+  detailRoute: TDetailRoute
+  indexRoute: TIndexRoute
+  paramName: TParamName
   hookErrorMessage: string
 }
 
-export function createAuditWorkspaceContext({
+export function createAuditWorkspaceContext<
+  TDetailRoute extends RouteId,
+  TIndexRoute extends RouteTo,
+  TParamName extends keyof ResolveParams<TDetailRoute>,
+>({
   detailRoute,
   indexRoute,
   paramName,
   hookErrorMessage,
-}: AuditWorkspaceConfig) {
+}: AuditWorkspaceConfig<TDetailRoute, TIndexRoute, TParamName>) {
   const AuditWorkspaceContext =
     createContext<AuditWorkspaceContextValue | null>(null)
 
@@ -34,9 +47,9 @@ export function createAuditWorkspaceContext({
       shouldThrow: false,
     })
     const navigate = useNavigate()
-    const urlEntityId = match?.params[paramName]
-      ? Number(match.params[paramName])
-      : null
+    const params = match?.params as ResolveParams<TDetailRoute> | undefined
+    const rawParam = params?.[paramName]
+    const urlEntityId = rawParam ? Number(rawParam) : null
 
     const [selectedId, setSelectedId] = useState<number | null>(null)
 
