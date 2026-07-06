@@ -1,11 +1,9 @@
 package com.test.backend.domain.query;
 
 import com.test.backend.entity.query.QueryVersion;
-import com.test.backend.entity.query.QuerySection;
 import com.test.backend.entity.query.QueryVariable;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Renders stored section fragments into executable SQL.
@@ -18,13 +16,19 @@ public final class QuerySqlRenderer {
 	private QuerySqlRenderer() {
 	}
 
-	public static String renderQuerySql(List<QuerySection> sections, boolean defaultEnabledOnly) {
+	public static String renderQuerySql(List<com.test.backend.entity.query.QuerySection> sections, boolean defaultEnabledOnly) {
 		return sections.stream()
 				.sorted(QuerySqlRenderer::compareSections)
 				.filter(section -> !defaultEnabledOnly || section.isDefaultEnabled())
-				.map(QuerySection::getSqlFragment)
+				.map(com.test.backend.entity.query.QuerySection::getSqlFragment)
 				.map(QuerySqlRenderer::trimFragmentBoundaries)
-				.collect(Collectors.joining("\n"));
+				.collect(java.util.stream.Collectors.joining("\n"));
+	}
+
+	public record RenderedQuerySql(String sql) {
+	}
+
+	public record PreviewSql(String sql, List<String> unresolvedVariables) {
 	}
 
 	public static RenderedQuerySql renderVersionSql(
@@ -37,12 +41,31 @@ public final class QuerySqlRenderer {
 				.toList();
 		if (variables.isEmpty()) {
 			QueryVariableSubstitutor.rejectUnresolvedPlaceholders(concatenated);
-			return new RenderedQuerySql(concatenated, Map.of());
+			return new RenderedQuerySql(concatenated);
 		}
 
 		Map<String, String> resolvedValues = QueryVariableSubstitutor.resolveVariableValues(variables, variableValues);
 		String sql = QueryVariableSubstitutor.substituteVariables(concatenated, variables, resolvedValues);
-		return new RenderedQuerySql(sql, resolvedValues);
+		return new RenderedQuerySql(sql);
+	}
+
+	public static PreviewSql renderPreviewSql(
+			QueryVersion version,
+			boolean defaultEnabledOnly,
+			Map<String, String> variableValues) {
+		String concatenated = renderQuerySql(version.getSections(), defaultEnabledOnly);
+		List<QueryVariable> variables = version.getVariables().stream()
+				.sorted(QuerySqlRenderer::compareVariables)
+				.toList();
+		if (variables.isEmpty()) {
+			return new PreviewSql(
+					concatenated,
+					QueryVariableSubstitutor.findUnresolvedPlaceholders(concatenated));
+		}
+
+		Map<String, String> resolvedValues = QueryVariableSubstitutor.resolveVariableValues(variables, variableValues);
+		String sql = QueryVariableSubstitutor.substituteVariablesPreview(concatenated, variables, resolvedValues);
+		return new PreviewSql(sql, QueryVariableSubstitutor.findUnresolvedPlaceholders(sql));
 	}
 
 	public static String trimFragmentBoundaries(String sqlFragment) {
@@ -53,12 +76,14 @@ public final class QuerySqlRenderer {
 				.replaceAll("\\n[\\t \\n]*\\z", "");
 	}
 
-	public static int compareSections(QuerySection left, QuerySection right) {
+	public static int compareSections(
+			com.test.backend.entity.query.QuerySection left,
+			com.test.backend.entity.query.QuerySection right) {
 		int orderComparison = Integer.compare(left.getSortOrder(), right.getSortOrder());
 		if (orderComparison != 0) {
 			return orderComparison;
 		}
-		return Long.compare(idOrMax(left), idOrMax(right));
+		return Long.compare(idOrMax(left.getId()), idOrMax(right.getId()));
 	}
 
 	public static int compareVariables(QueryVariable left, QueryVariable right) {
@@ -66,14 +91,10 @@ public final class QuerySqlRenderer {
 		if (orderComparison != 0) {
 			return orderComparison;
 		}
-		return Long.compare(idOrMax(left), idOrMax(right));
+		return Long.compare(idOrMax(left.getId()), idOrMax(right.getId()));
 	}
 
-	private static long idOrMax(QuerySection section) {
-		return section.getId() == null ? Long.MAX_VALUE : section.getId();
-	}
-
-	private static long idOrMax(QueryVariable variable) {
-		return variable.getId() == null ? Long.MAX_VALUE : variable.getId();
+	private static long idOrMax(Long id) {
+		return id == null ? Long.MAX_VALUE : id;
 	}
 }

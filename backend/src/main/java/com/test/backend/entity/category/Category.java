@@ -13,9 +13,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "categories", uniqueConstraints = @UniqueConstraint(name = "uk_categories_name", columnNames = "name"))
+@Getter
+@Setter
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Category {
 
 	@Id
@@ -31,35 +37,8 @@ public class Category {
 	@ManyToMany(mappedBy = "categories")
 	private Set<Query> queries = new LinkedHashSet<>();
 
-	protected Category() {
-	}
-
 	public Category(String name, String description) {
 		this.name = name;
 		this.description = description;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public Set<Query> getQueries() {
-		return queries;
 	}
 }

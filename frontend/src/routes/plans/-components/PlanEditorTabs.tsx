@@ -1,17 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { Switch } from '@/components/ui/switch'
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { Query } from '@/lib/api'
 
 import { EditorSection } from '@/components/workspace/EditorSection'
+import { EntityMetadataFields } from '@/components/workspace/EntityMetadataFields'
 import type { PlanEditorTab } from './plan-editor-tab'
 import { PlanItemsEditor } from './PlanItemsEditor'
 import { PlanVariablesEditor } from './PlanVariablesEditor'
@@ -23,7 +16,7 @@ type PlanEditorTabsProps = {
   queries: Query[]
   onAddItem: () => void
   onRemoveItem: (clientId: string) => void
-  onMoveItem: (clientId: string, direction: -1 | 1) => void
+  onReorderItem: (activeId: string, overId: string) => void
   onQueryChange: (clientId: string, queryId: number | null) => void
 }
 
@@ -33,7 +26,7 @@ export function PlanEditorTabs({
   queries,
   onAddItem,
   onRemoveItem,
-  onMoveItem,
+  onReorderItem,
   onQueryChange,
 }: PlanEditorTabsProps) {
   const [activeTab, setActiveTab] = useState<PlanEditorTab>('details')
@@ -56,49 +49,12 @@ export function PlanEditorTabs({
 
       <TabsContent value="details" className="mt-0 min-h-0 flex-1">
         <EditorSection title="Basic information">
-          <FieldGroup className="grid gap-4 lg:grid-cols-2">
-            <form.Field
-              name="name"
-              children={(field) => (
-                <Field>
-                  <FieldLabel required>Name</FieldLabel>
-                  <Input
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    placeholder="Plan name"
-                  />
-                </Field>
-              )}
-            />
-
-            <form.Field
-              name="active"
-              children={(field) => (
-                <Field orientation="horizontal">
-                  <Switch
-                    checked={field.state.value}
-                    onCheckedChange={(checked) => field.handleChange(checked)}
-                  />
-                  <FieldLabel>Active</FieldLabel>
-                </Field>
-              )}
-            />
-
-            <form.Field
-              name="description"
-              children={(field) => (
-                <Field className="lg:col-span-2">
-                  <FieldLabel>Description</FieldLabel>
-                  <Textarea
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    className="min-h-20"
-                    placeholder="What this plan checks and when it should be used"
-                  />
-                </Field>
-              )}
-            />
-          </FieldGroup>
+          <EntityMetadataFields
+            form={form}
+            activeLabel="Active"
+            namePlaceholder="Plan name"
+            descriptionPlaceholder="What this plan checks and when it should be used"
+          />
         </EditorSection>
       </TabsContent>
 
@@ -108,7 +64,7 @@ export function PlanEditorTabs({
           queries={queries}
           onAddItem={onAddItem}
           onRemoveItem={onRemoveItem}
-          onMoveItem={onMoveItem}
+          onReorderItem={onReorderItem}
           onQueryChange={onQueryChange}
         />
       </TabsContent>

@@ -35,34 +35,6 @@ These files define a staged plan for a customised SQL audit query store and exec
 
 - [Runtime And Variable Context](runtime-and-variable-context.md)
 
-## Plan Status
-
-- Plan 00: done
-- Plan 01: done
-- Plan 01.5: done
-- Plan 02: done
-- Plan 02.5: done
-- Plan 02.6: done
-- Plan 03: next
-- Plan 04: not started
-- Plan 05: not started
-- Plan 06: blocked by connection setup and execution work
-
-## MVP Progression
-
-```mermaid
-flowchart LR
-  docs[Docs] --> setup[Setup_Config]
-  setup --> navMeta[Route_Metadata_Nav]
-  navMeta --> queries[Queries_Categories]
-  queries --> framing[Product_Framing]
-  framing --> versions[Versioning_Variables]
-  versions --> connections[Database_Connections]
-  connections --> plans[Plans_Execution]
-  plans --> overrides[Overrides_Scheduling]
-  overrides --> verify[Verification]
-```
-
 ## Domain Summary
 
 - **Query:** a reusable, versioned SQL audit definition made from toggleable ordered sections and variables.
@@ -70,8 +42,3 @@ flowchart LR
 - **Plan:** an ordered pipeline of queries that can be run together.
 - **Plan run:** one execution of a plan.
 - **Query run:** one execution of a single query.
-
-## Key MVP Constraint
-
-The app should remain abstract. It should provide the structure to define, organize, render, and run SQL audits, but it should not include fake customer schemas, fake customer data, or pretend production queries.
-

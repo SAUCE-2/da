@@ -17,6 +17,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -24,6 +27,9 @@ import jakarta.persistence.UniqueConstraint;
 		uniqueConstraints = @UniqueConstraint(
 				name = "uk_query_versions_number",
 				columnNames = { "query_id", "version_number" }))
+@Getter
+@Setter
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class QueryVersion {
 
 	@Id
@@ -48,40 +54,9 @@ public class QueryVersion {
 	@OrderBy("sortOrder ASC, id ASC")
 	private List<QueryVariable> variables = new ArrayList<>();
 
-	protected QueryVersion() {
-	}
-
 	public QueryVersion(Query query, int versionNumber) {
 		this.query = query;
 		this.versionNumber = versionNumber;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public Query getQuery() {
-		return query;
-	}
-
-	public void setQuery(Query query) {
-		this.query = query;
-	}
-
-	public int getVersionNumber() {
-		return versionNumber;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
-	}
-
-	public List<QuerySection> getSections() {
-		return sections;
-	}
-
-	public List<QueryVariable> getVariables() {
-		return variables;
 	}
 
 	public void replaceSections(List<QuerySection> replacementSections) {

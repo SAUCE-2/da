@@ -1,24 +1,30 @@
-import { useMutation } from '@tanstack/react-query'
-import { toast } from 'sonner'
-
 import {
   createCategory,
+  createPlan,
   createQuery,
   deleteCategory,
+  deletePlan,
   deleteQuery,
   updateCategory,
+  updatePlan,
   updateQuery,
   type Category,
   type CategoryRequest,
+  type Plan,
+  type PlanRequest,
   type Query,
   type QueryRequest,
 } from '@/lib/api'
-import { getErrorMessage } from '@/lib/get-error-message'
 import { queryClient } from '@/lib/query-client'
 
-import { categoryKeys, queryKeys } from './keys'
+import { categoryKeys, planKeys, queryKeys } from './keys'
+import {
+  createPersistListMutation,
+  createRemoveListMutation,
+  OPTIMISTIC_ID,
+} from './list-mutation-factory'
 
-export const OPTIMISTIC_ID = 0
+export { OPTIMISTIC_ID }
 
 function refreshMetadata() {
   void Promise.all([
@@ -48,10 +54,7 @@ function buildOptimisticQuery(request: QueryRequest): Query {
   }
 }
 
-function applyRequestToQuery(
-  query: Query,
-  request: QueryRequest,
-): Query {
+function applyRequestToQuery(query: Query, request: QueryRequest): Query {
   return {
     ...query,
     name: request.name,
@@ -77,194 +80,127 @@ function buildOptimisticCategory(request: CategoryRequest): Category {
   }
 }
 
-type PersistQueryVariables = {
-  id: number | null
-  request: QueryRequest
+function buildOptimisticPlan(request: PlanRequest): Plan {
+  return {
+    id: OPTIMISTIC_ID,
+    name: request.name,
+    description: request.description || null,
+    active: request.active,
+    items: request.items.map((item, index) => ({
+      id: index,
+      queryId: item.queryId,
+      queryName: '',
+      sortOrder: item.sortOrder,
+      enabled: item.enabled,
+      queryVersionId: null,
+      queryVersionNumber: null,
+      variableBindings: item.variableBindings.map((binding) => ({
+        name: binding.name,
+        value: binding.value ?? null,
+      })),
+    })),
+  }
 }
 
-type PersistCategoryVariables = {
-  id: number | null
-  request: CategoryRequest
+function applyRequestToPlan(plan: Plan, request: PlanRequest): Plan {
+  return {
+    ...plan,
+    name: request.name,
+    description: request.description || null,
+    active: request.active,
+    items: request.items.map((item, index) => ({
+      id: plan.items[index]?.id ?? index,
+      queryId: item.queryId,
+      queryName: plan.items[index]?.queryName ?? '',
+      sortOrder: item.sortOrder,
+      enabled: item.enabled,
+      queryVersionId: plan.items[index]?.queryVersionId ?? null,
+      queryVersionNumber: plan.items[index]?.queryVersionNumber ?? null,
+      variableBindings: item.variableBindings.map((binding) => ({
+        name: binding.name,
+        value: binding.value ?? null,
+      })),
+    })),
+  }
 }
 
-export function usePersistQuery() {
-  return useMutation({
-    mutationFn: ({ id, request }: PersistQueryVariables) =>
-      id === null
-        ? createQuery(request)
-        : updateQuery(id, request),
-    onMutate: async ({ id, request }) => {
-      const listKey = queryKeys.list()
-      await queryClient.cancelQueries({ queryKey: listKey })
-      const previous = queryClient.getQueryData<Query[]>(listKey)
+export const usePersistQuery = createPersistListMutation<Query, QueryRequest>({
+  listKey: queryKeys.list(),
+  mutationFn: ({ id, request }) =>
+    (id === null
+      ? createQuery(request)
+      : updateQuery(id, request)) as Promise<Query>,
+  buildOptimistic: buildOptimisticQuery,
+  applyRequest: applyRequestToQuery,
+  getId: (query) => query.id,
+  successMessage: 'Query saved.',
+  errorMessage: 'Unable to save query.',
+  onSettled: (_data, _error, variables) => {
+    void refreshMetadata()
+    if (variables.id !== null) {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.preview(variables.id),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.versions(variables.id),
+      })
+    }
+  },
+})
 
-      if (id === null) {
-        const optimistic = buildOptimisticQuery(request)
-        queryClient.setQueryData<Query[]>(listKey, (current = []) => [
-          ...current,
-          optimistic,
-        ])
-      } else {
-        queryClient.setQueryData<Query[]>(listKey, (current = []) =>
-          current.map((query) =>
-            query.id === id ? applyRequestToQuery(query, request) : query,
-          ),
-        )
-      }
+export const useRemoveQuery = createRemoveListMutation({
+  listKey: queryKeys.list(),
+  mutationFn: deleteQuery,
+  successMessage: 'Query deleted.',
+  errorMessage: 'Unable to delete query.',
+  onSettled: refreshMetadata,
+})
 
-      return { previous }
-    },
-    onSuccess: (saved, { id }) => {
-      const listKey = queryKeys.list()
+export const usePersistCategory = createPersistListMutation<
+  Category,
+  CategoryRequest
+>({
+  listKey: categoryKeys.list(),
+  mutationFn: ({ id, request }) =>
+    (id === null
+      ? createCategory(request)
+      : updateCategory(id, request)) as Promise<Category>,
+  buildOptimistic: buildOptimisticCategory,
+  applyRequest: (category, request) => ({
+    ...category,
+    name: request.name,
+    description: request.description || null,
+  }),
+  getId: (category) => category.id,
+  successMessage: 'Category saved.',
+  errorMessage: 'Unable to save category.',
+  onSettled: refreshMetadata,
+})
 
-      if (id === null) {
-        queryClient.setQueryData<Query[]>(listKey, (current = []) =>
-          current.map((query) => (query.id === OPTIMISTIC_ID ? saved : query)),
-        )
-      } else {
-        queryClient.setQueryData<Query[]>(listKey, (current = []) =>
-          current.map((query) => (query.id === id ? saved : query)),
-        )
-      }
+export const useRemoveCategory = createRemoveListMutation({
+  listKey: categoryKeys.list(),
+  mutationFn: deleteCategory,
+  successMessage: 'Category deleted.',
+  errorMessage: 'Unable to delete category.',
+  onSettled: refreshMetadata,
+})
 
-      toast.success('Query saved.')
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(queryKeys.list(), context.previous)
-      }
-      toast.error(getErrorMessage(error, 'Unable to save query.'))
-    },
-    onSettled: (_data, _error, variables) => {
-      void refreshMetadata()
-      if (variables.id !== null) {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.preview(variables.id),
-        })
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.versions(variables.id),
-        })
-      }
-    },
-  })
-}
+export const usePersistPlan = createPersistListMutation<Plan, PlanRequest>({
+  listKey: planKeys.list(),
+  mutationFn: ({ id, request }) =>
+    (id === null
+      ? createPlan(request as never)
+      : updatePlan(id, request as never)) as Promise<Plan>,
+  buildOptimistic: buildOptimisticPlan,
+  applyRequest: applyRequestToPlan,
+  getId: (plan) => plan.id,
+  successMessage: 'Plan saved.',
+  errorMessage: 'Unable to save plan.',
+})
 
-export function useRemoveQuery() {
-  return useMutation({
-    mutationFn: deleteQuery,
-    onMutate: async (id) => {
-      const listKey = queryKeys.list()
-      await queryClient.cancelQueries({ queryKey: listKey })
-      const previous = queryClient.getQueryData<Query[]>(listKey)
-
-      queryClient.setQueryData<Query[]>(listKey, (current = []) =>
-        current.filter((query) => query.id !== id),
-      )
-
-      return { previous }
-    },
-    onSuccess: () => {
-      toast.success('Query deleted.')
-    },
-    onError: (error, _id, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(queryKeys.list(), context.previous)
-      }
-      toast.error(getErrorMessage(error, 'Unable to delete query.'))
-    },
-    onSettled: () => {
-      void refreshMetadata()
-    },
-  })
-}
-
-export function usePersistCategory() {
-  return useMutation({
-    mutationFn: ({ id, request }: PersistCategoryVariables) =>
-      id === null
-        ? createCategory(request)
-        : updateCategory(id, request),
-    onMutate: async ({ id, request }) => {
-      const listKey = categoryKeys.list()
-      await queryClient.cancelQueries({ queryKey: listKey })
-      const previous = queryClient.getQueryData<Category[]>(listKey)
-
-      if (id === null) {
-        const optimistic = buildOptimisticCategory(request)
-        queryClient.setQueryData<Category[]>(listKey, (current = []) => [
-          ...current,
-          optimistic,
-        ])
-      } else {
-        queryClient.setQueryData<Category[]>(listKey, (current = []) =>
-          current.map((category) =>
-            category.id === id
-              ? {
-                ...category,
-                name: request.name,
-                description: request.description || null,
-              }
-              : category,
-          ),
-        )
-      }
-
-      return { previous }
-    },
-    onSuccess: (saved, { id }) => {
-      const listKey = categoryKeys.list()
-
-      if (id === null) {
-        queryClient.setQueryData<Category[]>(listKey, (current = []) =>
-          current.map((category) =>
-            category.id === OPTIMISTIC_ID ? saved : category,
-          ),
-        )
-      } else {
-        queryClient.setQueryData<Category[]>(listKey, (current = []) =>
-          current.map((category) => (category.id === id ? saved : category)),
-        )
-      }
-
-      toast.success('Category saved.')
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(categoryKeys.list(), context.previous)
-      }
-      toast.error(getErrorMessage(error, 'Unable to save category.'))
-    },
-    onSettled: () => {
-      void refreshMetadata()
-    },
-  })
-}
-
-export function useRemoveCategory() {
-  return useMutation({
-    mutationFn: deleteCategory,
-    onMutate: async (id) => {
-      const listKey = categoryKeys.list()
-      await queryClient.cancelQueries({ queryKey: listKey })
-      const previous = queryClient.getQueryData<Category[]>(listKey)
-
-      queryClient.setQueryData<Category[]>(listKey, (current = []) =>
-        current.filter((category) => category.id !== id),
-      )
-
-      return { previous }
-    },
-    onSuccess: () => {
-      toast.success('Category deleted.')
-    },
-    onError: (error, _id, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(categoryKeys.list(), context.previous)
-      }
-      toast.error(getErrorMessage(error, 'Unable to delete category.'))
-    },
-    onSettled: () => {
-      void refreshMetadata()
-    },
-  })
-}
+export const useRemovePlan = createRemoveListMutation({
+  listKey: planKeys.list(),
+  mutationFn: deletePlan,
+  successMessage: 'Plan deleted.',
+  errorMessage: 'Unable to delete plan.',
+})

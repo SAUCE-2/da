@@ -10,6 +10,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -17,6 +20,9 @@ import jakarta.persistence.UniqueConstraint;
 		uniqueConstraints = @UniqueConstraint(
 				name = "uk_plan_item_variables_name",
 				columnNames = { "plan_item_id", "variable_name" }))
+@Getter
+@Setter
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class PlanItemVariable {
 
 	@Id
@@ -33,35 +39,8 @@ public class PlanItemVariable {
 	@Column(name = "binding_value", length = 1000)
 	private String value;
 
-	protected PlanItemVariable() {
-	}
-
 	public PlanItemVariable(String variableName, String value) {
 		this.variableName = variableName;
-		this.value = value;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public PlanItem getPlanItem() {
-		return planItem;
-	}
-
-	public void setPlanItem(PlanItem planItem) {
-		this.planItem = planItem;
-	}
-
-	public String getVariableName() {
-		return variableName;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
 		this.value = value;
 	}
 }

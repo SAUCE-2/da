@@ -1,7 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import type { Category } from '@/lib/api'
-import { sortCategories } from '@/lib/category-utils'
-import { pluralize } from '@/lib/utils'
+import { pluralize, sortByName } from '@/lib/utils'
 
 import { EntityListItem } from '@/components/workspace/EntityListItem'
 import { EntityListPanel } from '@/components/workspace/EntityListPanel'
@@ -19,7 +18,7 @@ export function CategoryList({
   getQueryCount,
   onNew,
 }: CategoryListProps) {
-  const sortedCategories = sortCategories(categories)
+  const sortedCategories = sortByName(categories, (category) => category.name)
 
   return (
     <EntityListPanel

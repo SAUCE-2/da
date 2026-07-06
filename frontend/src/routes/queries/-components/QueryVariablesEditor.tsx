@@ -16,6 +16,13 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 import { EditorSection } from '@/components/workspace/EditorSection'
 import type { QueryWorkspaceForm } from './use-query-workspace'
@@ -90,19 +97,23 @@ export function QueryVariablesEditor({
                       children={(field) => (
                         <Field>
                           <FieldLabel required>Type</FieldLabel>
-                          <select
-                            className="h-8 w-full border border-input bg-transparent px-2.5 text-xs"
+                          <Select
                             value={field.state.value}
-                            onChange={(event) =>
+                            onValueChange={(value) =>
                               field.handleChange(
-                                event.target.value as 'STRING' | 'NUMBER' | 'DATE',
+                                value as 'STRING' | 'NUMBER' | 'DATE',
                               )
                             }
                           >
-                            <option value="STRING">String</option>
-                            <option value="NUMBER">Number</option>
-                            <option value="DATE">Date</option>
-                          </select>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="STRING">String</SelectItem>
+                              <SelectItem value="NUMBER">Number</SelectItem>
+                              <SelectItem value="DATE">Date</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </Field>
                       )}
                     />
@@ -156,7 +167,6 @@ export function QueryVariablesEditor({
   return (
     <EditorSection
       title="Query variables"
-      description="Reference variables in SQL fragments as {{variableName}}."
       action={
         <Button type="button" variant="outline" size="sm" onClick={onAddVariable}>
           Add variable

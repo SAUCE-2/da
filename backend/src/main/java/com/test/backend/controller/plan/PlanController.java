@@ -1,9 +1,12 @@
 package com.test.backend.controller.plan;
 
+import com.test.backend.dto.plan.PlanRequest;
+import com.test.backend.dto.plan.PlanResponse;
+import com.test.backend.service.plan.PlanService;
+import jakarta.validation.Valid;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,21 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.test.backend.service.plan.PlanService;
-import com.test.backend.dto.plan.PlanRequest;
-import com.test.backend.dto.plan.PlanResponse;
-
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/plans")
+@RequiredArgsConstructor
 public class PlanController {
 
 	private final PlanService planService;
-
-	public PlanController(PlanService planService) {
-		this.planService = planService;
-	}
 
 	@GetMapping
 	public List<PlanResponse> listPlans() {
@@ -52,8 +46,8 @@ public class PlanController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deletePlan(@PathVariable Long id) {
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deletePlan(@PathVariable Long id) {
 		planService.deletePlan(id);
-		return ResponseEntity.noContent().build();
 	}
 }

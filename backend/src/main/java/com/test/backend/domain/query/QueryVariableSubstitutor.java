@@ -46,6 +46,21 @@ public final class QueryVariableSubstitutor {
 	}
 
 	public static String substituteVariables(String sql, List<QueryVariable> variables, Map<String, String> values) {
+		return substituteVariables(sql, variables, values, false);
+	}
+
+	public static String substituteVariablesPreview(
+			String sql,
+			List<QueryVariable> variables,
+			Map<String, String> values) {
+		return substituteVariables(sql, variables, values, true);
+	}
+
+	private static String substituteVariables(
+			String sql,
+			List<QueryVariable> variables,
+			Map<String, String> values,
+			boolean preview) {
 		Map<String, QueryVariable> variablesByName = new LinkedHashMap<>();
 		for (QueryVariable variable : variables) {
 			variablesByName.put(variable.getName(), variable);
@@ -63,6 +78,10 @@ public final class QueryVariableSubstitutor {
 			}
 			String rawValue = values.get(variableName);
 			if (rawValue == null || rawValue.isBlank()) {
+				if (preview) {
+					matcher.appendReplacement(rendered, Matcher.quoteReplacement(matcher.group(0)));
+					continue;
+				}
 				throw new ResponseStatusException(
 						HttpStatus.BAD_REQUEST,
 						"Missing value for variable referenced in SQL: " + variableName);
@@ -72,7 +91,9 @@ public final class QueryVariableSubstitutor {
 		matcher.appendTail(rendered);
 
 		String renderedSql = rendered.toString();
-		rejectUnresolvedPlaceholders(renderedSql);
+		if (!preview) {
+			rejectUnresolvedPlaceholders(renderedSql);
+		}
 		return renderedSql;
 	}
 

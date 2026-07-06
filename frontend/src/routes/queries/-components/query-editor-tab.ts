@@ -1,3 +1,1 @@
-export const QUERY_EDITOR_TABS = ['details', 'query', 'variables'] as const
-
-export type QueryEditorTab = (typeof QUERY_EDITOR_TABS)[number]
+export type QueryEditorTab = 'details' | 'query' | 'variables'

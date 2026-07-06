@@ -1,23 +1,22 @@
+import { arrayMove } from '@dnd-kit/sortable'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { useLayoutEffect, useMemo, useState } from 'react'
 
-import { mergePreviewVariableOverrides } from '@/lib/variable-utils'
+import { useClearSubmitErrorOnDirty } from '@/hooks/use-clear-submit-error-on-dirty'
+import { queryRequestSchema } from '@/lib/schemas'
+import { formatZodError } from '@/lib/api'
 import {
-  queryRequestSchema,
-  formatZodError,
-} from '@/lib/api'
-import { getErrorMessage } from '@/lib/get-error-message'
+  readSubmitError,
+  submitValidationError,
+} from '@/lib/form-submit-validation'
 import { categoriesListOptions } from '@/lib/queries/categories'
 import {
   OPTIMISTIC_ID,
   usePersistQuery,
   useRemoveQuery,
 } from '@/lib/queries/mutations'
-import {
-  queriesListOptions,
-  queryPreviewOptions,
-} from '@/lib/queries/queries'
+import { queriesListOptions } from '@/lib/queries/queries'
 
 import {
   createBlankForm,
@@ -28,14 +27,12 @@ import {
   toQueryRequest,
   toFormState,
 } from './query-form'
+import { useQueryPreview } from './use-query-preview'
 import { useQueryWorkspaceSelection } from './query-workspace-context'
 
 export function useQueryWorkspace() {
   const { selectedQueryId, selectQuery } = useQueryWorkspaceSelection()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [previewVariableOverrides, setPreviewVariableOverrides] = useState<
-    Record<string, string>
-  >({})
 
   const persistQuery = usePersistQuery()
   const removeQuery = useRemoveQuery()
@@ -61,13 +58,8 @@ export function useQueryWorkspace() {
     defaultValues: defaultFormValues,
     validators: {
       onSubmit: ({ value }) => {
-        const result = queryRequestSchema.safeParse(
-          toQueryRequest(value),
-        )
-        if (!result.success) {
-          return formatZodError(result.error)
-        }
-        return undefined
+        const result = queryRequestSchema.safeParse(toQueryRequest(value))
+        return result.success ? undefined : submitValidationError(result.error)
       },
     },
     onSubmit: async ({ value }) => {
@@ -87,7 +79,7 @@ export function useQueryWorkspace() {
           selectQuery(saved.id)
         }
         form.reset(toFormState(saved))
-        setPreviewVariableOverrides({})
+        resetPreviewOverrides()
       } catch {
         if (wasCreate) {
           selectQuery(null)
@@ -97,38 +89,36 @@ export function useQueryWorkspace() {
   })
 
   const formVariables = useStore(form.store, (state) => state.values.variables)
-  const previewVariableValues = useMemo(
-    () => mergePreviewVariableOverrides(formVariables, previewVariableOverrides),
-    [formVariables, previewVariableOverrides],
-  )
-  const previewRequest = useMemo(
-    () => ({ variables: previewVariableValues }),
-    [previewVariableValues],
-  )
-
-  const previewQuery = useQuery(
-    queryPreviewOptions(selectedQueryId, previewRequest),
-  )
+  const {
+    preview,
+    previewVariableValues,
+    isPreviewLoading,
+    previewErrorMessage,
+    updatePreviewVariable,
+    resetPreviewOverrides,
+  } = useQueryPreview(selectedQueryId, formVariables)
 
   const isDirty = useStore(form.store, (state) => state.isDirty)
-  const previewErrorMessage = previewQuery.isError
-    ? getErrorMessage(previewQuery.error, 'Unable to load SQL preview.')
-    : null
+  const submitError = useStore(form.store, (state) =>
+    readSubmitError(state.errorMap),
+  )
+
+  useClearSubmitErrorOnDirty(form)
 
   useLayoutEffect(() => {
     if (selectedQueryId === null) {
       form.reset(createBlankForm())
-      setPreviewVariableOverrides({})
+      resetPreviewOverrides()
       setErrorMessage(null)
       return
     }
 
     if (selectedQuery) {
       form.reset(toFormState(selectedQuery))
-      setPreviewVariableOverrides({})
+      resetPreviewOverrides()
       setErrorMessage(null)
     }
-  }, [selectedQueryId, selectedQuery, form])
+  }, [selectedQueryId, selectedQuery, form, resetPreviewOverrides])
 
   function handleDelete() {
     if (selectedQueryId === null) {
@@ -184,21 +174,19 @@ export function useQueryWorkspace() {
     form.setFieldValue('sections', nextSections)
   }
 
-  function moveSection(clientId: string, direction: -1 | 1) {
+  function reorderSection(activeId: string, overId: string) {
     const sections = form.getFieldValue('sections')
-    const currentIndex = sections.findIndex(
-      (section) => section.clientId === clientId,
-    )
-    const nextIndex = currentIndex + direction
+    const oldIndex = sections.findIndex((section) => section.clientId === activeId)
+    const newIndex = sections.findIndex((section) => section.clientId === overId)
 
-    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= sections.length) {
+    if (oldIndex < 0 || newIndex < 0) {
       return
     }
 
-    const nextSections = [...sections]
-    const [section] = nextSections.splice(currentIndex, 1)
-    nextSections.splice(nextIndex, 0, section)
-    form.setFieldValue('sections', reindexSections(nextSections))
+    form.setFieldValue(
+      'sections',
+      reindexSections(arrayMove(sections, oldIndex, newIndex)),
+    )
   }
 
   function addVariable() {
@@ -218,10 +206,6 @@ export function useQueryWorkspace() {
     )
   }
 
-  function updatePreviewVariable(name: string, value: string) {
-    setPreviewVariableOverrides((current) => ({ ...current, [name]: value }))
-  }
-
   return {
     selectedQueryId,
     selectedQuery,
@@ -229,18 +213,18 @@ export function useQueryWorkspace() {
     isNotFound,
     form,
     categories,
-    preview: previewQuery.data ?? null,
+    preview,
     previewVariableValues,
     isDirty,
     isSaving: persistQuery.isPending,
-    isPreviewLoading: previewQuery.isFetching,
-    errorMessage: errorMessage ?? previewErrorMessage,
+    isPreviewLoading,
+    errorMessage: errorMessage ?? submitError ?? previewErrorMessage,
     handleDelete,
     handleBack,
     toggleCategory,
     addSection,
     removeSection,
-    moveSection,
+    reorderSection,
     addVariable,
     removeVariable,
     updatePreviewVariable,

@@ -1,8 +1,10 @@
 import { TagIcon } from '@phosphor-icons/react/Tag'
-import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
-import { MasterDetailLayout } from '@/components/layout/master-detail-layout'
+import {
+  EntityWorkspaceLayout,
+  entityWorkspaceLoader,
+} from '@/components/workspace/entity-workspace-layout'
 import { categoriesListOptions } from '@/lib/queries/categories'
 import { queriesListOptions } from '@/lib/queries/queries'
 
@@ -10,46 +12,38 @@ import { RouteQueryError } from '@/components/workspace/RouteQueryError'
 import { CategoryList } from './-components/CategoryList'
 import {
   CategoryWorkspaceProvider,
-  useCategoryWorkspaceSelection,
+  useCategoryWorkspaceSelectionBase,
 } from './-components/category-workspace-context'
 import { useCategoryQueryCounts } from './-components/use-category-query-counts'
 
-function CategoriesLayoutContent() {
-  const { selectedCategoryId, selectCategory } = useCategoryWorkspaceSelection()
+function CategoriesWorkspaceLayout() {
   const getQueryCount = useCategoryQueryCounts()
 
-  const { data: categories = [] } = useQuery(categoriesListOptions())
-
   return (
-    <MasterDetailLayout
-      list={
+    <EntityWorkspaceLayout
+      Provider={CategoryWorkspaceProvider}
+      useSelection={useCategoryWorkspaceSelectionBase}
+      listOptions={categoriesListOptions}
+      renderList={({ items, selectedId, onNew }) => (
         <CategoryList
-          categories={categories}
-          selectedCategoryId={selectedCategoryId}
+          categories={items}
+          selectedCategoryId={selectedId}
           getQueryCount={getQueryCount}
-          onNew={() => selectCategory(null)}
+          onNew={onNew}
         />
-      }
-      detail={<Outlet />}
+      )}
     />
-  )
-}
-
-function CategoriesLayout() {
-  return (
-    <CategoryWorkspaceProvider>
-      <CategoriesLayoutContent />
-    </CategoryWorkspaceProvider>
   )
 }
 
 export const Route = createFileRoute('/categories')({
   loader: ({ context }) =>
-    Promise.all([
-      context.queryClient.ensureQueryData(categoriesListOptions()),
-      context.queryClient.ensureQueryData(queriesListOptions()),
-    ]),
-  component: CategoriesLayout,
+    entityWorkspaceLoader(
+      context.queryClient,
+      categoriesListOptions,
+      queriesListOptions,
+    ),
+  component: CategoriesWorkspaceLayout,
   errorComponent: ({ error }) => (
     <RouteQueryError
       error={error}

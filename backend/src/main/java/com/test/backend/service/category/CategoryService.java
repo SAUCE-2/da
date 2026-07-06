@@ -1,38 +1,36 @@
 package com.test.backend.service.category;
 
+import com.test.backend.dto.category.CategoryRequest;
+import com.test.backend.dto.category.CategoryResponse;
 import com.test.backend.entity.category.Category;
+import com.test.backend.mapper.CategoryMapper;
 import com.test.backend.repository.category.CategoryRepository;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
-import com.test.backend.dto.category.CategoryRequest;
-import com.test.backend.dto.category.CategoryResponse;
+import static com.test.backend.service.ServiceSupport.notFound;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryService {
 
 	private final CategoryRepository categoryRepository;
-
-	public CategoryService(CategoryRepository categoryRepository) {
-		this.categoryRepository = categoryRepository;
-	}
+	private final CategoryMapper categoryMapper;
 
 	@Transactional(readOnly = true)
 	public List<CategoryResponse> listCategories() {
 		return categoryRepository.findAllByOrderByNameAsc().stream()
-				.map(this::toResponse)
+				.map(categoryMapper::toResponse)
 				.toList();
 	}
 
 	@Transactional
 	public CategoryResponse createCategory(CategoryRequest request) {
 		Category category = new Category(request.name(), request.description());
-		return toResponse(categoryRepository.save(category));
+		return categoryMapper.toResponse(categoryRepository.save(category));
 	}
 
 	@Transactional
@@ -40,7 +38,7 @@ public class CategoryService {
 		Category category = getCategoryEntity(id);
 		category.setName(request.name());
 		category.setDescription(request.description());
-		return toResponse(category);
+		return categoryMapper.toResponse(category);
 	}
 
 	@Transactional
@@ -52,14 +50,6 @@ public class CategoryService {
 
 	private Category getCategoryEntity(Long id) {
 		return categoryRepository.findById(id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found: " + id));
-	}
-
-	private CategoryResponse toResponse(Category category) {
-		return new CategoryResponse(
-				category.getId(),
-				category.getName(),
-				category.getDescription(),
-				category.getQueries().size());
+				.orElseThrow(() -> notFound("Category not found: " + id));
 	}
 }

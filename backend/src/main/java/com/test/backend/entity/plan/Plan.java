@@ -12,9 +12,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "plans")
+@Getter
+@Setter
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Plan {
 
 	@Id
@@ -34,45 +40,10 @@ public class Plan {
 	@OrderBy("sortOrder ASC, id ASC")
 	private List<PlanItem> items = new ArrayList<>();
 
-	protected Plan() {
-	}
-
 	public Plan(String name, String description, boolean active) {
 		this.name = name;
 		this.description = description;
 		this.active = active;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
-	public List<PlanItem> getItems() {
-		return items;
 	}
 
 	public void replaceItems(List<PlanItem> replacementItems) {

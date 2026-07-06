@@ -13,6 +13,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -23,6 +26,9 @@ import jakarta.persistence.UniqueConstraint;
 		uniqueConstraints = @UniqueConstraint(
 				name = "uk_query_variables_version_name",
 				columnNames = { "query_version_id", "name" }))
+@Getter
+@Setter
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class QueryVariable {
 
 	@Id
@@ -49,9 +55,6 @@ public class QueryVariable {
 	@Column(name = "sort_order", nullable = false)
 	private int sortOrder;
 
-	protected QueryVariable() {
-	}
-
 	public QueryVariable(
 			String name,
 			QueryVariableType type,
@@ -63,37 +66,5 @@ public class QueryVariable {
 		this.defaultValue = defaultValue;
 		this.required = required;
 		this.sortOrder = sortOrder;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public QueryVersion getQueryVersion() {
-		return queryVersion;
-	}
-
-	public void setQueryVersion(QueryVersion queryVersion) {
-		this.queryVersion = queryVersion;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public QueryVariableType getType() {
-		return type;
-	}
-
-	public String getDefaultValue() {
-		return defaultValue;
-	}
-
-	public boolean isRequired() {
-		return required;
-	}
-
-	public int getSortOrder() {
-		return sortOrder;
 	}
 }

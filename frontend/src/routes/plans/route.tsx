@@ -1,8 +1,10 @@
 import { StackIcon } from '@phosphor-icons/react/Stack'
-import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
-import { MasterDetailLayout } from '@/components/layout/master-detail-layout'
+import {
+  EntityWorkspaceLayout,
+  entityWorkspaceLoader,
+} from '@/components/workspace/entity-workspace-layout'
 import { queriesListOptions } from '@/lib/queries/queries'
 import { plansListOptions } from '@/lib/queries/plans'
 
@@ -10,42 +12,26 @@ import { RouteQueryError } from '@/components/workspace/RouteQueryError'
 import { PlanList } from './-components/PlanList'
 import {
   PlanWorkspaceProvider,
-  usePlanWorkspaceSelection,
+  usePlanWorkspaceSelectionBase,
 } from './-components/plan-workspace-context'
-
-function PlansLayoutContent() {
-  const { selectedPlanId, selectPlan } = usePlanWorkspaceSelection()
-  const { data: plans = [] } = useQuery(plansListOptions())
-
-  return (
-    <MasterDetailLayout
-      list={
-        <PlanList
-          plans={plans}
-          selectedPlanId={selectedPlanId}
-          onNew={() => selectPlan(null)}
-        />
-      }
-      detail={<Outlet />}
-    />
-  )
-}
-
-function PlansLayout() {
-  return (
-    <PlanWorkspaceProvider>
-      <PlansLayoutContent />
-    </PlanWorkspaceProvider>
-  )
-}
 
 export const Route = createFileRoute('/plans')({
   loader: ({ context }) =>
-    Promise.all([
-      context.queryClient.ensureQueryData(plansListOptions()),
-      context.queryClient.ensureQueryData(queriesListOptions()),
-    ]),
-  component: PlansLayout,
+    entityWorkspaceLoader(
+      context.queryClient,
+      plansListOptions,
+      queriesListOptions,
+    ),
+  component: () => (
+    <EntityWorkspaceLayout
+      Provider={PlanWorkspaceProvider}
+      useSelection={usePlanWorkspaceSelectionBase}
+      listOptions={plansListOptions}
+      renderList={({ items, selectedId, onNew }) => (
+        <PlanList plans={items} selectedPlanId={selectedId} onNew={onNew} />
+      )}
+    />
+  ),
   errorComponent: ({ error }) => (
     <RouteQueryError
       error={error}

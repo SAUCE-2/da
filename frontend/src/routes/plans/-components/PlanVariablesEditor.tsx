@@ -33,10 +33,7 @@ export function PlanVariablesEditor({ form, queries }: PlanVariablesEditorProps)
     .filter((entry) => entry !== null)
 
   return (
-    <EditorSection
-      title="Variable defaults"
-      description="Override query variable defaults for this plan. Variables are derived from queries in the plan — you cannot add new definitions here."
-    >
+    <EditorSection title="Variable defaults">
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Add queries on the Queries tab first.

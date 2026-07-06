@@ -1,11 +1,10 @@
 import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 
-import {
-  categoryRequestSchema,
-  formatZodError,
-} from '@/lib/api'
+import { useClearSubmitErrorOnDirty } from '@/hooks/use-clear-submit-error-on-dirty'
+
+import { categoryRequestSchema } from '@/lib/schemas'
 import { categoriesListOptions } from '@/lib/queries/categories'
 import {
   OPTIMISTIC_ID,
@@ -27,7 +26,7 @@ export function useCategoryWorkspace() {
   const persistCategory = usePersistCategory()
   const removeCategory = useRemoveCategory()
 
-  const { data: categories = [] } = useQuery(categoriesListOptions())
+  const { data: categories = [], isFetched } = useQuery(categoriesListOptions())
   const getQueryCount = useCategoryQueryCounts()
 
   const selectedCategory =
@@ -36,6 +35,7 @@ export function useCategoryWorkspace() {
     ? getQueryCount(selectedCategory)
     : 0
   const isNotFound =
+    isFetched &&
     selectedCategoryId !== null &&
     selectedCategoryId !== OPTIMISTIC_ID &&
     selectedCategory === null
@@ -43,13 +43,7 @@ export function useCategoryWorkspace() {
   const form = useForm({
     defaultValues: createBlankForm(),
     validators: {
-      onSubmit: ({ value }) => {
-        const result = categoryRequestSchema.safeParse(value)
-        if (!result.success) {
-          return formatZodError(result.error)
-        }
-        return undefined
-      },
+      onSubmit: categoryRequestSchema,
     },
     onSubmit: async ({ value }) => {
       const request = categoryRequestSchema.parse(value)
@@ -76,7 +70,9 @@ export function useCategoryWorkspace() {
     },
   })
 
-  useEffect(() => {
+  useClearSubmitErrorOnDirty(form)
+
+  useLayoutEffect(() => {
     if (selectedCategoryId === null) {
       form.reset(createBlankForm())
       setErrorMessage(null)

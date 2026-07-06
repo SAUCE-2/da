@@ -1,5 +1,6 @@
 import { useStore } from '@tanstack/react-form'
 
+import { SortableList } from '@/components/sortable-list'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -10,6 +11,13 @@ import {
 } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 import { EditorSection } from '@/components/workspace/EditorSection'
 import type { Query } from '@/lib/api'
@@ -20,7 +28,7 @@ type PlanItemsEditorProps = {
   queries: Query[]
   onAddItem: () => void
   onRemoveItem: (clientId: string) => void
-  onMoveItem: (clientId: string, direction: -1 | 1) => void
+  onReorderItem: (activeId: string, overId: string) => void
   onQueryChange: (clientId: string, queryId: number | null) => void
 }
 
@@ -29,7 +37,7 @@ export function PlanItemsEditor({
   queries,
   onAddItem,
   onRemoveItem,
-  onMoveItem,
+  onReorderItem,
   onQueryChange,
 }: PlanItemsEditorProps) {
   const items = useStore(form.store, (state) => state.values.items)
@@ -37,7 +45,6 @@ export function PlanItemsEditor({
   return (
     <EditorSection
       title="Queries in plan"
-      description="Add and order the queries this plan runs."
       action={
         <Button type="button" variant="outline" size="sm" onClick={onAddItem}>
           Add query
@@ -49,8 +56,11 @@ export function PlanItemsEditor({
           No queries in this plan yet.
         </p>
       ) : (
-        <div className="flex flex-col gap-4">
-          {items.map((item, index) => {
+        <SortableList
+          items={items}
+          onReorder={onReorderItem}
+          className="flex flex-col gap-4"
+          renderItem={(item, index, dragHandle) => {
             const selectedQuery = queries.find(
               (query) => query.id === item.queryId,
             )
@@ -58,61 +68,45 @@ export function PlanItemsEditor({
             return (
               <Card key={item.clientId} size="sm">
                 <CardHeader>
-                  <CardTitle>Step {index + 1}</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    {dragHandle}
+                    Step {index + 1}
+                  </CardTitle>
                   <CardAction>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onMoveItem(item.clientId, -1)}
-                        disabled={index === 0}
-                      >
-                        Move up
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onMoveItem(item.clientId, 1)}
-                        disabled={index === items.length - 1}
-                      >
-                        Move down
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onRemoveItem(item.clientId)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRemoveItem(item.clientId)}
+                    >
+                      Remove
+                    </Button>
                   </CardAction>
                 </CardHeader>
                 <CardContent>
                   <FieldGroup className="gap-4">
                     <Field>
                       <FieldLabel required>Query</FieldLabel>
-                      <select
-                        className="h-8 w-full border border-input bg-transparent px-2.5 text-xs"
-                        value={item.queryId ?? ''}
-                        onChange={(event) =>
+                      <Select
+                        value={item.queryId?.toString() ?? ''}
+                        onValueChange={(value) =>
                           onQueryChange(
                             item.clientId,
-                            event.target.value
-                              ? Number(event.target.value)
-                              : null,
+                            value ? Number(value) : null,
                           )
                         }
                       >
-                        <option value="">Select query</option>
-                        {queries.map((query) => (
-                          <option key={query.id} value={query.id}>
-                            {query.name} (v{query.versionNumber})
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select query" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {queries.map((query) => (
+                            <SelectItem key={query.id} value={String(query.id)}>
+                              {query.name} (v{query.versionNumber})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </Field>
 
                     <form.Field
@@ -143,8 +137,8 @@ export function PlanItemsEditor({
                 </CardContent>
               </Card>
             )
-          })}
-        </div>
+          }}
+        />
       )}
     </EditorSection>
   )

@@ -1,9 +1,10 @@
 import { queryOptions } from '@tanstack/react-query'
 
 import {
-  listQueryVersions,
   listQueries,
   previewQuery,
+  type Query,
+  type QueryPreview,
   type QueryPreviewRequest,
 } from '@/lib/api'
 
@@ -13,21 +14,8 @@ import { OPTIMISTIC_ID } from './mutations'
 export const queriesListOptions = () =>
   queryOptions({
     queryKey: queryKeys.list(),
-    queryFn: listQueries,
+    queryFn: async () => (await listQueries()) as Query[],
     staleTime: 60_000,
-  })
-
-export const queryVersionsOptions = (id: number | null) =>
-  queryOptions({
-    queryKey: queryKeys.versions(id),
-    queryFn: () => {
-      if (id === null) {
-        throw new Error('A saved query is required to load versions.')
-      }
-      return listQueryVersions(id)
-    },
-    enabled: id !== null && id !== OPTIMISTIC_ID,
-    staleTime: 0,
   })
 
 export const queryPreviewOptions = (
@@ -36,12 +24,12 @@ export const queryPreviewOptions = (
 ) =>
   queryOptions({
     queryKey: queryKeys.preview(id, request),
-    queryFn: () => {
+    queryFn: async () => {
       if (id === null) {
         throw new Error('A saved query is required to load a preview.')
       }
 
-      return previewQuery(id, request)
+      return (await previewQuery(id, request)) as QueryPreview
     },
     enabled: id !== null && id !== OPTIMISTIC_ID,
     staleTime: 0,

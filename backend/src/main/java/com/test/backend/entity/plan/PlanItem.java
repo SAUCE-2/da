@@ -5,7 +5,6 @@ import com.test.backend.entity.query.QueryVersion;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,6 +19,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -28,6 +30,9 @@ import jakarta.persistence.UniqueConstraint;
 		uniqueConstraints = @UniqueConstraint(
 				name = "uk_plan_items_plan_query",
 				columnNames = { "plan_id", "query_id" }))
+@Getter
+@Setter
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class PlanItem {
 
 	@Id
@@ -56,57 +61,10 @@ public class PlanItem {
 	@OrderBy("variableName ASC")
 	private List<PlanItemVariable> variableBindings = new ArrayList<>();
 
-	protected PlanItem() {
-	}
-
 	public PlanItem(Query query, int sortOrder, boolean enabled) {
 		this.query = query;
 		this.sortOrder = sortOrder;
 		this.enabled = enabled;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public Plan getPlan() {
-		return plan;
-	}
-
-	public void setPlan(Plan plan) {
-		this.plan = plan;
-	}
-
-	public Query getQuery() {
-		return query;
-	}
-
-	public QueryVersion getQueryVersion() {
-		return queryVersion;
-	}
-
-	public void setQueryVersion(QueryVersion queryVersion) {
-		this.queryVersion = queryVersion;
-	}
-
-	public int getSortOrder() {
-		return sortOrder;
-	}
-
-	public void setSortOrder(int sortOrder) {
-		this.sortOrder = sortOrder;
-	}
-
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
-
-	public List<PlanItemVariable> getVariableBindings() {
-		return variableBindings;
 	}
 
 	public void replaceVariableBindings(List<PlanItemVariable> replacementBindings) {

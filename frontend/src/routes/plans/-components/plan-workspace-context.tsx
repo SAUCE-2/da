@@ -9,6 +9,7 @@ const { Provider, useSelection } = createWorkspaceContext({
 })
 
 export const PlanWorkspaceProvider = Provider
+export const usePlanWorkspaceSelectionBase = useSelection
 
 export function usePlanWorkspaceSelection() {
   const { selectedId, selectEntity } = useSelection()

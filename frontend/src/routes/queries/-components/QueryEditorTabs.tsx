@@ -1,39 +1,12 @@
-import { useStore } from '@tanstack/react-form'
 import { useEffect, useState } from 'react'
 
-import { FormattedSqlDisplay } from '@/components/formatted-sql-display'
-import { VariableValueFields } from '@/components/variable-value-fields'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Switch } from '@/components/ui/switch'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from '@/components/ui/empty'
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type {
-  Category,
-  QueryPreview,
-} from '@/lib/api'
+import type { Category, QueryPreview } from '@/lib/api'
 
-import { EditorSection } from '@/components/workspace/EditorSection'
-import { QuerySectionsEditor } from './QuerySectionsEditor'
-import { QueryVariablesEditor } from './QueryVariablesEditor'
 import type { QueryEditorTab } from './query-editor-tab'
+import { QueryDetailsTab } from './QueryDetailsTab'
+import { QuerySqlTab } from './QuerySqlTab'
+import { QueryVariablesTab } from './QueryVariablesTab'
 import type { ClientVariable } from './query-form'
 import type { QueryWorkspaceForm } from './use-query-workspace'
 
@@ -49,7 +22,7 @@ type QueryEditorTabsProps = {
   toggleCategory: (categoryId: number) => void
   onAddSection: () => void
   onRemoveSection: (clientId: string) => void
-  onMoveSection: (clientId: string, direction: -1 | 1) => void
+  onReorderSection: (activeId: string, overId: string) => void
   onAddVariable: () => void
   onRemoveVariable: (clientId: string) => void
   updatePreviewVariable: (name: string, value: string) => void
@@ -67,16 +40,12 @@ export function QueryEditorTabs({
   toggleCategory,
   onAddSection,
   onRemoveSection,
-  onMoveSection,
+  onReorderSection,
   onAddVariable,
   onRemoveVariable,
   updatePreviewVariable,
 }: QueryEditorTabsProps) {
   const [activeTab, setActiveTab] = useState<QueryEditorTab>('details')
-  const categoryIds = useStore(form.store, (state) => state.values.categoryIds)
-  const namedVariables = formVariables.filter((variable) => variable.name.trim())
-  const hasNamedVariables = namedVariables.length > 0
-  const canPreview = selectedQueryId !== null
 
   useEffect(() => {
     setActiveTab('details')
@@ -95,214 +64,35 @@ export function QueryEditorTabs({
       </TabsList>
 
       <TabsContent value="details" className="mt-0 min-h-0 flex-1">
-        <EditorSection title="Basic information">
-          <FieldGroup className="grid gap-4 lg:grid-cols-2">
-            <form.Field
-              name="name"
-              children={(field) => (
-                <Field>
-                  <FieldLabel required>Name</FieldLabel>
-                  <Input
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder="Query name"
-                  />
-                </Field>
-              )}
-            />
-
-            <form.Field
-              name="active"
-              children={(field) => (
-                <Field orientation="horizontal">
-                  <Switch
-                    id="query-active"
-                    checked={field.state.value}
-                    onCheckedChange={(checked) => field.handleChange(checked)}
-                  />
-                  <FieldLabel htmlFor="query-active">Active by default</FieldLabel>
-                </Field>
-              )}
-            />
-
-            <form.Field
-              name="description"
-              children={(field) => (
-                <Field className="lg:col-span-2">
-                  <FieldLabel>Description</FieldLabel>
-                  <Textarea
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    className="min-h-20"
-                    placeholder="What this query checks and when it should be used"
-                  />
-                </Field>
-              )}
-            />
-          </FieldGroup>
-        </EditorSection>
-
-        <EditorSection
-          title="Categories"
-          description="Assign this query to one or more audit categories."
-        >
-          {categories.length === 0 ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyTitle>No categories available</EmptyTitle>
-                <EmptyDescription>
-                  Create audit categories before assigning them to queries.
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          ) : (
-            <FieldSet>
-              <FieldLegend variant="label" className="sr-only">
-                Audit categories
-              </FieldLegend>
-              <FieldGroup className="gap-3">
-                {categories.map((category) => {
-                  const categoryId = `query-category-${category.id}`
-
-                  return (
-                    <Field key={category.id} orientation="horizontal">
-                      <Checkbox
-                        id={categoryId}
-                        checked={categoryIds.includes(category.id)}
-                        onCheckedChange={() => toggleCategory(category.id)}
-                      />
-                      <FieldContent>
-                        <FieldLabel htmlFor={categoryId}>
-                          {category.name}
-                        </FieldLabel>
-                        {category.description ? (
-                          <FieldDescription>
-                            {category.description}
-                          </FieldDescription>
-                        ) : null}
-                      </FieldContent>
-                    </Field>
-                  )
-                })}
-              </FieldGroup>
-            </FieldSet>
-          )}
-        </EditorSection>
+        <QueryDetailsTab
+          form={form}
+          categories={categories}
+          toggleCategory={toggleCategory}
+        />
       </TabsContent>
 
       <TabsContent value="query" className="mt-0 min-h-0 flex-1">
-        <EditorSection
-          title="Query sections"
-          description="SQL sections are rendered in sort order when enabled by default."
-          action={
-            <Button type="button" variant="outline" size="sm" onClick={onAddSection}>
-              Add section
-            </Button>
-          }
-        >
-          <QuerySectionsEditor
-            form={form}
-            embedded
-            onAddSection={onAddSection}
-            onRemoveSection={onRemoveSection}
-            onMoveSection={onMoveSection}
-          />
-        </EditorSection>
-
-        <EditorSection
-          title="SQL preview"
-          description="Rendered by the backend from default-enabled sections with variable substitution."
-        >
-          {!canPreview ? (
-            <>
-              <Empty>
-                <EmptyHeader>
-                  <EmptyTitle>Preview unavailable</EmptyTitle>
-                  <EmptyDescription>
-                    Save the query before requesting a backend-rendered preview.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-              {hasNamedVariables ? (
-                <p className="text-sm text-muted-foreground">
-                  Save the query to preview SQL. Variable definitions on the
-                  Variables tab apply after save.
-                </p>
-              ) : null}
-            </>
-          ) : (
-            <>
-              {hasNamedVariables ? (
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-medium">Preview values</p>
-                    <p className="text-xs text-muted-foreground">
-                      Override defaults for this preview only — not saved with
-                      the query.
-                    </p>
-                  </div>
-                  <VariableValueFields
-                    variables={formVariables}
-                    values={previewVariableValues}
-                    onChange={updatePreviewVariable}
-                    keyFor={(variable) => variable.name}
-                    layout="grid"
-                    className="grid gap-4 lg:grid-cols-2"
-                  />
-                </div>
-              ) : null}
-
-              {isPreviewLoading ? (
-                <div className="flex flex-col gap-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-                  <Skeleton className="h-4 w-4/6" />
-                </div>
-              ) : preview?.id === selectedQueryId ? (
-                <FormattedSqlDisplay
-                  sql={preview.sql}
-                  emptyMessage="-- No default-enabled sections to render."
-                />
-              ) : (
-                <Empty>
-                  <EmptyHeader>
-                    <EmptyTitle>Preview unavailable</EmptyTitle>
-                    <EmptyDescription>
-                      The backend did not return a preview for this query.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
-              )}
-            </>
-          )}
-          {isDirty && canPreview ? (
-            <p className="text-sm text-muted-foreground">
-              Unsaved section or variable definition edits are not reflected in
-              the preview yet.
-            </p>
-          ) : null}
-        </EditorSection>
+        <QuerySqlTab
+          form={form}
+          selectedQueryId={selectedQueryId}
+          formVariables={formVariables}
+          preview={preview}
+          previewVariableValues={previewVariableValues}
+          isDirty={isDirty}
+          isPreviewLoading={isPreviewLoading}
+          onAddSection={onAddSection}
+          onRemoveSection={onRemoveSection}
+          onReorderSection={onReorderSection}
+          updatePreviewVariable={updatePreviewVariable}
+        />
       </TabsContent>
 
       <TabsContent value="variables" className="mt-0 min-h-0 flex-1">
-        <EditorSection
-          title="Query variables"
-          description="Define variables that can be substituted into SQL fragments at run time."
-          action={
-            <Button type="button" variant="outline" size="sm" onClick={onAddVariable}>
-              Add variable
-            </Button>
-          }
-        >
-          <QueryVariablesEditor
-            form={form}
-            embedded
-            onAddVariable={onAddVariable}
-            onRemoveVariable={onRemoveVariable}
-          />
-        </EditorSection>
+        <QueryVariablesTab
+          form={form}
+          onAddVariable={onAddVariable}
+          onRemoveVariable={onRemoveVariable}
+        />
       </TabsContent>
     </Tabs>
   )

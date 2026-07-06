@@ -1,9 +1,4 @@
 import type { Category, Query } from '@/lib/api'
-import { sortByName } from '@/lib/utils'
-
-export function sortCategories(categories: Category[]) {
-  return sortByName(categories, (category) => category.name)
-}
 
 export function buildDerivedQueryCounts(queries: Query[]) {
   const counts = new Map<number, number>()

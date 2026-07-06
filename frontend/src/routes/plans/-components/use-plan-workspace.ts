@@ -1,8 +1,15 @@
-import { useForm } from '@tanstack/react-form'
+import { arrayMove } from '@dnd-kit/sortable'
+import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 
-import { planRequestSchema, formatZodError } from '@/lib/api'
+import { useClearSubmitErrorOnDirty } from '@/hooks/use-clear-submit-error-on-dirty'
+
+import { planRequestSchema } from '@/lib/schemas'
+import {
+  readSubmitError,
+  submitValidationError,
+} from '@/lib/form-submit-validation'
 import { OPTIMISTIC_ID } from '@/lib/queries/mutations'
 import { queriesListOptions } from '@/lib/queries/queries'
 import {
@@ -28,12 +35,13 @@ export function usePlanWorkspace() {
   const persistPlan = usePersistPlan()
   const removePlan = useRemovePlan()
 
-  const { data: plans = [] } = useQuery(plansListOptions())
+  const { data: plans = [], isFetched } = useQuery(plansListOptions())
   const { data: queries = [] } = useQuery(queriesListOptions())
 
   const selectedPlan =
     plans.find((plan) => plan.id === selectedPlanId) ?? null
   const isNotFound =
+    isFetched &&
     selectedPlanId !== null &&
     selectedPlanId !== OPTIMISTIC_ID &&
     selectedPlan === null
@@ -42,11 +50,12 @@ export function usePlanWorkspace() {
     defaultValues: createBlankPlanForm(),
     validators: {
       onSubmit: ({ value }) => {
-        const result = planRequestSchema.safeParse(toPlanRequest(value))
-        if (!result.success) {
-          return formatZodError(result.error)
+        const unselected = value.items.find((item) => item.queryId === null)
+        if (unselected) {
+          return 'Select a query for every step in the plan.'
         }
-        return undefined
+        const result = planRequestSchema.safeParse(toPlanRequest(value))
+        return result.success ? undefined : submitValidationError(result.error)
       },
     },
     onSubmit: async ({ value }) => {
@@ -74,7 +83,13 @@ export function usePlanWorkspace() {
     },
   })
 
-  useEffect(() => {
+  const submitError = useStore(form.store, (state) =>
+    readSubmitError(state.errorMap),
+  )
+
+  useClearSubmitErrorOnDirty(form)
+
+  useLayoutEffect(() => {
     if (selectedPlanId === null) {
       form.reset(createBlankPlanForm())
       setErrorMessage(null)
@@ -116,19 +131,19 @@ export function usePlanWorkspace() {
     )
   }
 
-  function moveItem(clientId: string, direction: -1 | 1) {
+  function reorderItem(activeId: string, overId: string) {
     const items = form.getFieldValue('items')
-    const currentIndex = items.findIndex((item) => item.clientId === clientId)
-    const nextIndex = currentIndex + direction
+    const oldIndex = items.findIndex((item) => item.clientId === activeId)
+    const newIndex = items.findIndex((item) => item.clientId === overId)
 
-    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= items.length) {
+    if (oldIndex < 0 || newIndex < 0) {
       return
     }
 
-    const nextItems = [...items]
-    const [item] = nextItems.splice(currentIndex, 1)
-    nextItems.splice(nextIndex, 0, item)
-    form.setFieldValue('items', reindexPlanItems(nextItems))
+    form.setFieldValue(
+      'items',
+      reindexPlanItems(arrayMove(items, oldIndex, newIndex)),
+    )
   }
 
   function handleQueryChange(clientId: string, queryId: number | null) {
@@ -156,12 +171,12 @@ export function usePlanWorkspace() {
     form,
     queries,
     isSaving: persistPlan.isPending,
-    errorMessage,
+    errorMessage: errorMessage ?? submitError,
     handleDelete,
     handleBack,
     addItem,
     removeItem,
-    moveItem,
+    reorderItem,
     handleQueryChange,
   }
 }
