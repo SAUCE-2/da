@@ -13,7 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "query_sections", indexes = @Index(name = "idx_query_sections_version_sort", columnList = "audit_query_version_id, sort_order"))
+@Table(name = "query_sections", indexes = @Index(name = "idx_query_sections_version_sort", columnList = "query_version_id, sort_order"))
 public class QuerySection {
 
 	@Id
@@ -21,8 +21,8 @@ public class QuerySection {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "audit_query_version_id", nullable = false)
-	private AuditQueryVersion auditQueryVersion;
+	@JoinColumn(name = "query_version_id", nullable = false)
+	private QueryVersion queryVersion;
 
 	@Column(nullable = false, length = 200)
 	private String name;
@@ -51,12 +51,12 @@ public class QuerySection {
 		return id;
 	}
 
-	public AuditQueryVersion getAuditQueryVersion() {
-		return auditQueryVersion;
+	public QueryVersion getQueryVersion() {
+		return queryVersion;
 	}
 
-	public void setAuditQueryVersion(AuditQueryVersion auditQueryVersion) {
-		this.auditQueryVersion = auditQueryVersion;
+	public void setQueryVersion(QueryVersion queryVersion) {
+		this.queryVersion = queryVersion;
 	}
 
 	public String getName() {

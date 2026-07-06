@@ -19,21 +19,21 @@ export const Route = createFileRoute('/')({
 
 const QUICK_LINKS = [
   {
-    to: '/audit/queries',
+    to: '/queries',
     label: 'Queries',
     description:
       'Define reusable SQL audit queries with variables and ordered sections.',
     icon: FileMagnifyingGlassIcon,
   },
   {
-    to: '/audit/plans',
+    to: '/plans',
     label: 'Plans',
     description:
       'Build run pipelines — ordered queries with variable bindings for repeatable audits.',
     icon: StackIcon,
   },
   {
-    to: '/audit/categories',
+    to: '/categories',
     label: 'Categories',
     description: 'Organize queries for browsing and plan building.',
     icon: TagIcon,

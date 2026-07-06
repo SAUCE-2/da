@@ -65,7 +65,7 @@ flowchart LR
 
 ## Domain Summary
 
-- **Audit query:** a reusable, versioned SQL audit definition made from toggleable ordered sections and variables.
+- **Query:** a reusable, versioned SQL audit definition made from toggleable ordered sections and variables.
 - **Category:** a way to organize queries; one query can belong to many categories.
 - **Plan:** an ordered pipeline of queries that can be run together.
 - **Plan run:** one execution of a plan.

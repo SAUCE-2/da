@@ -4,10 +4,10 @@ import java.util.List;
 
 public record PlanItemResponse(
 		Long id,
-		Long auditQueryId,
-		String auditQueryName,
-		Long auditQueryVersionId,
-		Integer auditQueryVersionNumber,
+		Long queryId,
+		String queryName,
+		Long queryVersionId,
+		Integer queryVersionNumber,
 		int sortOrder,
 		boolean enabled,
 		List<PlanItemVariableBindingResponse> variableBindings) {

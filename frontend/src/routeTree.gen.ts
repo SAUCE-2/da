@@ -9,21 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuditRouteRouteImport } from './routes/audit/route'
+import { Route as QueriesRouteRouteImport } from './routes/queries/route'
+import { Route as PlansRouteRouteImport } from './routes/plans/route'
+import { Route as CategoriesRouteRouteImport } from './routes/categories/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuditQueriesRouteRouteImport } from './routes/audit/queries/route'
-import { Route as AuditPlansRouteRouteImport } from './routes/audit/plans/route'
-import { Route as AuditCategoriesRouteRouteImport } from './routes/audit/categories/route'
-import { Route as AuditQueriesIndexRouteImport } from './routes/audit/queries/index'
-import { Route as AuditPlansIndexRouteImport } from './routes/audit/plans/index'
-import { Route as AuditCategoriesIndexRouteImport } from './routes/audit/categories/index'
-import { Route as AuditQueriesQueryIdRouteImport } from './routes/audit/queries/$queryId'
-import { Route as AuditPlansPlanIdRouteImport } from './routes/audit/plans/$planId'
-import { Route as AuditCategoriesCategoryIdRouteImport } from './routes/audit/categories/$categoryId'
+import { Route as QueriesIndexRouteImport } from './routes/queries/index'
+import { Route as PlansIndexRouteImport } from './routes/plans/index'
+import { Route as CategoriesIndexRouteImport } from './routes/categories/index'
+import { Route as QueriesQueryIdRouteImport } from './routes/queries/$queryId'
+import { Route as PlansPlanIdRouteImport } from './routes/plans/$planId'
+import { Route as CategoriesCategoryIdRouteImport } from './routes/categories/$categoryId'
 
-const AuditRouteRoute = AuditRouteRouteImport.update({
-  id: '/audit',
-  path: '/audit',
+const QueriesRouteRoute = QueriesRouteRouteImport.update({
+  id: '/queries',
+  path: '/queries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlansRouteRoute = PlansRouteRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesRouteRoute = CategoriesRouteRouteImport.update({
+  id: '/categories',
+  path: '/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -31,141 +40,135 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuditQueriesRouteRoute = AuditQueriesRouteRouteImport.update({
-  id: '/queries',
-  path: '/queries',
-  getParentRoute: () => AuditRouteRoute,
-} as any)
-const AuditPlansRouteRoute = AuditPlansRouteRouteImport.update({
-  id: '/plans',
-  path: '/plans',
-  getParentRoute: () => AuditRouteRoute,
-} as any)
-const AuditCategoriesRouteRoute = AuditCategoriesRouteRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => AuditRouteRoute,
-} as any)
-const AuditQueriesIndexRoute = AuditQueriesIndexRouteImport.update({
+const QueriesIndexRoute = QueriesIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuditQueriesRouteRoute,
+  getParentRoute: () => QueriesRouteRoute,
 } as any)
-const AuditPlansIndexRoute = AuditPlansIndexRouteImport.update({
+const PlansIndexRoute = PlansIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuditPlansRouteRoute,
+  getParentRoute: () => PlansRouteRoute,
 } as any)
-const AuditCategoriesIndexRoute = AuditCategoriesIndexRouteImport.update({
+const CategoriesIndexRoute = CategoriesIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuditCategoriesRouteRoute,
+  getParentRoute: () => CategoriesRouteRoute,
 } as any)
-const AuditQueriesQueryIdRoute = AuditQueriesQueryIdRouteImport.update({
+const QueriesQueryIdRoute = QueriesQueryIdRouteImport.update({
   id: '/$queryId',
   path: '/$queryId',
-  getParentRoute: () => AuditQueriesRouteRoute,
+  getParentRoute: () => QueriesRouteRoute,
 } as any)
-const AuditPlansPlanIdRoute = AuditPlansPlanIdRouteImport.update({
+const PlansPlanIdRoute = PlansPlanIdRouteImport.update({
   id: '/$planId',
   path: '/$planId',
-  getParentRoute: () => AuditPlansRouteRoute,
+  getParentRoute: () => PlansRouteRoute,
 } as any)
-const AuditCategoriesCategoryIdRoute =
-  AuditCategoriesCategoryIdRouteImport.update({
-    id: '/$categoryId',
-    path: '/$categoryId',
-    getParentRoute: () => AuditCategoriesRouteRoute,
-  } as any)
+const CategoriesCategoryIdRoute = CategoriesCategoryIdRouteImport.update({
+  id: '/$categoryId',
+  path: '/$categoryId',
+  getParentRoute: () => CategoriesRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/audit': typeof AuditRouteRouteWithChildren
-  '/audit/categories': typeof AuditCategoriesRouteRouteWithChildren
-  '/audit/plans': typeof AuditPlansRouteRouteWithChildren
-  '/audit/queries': typeof AuditQueriesRouteRouteWithChildren
-  '/audit/categories/$categoryId': typeof AuditCategoriesCategoryIdRoute
-  '/audit/plans/$planId': typeof AuditPlansPlanIdRoute
-  '/audit/queries/$queryId': typeof AuditQueriesQueryIdRoute
-  '/audit/categories/': typeof AuditCategoriesIndexRoute
-  '/audit/plans/': typeof AuditPlansIndexRoute
-  '/audit/queries/': typeof AuditQueriesIndexRoute
+  '/categories': typeof CategoriesRouteRouteWithChildren
+  '/plans': typeof PlansRouteRouteWithChildren
+  '/queries': typeof QueriesRouteRouteWithChildren
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
+  '/plans/$planId': typeof PlansPlanIdRoute
+  '/queries/$queryId': typeof QueriesQueryIdRoute
+  '/categories/': typeof CategoriesIndexRoute
+  '/plans/': typeof PlansIndexRoute
+  '/queries/': typeof QueriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/audit': typeof AuditRouteRouteWithChildren
-  '/audit/categories/$categoryId': typeof AuditCategoriesCategoryIdRoute
-  '/audit/plans/$planId': typeof AuditPlansPlanIdRoute
-  '/audit/queries/$queryId': typeof AuditQueriesQueryIdRoute
-  '/audit/categories': typeof AuditCategoriesIndexRoute
-  '/audit/plans': typeof AuditPlansIndexRoute
-  '/audit/queries': typeof AuditQueriesIndexRoute
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
+  '/plans/$planId': typeof PlansPlanIdRoute
+  '/queries/$queryId': typeof QueriesQueryIdRoute
+  '/categories': typeof CategoriesIndexRoute
+  '/plans': typeof PlansIndexRoute
+  '/queries': typeof QueriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/audit': typeof AuditRouteRouteWithChildren
-  '/audit/categories': typeof AuditCategoriesRouteRouteWithChildren
-  '/audit/plans': typeof AuditPlansRouteRouteWithChildren
-  '/audit/queries': typeof AuditQueriesRouteRouteWithChildren
-  '/audit/categories/$categoryId': typeof AuditCategoriesCategoryIdRoute
-  '/audit/plans/$planId': typeof AuditPlansPlanIdRoute
-  '/audit/queries/$queryId': typeof AuditQueriesQueryIdRoute
-  '/audit/categories/': typeof AuditCategoriesIndexRoute
-  '/audit/plans/': typeof AuditPlansIndexRoute
-  '/audit/queries/': typeof AuditQueriesIndexRoute
+  '/categories': typeof CategoriesRouteRouteWithChildren
+  '/plans': typeof PlansRouteRouteWithChildren
+  '/queries': typeof QueriesRouteRouteWithChildren
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
+  '/plans/$planId': typeof PlansPlanIdRoute
+  '/queries/$queryId': typeof QueriesQueryIdRoute
+  '/categories/': typeof CategoriesIndexRoute
+  '/plans/': typeof PlansIndexRoute
+  '/queries/': typeof QueriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/audit'
-    | '/audit/categories'
-    | '/audit/plans'
-    | '/audit/queries'
-    | '/audit/categories/$categoryId'
-    | '/audit/plans/$planId'
-    | '/audit/queries/$queryId'
-    | '/audit/categories/'
-    | '/audit/plans/'
-    | '/audit/queries/'
+    | '/categories'
+    | '/plans'
+    | '/queries'
+    | '/categories/$categoryId'
+    | '/plans/$planId'
+    | '/queries/$queryId'
+    | '/categories/'
+    | '/plans/'
+    | '/queries/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/audit'
-    | '/audit/categories/$categoryId'
-    | '/audit/plans/$planId'
-    | '/audit/queries/$queryId'
-    | '/audit/categories'
-    | '/audit/plans'
-    | '/audit/queries'
+    | '/categories/$categoryId'
+    | '/plans/$planId'
+    | '/queries/$queryId'
+    | '/categories'
+    | '/plans'
+    | '/queries'
   id:
     | '__root__'
     | '/'
-    | '/audit'
-    | '/audit/categories'
-    | '/audit/plans'
-    | '/audit/queries'
-    | '/audit/categories/$categoryId'
-    | '/audit/plans/$planId'
-    | '/audit/queries/$queryId'
-    | '/audit/categories/'
-    | '/audit/plans/'
-    | '/audit/queries/'
+    | '/categories'
+    | '/plans'
+    | '/queries'
+    | '/categories/$categoryId'
+    | '/plans/$planId'
+    | '/queries/$queryId'
+    | '/categories/'
+    | '/plans/'
+    | '/queries/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuditRouteRoute: typeof AuditRouteRouteWithChildren
+  CategoriesRouteRoute: typeof CategoriesRouteRouteWithChildren
+  PlansRouteRoute: typeof PlansRouteRouteWithChildren
+  QueriesRouteRoute: typeof QueriesRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/audit': {
-      id: '/audit'
-      path: '/audit'
-      fullPath: '/audit'
-      preLoaderRoute: typeof AuditRouteRouteImport
+    '/queries': {
+      id: '/queries'
+      path: '/queries'
+      fullPath: '/queries'
+      preLoaderRoute: typeof QueriesRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans': {
+      id: '/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories': {
+      id: '/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof CategoriesRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -175,131 +178,98 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/audit/queries': {
-      id: '/audit/queries'
-      path: '/queries'
-      fullPath: '/audit/queries'
-      preLoaderRoute: typeof AuditQueriesRouteRouteImport
-      parentRoute: typeof AuditRouteRoute
-    }
-    '/audit/plans': {
-      id: '/audit/plans'
-      path: '/plans'
-      fullPath: '/audit/plans'
-      preLoaderRoute: typeof AuditPlansRouteRouteImport
-      parentRoute: typeof AuditRouteRoute
-    }
-    '/audit/categories': {
-      id: '/audit/categories'
-      path: '/categories'
-      fullPath: '/audit/categories'
-      preLoaderRoute: typeof AuditCategoriesRouteRouteImport
-      parentRoute: typeof AuditRouteRoute
-    }
-    '/audit/queries/': {
-      id: '/audit/queries/'
+    '/queries/': {
+      id: '/queries/'
       path: '/'
-      fullPath: '/audit/queries/'
-      preLoaderRoute: typeof AuditQueriesIndexRouteImport
-      parentRoute: typeof AuditQueriesRouteRoute
+      fullPath: '/queries/'
+      preLoaderRoute: typeof QueriesIndexRouteImport
+      parentRoute: typeof QueriesRouteRoute
     }
-    '/audit/plans/': {
-      id: '/audit/plans/'
+    '/plans/': {
+      id: '/plans/'
       path: '/'
-      fullPath: '/audit/plans/'
-      preLoaderRoute: typeof AuditPlansIndexRouteImport
-      parentRoute: typeof AuditPlansRouteRoute
+      fullPath: '/plans/'
+      preLoaderRoute: typeof PlansIndexRouteImport
+      parentRoute: typeof PlansRouteRoute
     }
-    '/audit/categories/': {
-      id: '/audit/categories/'
+    '/categories/': {
+      id: '/categories/'
       path: '/'
-      fullPath: '/audit/categories/'
-      preLoaderRoute: typeof AuditCategoriesIndexRouteImport
-      parentRoute: typeof AuditCategoriesRouteRoute
+      fullPath: '/categories/'
+      preLoaderRoute: typeof CategoriesIndexRouteImport
+      parentRoute: typeof CategoriesRouteRoute
     }
-    '/audit/queries/$queryId': {
-      id: '/audit/queries/$queryId'
+    '/queries/$queryId': {
+      id: '/queries/$queryId'
       path: '/$queryId'
-      fullPath: '/audit/queries/$queryId'
-      preLoaderRoute: typeof AuditQueriesQueryIdRouteImport
-      parentRoute: typeof AuditQueriesRouteRoute
+      fullPath: '/queries/$queryId'
+      preLoaderRoute: typeof QueriesQueryIdRouteImport
+      parentRoute: typeof QueriesRouteRoute
     }
-    '/audit/plans/$planId': {
-      id: '/audit/plans/$planId'
+    '/plans/$planId': {
+      id: '/plans/$planId'
       path: '/$planId'
-      fullPath: '/audit/plans/$planId'
-      preLoaderRoute: typeof AuditPlansPlanIdRouteImport
-      parentRoute: typeof AuditPlansRouteRoute
+      fullPath: '/plans/$planId'
+      preLoaderRoute: typeof PlansPlanIdRouteImport
+      parentRoute: typeof PlansRouteRoute
     }
-    '/audit/categories/$categoryId': {
-      id: '/audit/categories/$categoryId'
+    '/categories/$categoryId': {
+      id: '/categories/$categoryId'
       path: '/$categoryId'
-      fullPath: '/audit/categories/$categoryId'
-      preLoaderRoute: typeof AuditCategoriesCategoryIdRouteImport
-      parentRoute: typeof AuditCategoriesRouteRoute
+      fullPath: '/categories/$categoryId'
+      preLoaderRoute: typeof CategoriesCategoryIdRouteImport
+      parentRoute: typeof CategoriesRouteRoute
     }
   }
 }
 
-interface AuditCategoriesRouteRouteChildren {
-  AuditCategoriesCategoryIdRoute: typeof AuditCategoriesCategoryIdRoute
-  AuditCategoriesIndexRoute: typeof AuditCategoriesIndexRoute
+interface CategoriesRouteRouteChildren {
+  CategoriesCategoryIdRoute: typeof CategoriesCategoryIdRoute
+  CategoriesIndexRoute: typeof CategoriesIndexRoute
 }
 
-const AuditCategoriesRouteRouteChildren: AuditCategoriesRouteRouteChildren = {
-  AuditCategoriesCategoryIdRoute: AuditCategoriesCategoryIdRoute,
-  AuditCategoriesIndexRoute: AuditCategoriesIndexRoute,
+const CategoriesRouteRouteChildren: CategoriesRouteRouteChildren = {
+  CategoriesCategoryIdRoute: CategoriesCategoryIdRoute,
+  CategoriesIndexRoute: CategoriesIndexRoute,
 }
 
-const AuditCategoriesRouteRouteWithChildren =
-  AuditCategoriesRouteRoute._addFileChildren(AuditCategoriesRouteRouteChildren)
-
-interface AuditPlansRouteRouteChildren {
-  AuditPlansPlanIdRoute: typeof AuditPlansPlanIdRoute
-  AuditPlansIndexRoute: typeof AuditPlansIndexRoute
-}
-
-const AuditPlansRouteRouteChildren: AuditPlansRouteRouteChildren = {
-  AuditPlansPlanIdRoute: AuditPlansPlanIdRoute,
-  AuditPlansIndexRoute: AuditPlansIndexRoute,
-}
-
-const AuditPlansRouteRouteWithChildren = AuditPlansRouteRoute._addFileChildren(
-  AuditPlansRouteRouteChildren,
+const CategoriesRouteRouteWithChildren = CategoriesRouteRoute._addFileChildren(
+  CategoriesRouteRouteChildren,
 )
 
-interface AuditQueriesRouteRouteChildren {
-  AuditQueriesQueryIdRoute: typeof AuditQueriesQueryIdRoute
-  AuditQueriesIndexRoute: typeof AuditQueriesIndexRoute
+interface PlansRouteRouteChildren {
+  PlansPlanIdRoute: typeof PlansPlanIdRoute
+  PlansIndexRoute: typeof PlansIndexRoute
 }
 
-const AuditQueriesRouteRouteChildren: AuditQueriesRouteRouteChildren = {
-  AuditQueriesQueryIdRoute: AuditQueriesQueryIdRoute,
-  AuditQueriesIndexRoute: AuditQueriesIndexRoute,
+const PlansRouteRouteChildren: PlansRouteRouteChildren = {
+  PlansPlanIdRoute: PlansPlanIdRoute,
+  PlansIndexRoute: PlansIndexRoute,
 }
 
-const AuditQueriesRouteRouteWithChildren =
-  AuditQueriesRouteRoute._addFileChildren(AuditQueriesRouteRouteChildren)
+const PlansRouteRouteWithChildren = PlansRouteRoute._addFileChildren(
+  PlansRouteRouteChildren,
+)
 
-interface AuditRouteRouteChildren {
-  AuditCategoriesRouteRoute: typeof AuditCategoriesRouteRouteWithChildren
-  AuditPlansRouteRoute: typeof AuditPlansRouteRouteWithChildren
-  AuditQueriesRouteRoute: typeof AuditQueriesRouteRouteWithChildren
+interface QueriesRouteRouteChildren {
+  QueriesQueryIdRoute: typeof QueriesQueryIdRoute
+  QueriesIndexRoute: typeof QueriesIndexRoute
 }
 
-const AuditRouteRouteChildren: AuditRouteRouteChildren = {
-  AuditCategoriesRouteRoute: AuditCategoriesRouteRouteWithChildren,
-  AuditPlansRouteRoute: AuditPlansRouteRouteWithChildren,
-  AuditQueriesRouteRoute: AuditQueriesRouteRouteWithChildren,
+const QueriesRouteRouteChildren: QueriesRouteRouteChildren = {
+  QueriesQueryIdRoute: QueriesQueryIdRoute,
+  QueriesIndexRoute: QueriesIndexRoute,
 }
 
-const AuditRouteRouteWithChildren = AuditRouteRoute._addFileChildren(
-  AuditRouteRouteChildren,
+const QueriesRouteRouteWithChildren = QueriesRouteRoute._addFileChildren(
+  QueriesRouteRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuditRouteRoute: AuditRouteRouteWithChildren,
+  CategoriesRouteRoute: CategoriesRouteRouteWithChildren,
+  PlansRouteRoute: PlansRouteRouteWithChildren,
+  QueriesRouteRoute: QueriesRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

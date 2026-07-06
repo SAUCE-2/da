@@ -19,10 +19,10 @@ import jakarta.persistence.UniqueConstraint;
 		name = "query_variables",
 		indexes = @Index(
 				name = "idx_query_variables_version_sort",
-				columnList = "audit_query_version_id, sort_order"),
+				columnList = "query_version_id, sort_order"),
 		uniqueConstraints = @UniqueConstraint(
 				name = "uk_query_variables_version_name",
-				columnNames = { "audit_query_version_id", "name" }))
+				columnNames = { "query_version_id", "name" }))
 public class QueryVariable {
 
 	@Id
@@ -30,8 +30,8 @@ public class QueryVariable {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "audit_query_version_id", nullable = false)
-	private AuditQueryVersion auditQueryVersion;
+	@JoinColumn(name = "query_version_id", nullable = false)
+	private QueryVersion queryVersion;
 
 	@Column(nullable = false, length = 100)
 	private String name;
@@ -69,12 +69,12 @@ public class QueryVariable {
 		return id;
 	}
 
-	public AuditQueryVersion getAuditQueryVersion() {
-		return auditQueryVersion;
+	public QueryVersion getQueryVersion() {
+		return queryVersion;
 	}
 
-	public void setAuditQueryVersion(AuditQueryVersion auditQueryVersion) {
-		this.auditQueryVersion = auditQueryVersion;
+	public void setQueryVersion(QueryVersion queryVersion) {
+		this.queryVersion = queryVersion;
 	}
 
 	public String getName() {

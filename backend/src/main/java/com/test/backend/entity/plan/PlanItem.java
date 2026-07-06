@@ -1,7 +1,7 @@
 package com.test.backend.entity.plan;
 
-import com.test.backend.entity.query.AuditQuery;
-import com.test.backend.entity.query.AuditQueryVersion;
+import com.test.backend.entity.query.Query;
+import com.test.backend.entity.query.QueryVersion;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +27,7 @@ import jakarta.persistence.UniqueConstraint;
 		indexes = @Index(name = "idx_plan_items_plan_sort", columnList = "plan_id, sort_order"),
 		uniqueConstraints = @UniqueConstraint(
 				name = "uk_plan_items_plan_query",
-				columnNames = { "plan_id", "audit_query_id" }))
+				columnNames = { "plan_id", "query_id" }))
 public class PlanItem {
 
 	@Id
@@ -36,15 +36,15 @@ public class PlanItem {
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "plan_id", nullable = false)
-	private AuditPlan plan;
+	private Plan plan;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "audit_query_id", nullable = false)
-	private AuditQuery auditQuery;
+	@JoinColumn(name = "query_id", nullable = false)
+	private Query query;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "audit_query_version_id")
-	private AuditQueryVersion auditQueryVersion;
+	@JoinColumn(name = "query_version_id")
+	private QueryVersion queryVersion;
 
 	@Column(name = "sort_order", nullable = false)
 	private int sortOrder;
@@ -59,8 +59,8 @@ public class PlanItem {
 	protected PlanItem() {
 	}
 
-	public PlanItem(AuditQuery auditQuery, int sortOrder, boolean enabled) {
-		this.auditQuery = auditQuery;
+	public PlanItem(Query query, int sortOrder, boolean enabled) {
+		this.query = query;
 		this.sortOrder = sortOrder;
 		this.enabled = enabled;
 	}
@@ -69,24 +69,24 @@ public class PlanItem {
 		return id;
 	}
 
-	public AuditPlan getPlan() {
+	public Plan getPlan() {
 		return plan;
 	}
 
-	public void setPlan(AuditPlan plan) {
+	public void setPlan(Plan plan) {
 		this.plan = plan;
 	}
 
-	public AuditQuery getAuditQuery() {
-		return auditQuery;
+	public Query getQuery() {
+		return query;
 	}
 
-	public AuditQueryVersion getAuditQueryVersion() {
-		return auditQueryVersion;
+	public QueryVersion getQueryVersion() {
+		return queryVersion;
 	}
 
-	public void setAuditQueryVersion(AuditQueryVersion auditQueryVersion) {
-		this.auditQueryVersion = auditQueryVersion;
+	public void setQueryVersion(QueryVersion queryVersion) {
+		this.queryVersion = queryVersion;
 	}
 
 	public int getSortOrder() {

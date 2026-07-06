@@ -1,6 +1,6 @@
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import type { VariableDefinition } from '@/lib/audit-variable-utils'
+import type { VariableDefinition } from '@/lib/variable-utils'
 
 type VariableValueField = VariableDefinition & {
   required?: boolean

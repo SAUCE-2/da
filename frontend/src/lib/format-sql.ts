@@ -1,4 +1,4 @@
-/** Mirrors backend AuditQuerySqlRenderer.trimFragmentBoundaries. */
+/** Mirrors backend QuerySqlRenderer.trimFragmentBoundaries. */
 export function trimFragmentBoundaries(sql: string): string {
   return sql
     .replace(/\r\n/g, '\n')

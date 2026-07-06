@@ -6,7 +6,7 @@ Cross-cutting reference for frontend layout and editor patterns in the Data Audi
 
 | Complexity | Pattern | Example |
 |------------|---------|---------|
-| Simple CRUD (few fields) | Stacked `AuditEditorSection` blocks | Category editor, simple plan metadata |
+| Simple CRUD (few fields) | Stacked `EditorSection` blocks | Category editor, simple plan metadata |
 | Multi-concern editor (3+ distinct mental models) | Top-level line tabs below header | Query editor: Details / Query / Variables |
 | Sub-concern within one tab | Nested sections or cards, not more tabs | Section cards inside Query tab |
 
@@ -14,24 +14,24 @@ Cross-cutting reference for frontend layout and editor patterns in the Data Audi
 
 Use top-level tabs when a single entity has multiple independent concerns that users think about separately, but still belong to one save action.
 
-- **Single form across all tabs** — primary actions (Save, Delete) stay in the persistent `AuditEditorHeader`.
+- **Single form across all tabs** — primary actions (Save, Delete) stay in the persistent `EditorHeader`.
 - **Tab labels = user mental models** — use nouns (Details, Query, Variables), not step numbers.
 - **Preview / runtime tooling beside content** — SQL preview and preview-value overrides live on the Query tab, not Details.
-- **`embedded` child editors** — when a tab owns the context, child editors (`QuerySectionsEditor`, `QueryVariablesEditor`) skip their own `AuditEditorSection` wrapper and render inline headers/actions.
+- **`embedded` child editors** — when a tab owns the context, child editors (`QuerySectionsEditor`, `QueryVariablesEditor`) skip their own `EditorSection` wrapper and render inline headers/actions.
 - **Local tab state** — tab selection is component state, not URL search params. Reset to the details tab when the selected entity changes.
 - **Default tab** — start on the metadata/details tab for create flows.
 
 ### Reference implementation
 
-- [`AuditQueryEditor.tsx`](../frontend/src/routes/audit/queries/-components/AuditQueryEditor.tsx) — header + form shell
-- [`AuditQueryEditorTabs.tsx`](../frontend/src/routes/audit/queries/-components/AuditQueryEditorTabs.tsx) — three-tab layout
-- [`query-editor-tab.ts`](../frontend/src/routes/audit/queries/-components/query-editor-tab.ts) — shared tab type constants
+- [`QueryEditor.tsx`](../frontend/src/routes/queries/-components/QueryEditor.tsx) — header + form shell
+- [`QueryEditorTabs.tsx`](../frontend/src/routes/queries/-components/QueryEditorTabs.tsx) — three-tab layout
+- [`query-editor-tab.ts`](../frontend/src/routes/queries/-components/query-editor-tab.ts) — shared tab type constants
 
 ## Shared Layout Primitives
 
-- **`AuditMasterDetailLayout`** — list + detail pane for audit entities (queries, categories, plans).
-- **`AuditEditorHeader`** — title, description, and action row (save, delete, run).
-- **`AuditEditorSection`** — bordered section with title/description for stacked simple editors.
+- **`MasterDetailLayout`** — list + detail pane for entities (queries, categories, plans).
+- **`EditorHeader`** — title, description, and action row (save, delete, run).
+- **`EditorSection`** — bordered section with title/description for stacked simple editors.
 - **`TabPanelSection`** (inline in tabbed editors) — lighter sub-section grouping inside a tab panel without full border stack.
 
 ## Tabs Component

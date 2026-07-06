@@ -1,7 +1,7 @@
 package com.test.backend.service.plan;
 
 import com.test.backend.entity.query.QueryVariableType;
-import com.test.backend.service.query.AuditQueryService;
+import com.test.backend.service.query.QueryService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
@@ -11,12 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.test.backend.dto.query.AuditQueryRequest;
+import com.test.backend.dto.query.QueryRequest;
 import com.test.backend.dto.query.QuerySectionRequest;
 import com.test.backend.dto.query.QueryVariableRequest;
-import com.test.backend.service.plan.AuditPlanService;
-import com.test.backend.dto.plan.AuditPlanRequest;
-import com.test.backend.dto.plan.AuditPlanResponse;
+import com.test.backend.service.plan.PlanService;
+import com.test.backend.dto.plan.PlanRequest;
+import com.test.backend.dto.plan.PlanResponse;
 import com.test.backend.dto.plan.PlanItemRequest;
 import com.test.backend.dto.plan.PlanItemVariableBindingRequest;
 
@@ -25,14 +25,14 @@ import com.test.backend.dto.plan.PlanItemVariableBindingRequest;
 class PlanVariableTests {
 
 	@Autowired
-	private AuditQueryService auditQueryService;
+	private QueryService queryService;
 
 	@Autowired
-	private AuditPlanService auditPlanService;
+	private PlanService planService;
 
 	@Test
 	void planItemSeedsVariableBindingsFromQueryDefaults() {
-		var created = auditQueryService.createQuery(new AuditQueryRequest(
+		var created = queryService.createQuery(new QueryRequest(
 				"Plan query",
 				"Plan variable example",
 				true,
@@ -45,7 +45,7 @@ class PlanVariableTests {
 						0)),
 				List.of()));
 
-		AuditPlanResponse plan = auditPlanService.createPlan(new AuditPlanRequest(
+		PlanResponse plan = planService.createPlan(new PlanRequest(
 				"Nightly checks",
 				"Plan example",
 				true,
