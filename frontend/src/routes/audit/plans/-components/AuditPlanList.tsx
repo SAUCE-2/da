@@ -22,7 +22,7 @@ export function AuditPlanList({
       newLinkTo="/audit/plans"
       onNew={onNew}
       newLinkLabel="New plan"
-      emptyMessage="Create a plan to run multiple queries in sequence against a target."
+      emptyMessage="Create a plan to run multiple queries in sequence."
     >
       {plans.map((plan) => (
         <AuditEntityListItem

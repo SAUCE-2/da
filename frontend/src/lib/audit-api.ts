@@ -129,22 +129,6 @@ export type AuditQueryPreview = {
   unresolvedVariables: string[]
 }
 
-export type Environment = {
-  id: number
-  name: string
-  code: string
-  active: boolean
-}
-
-export type Project = {
-  id: number
-  environmentId: number
-  name: string
-  code: string
-  schemaName: string | null
-  active: boolean
-}
-
 export type PlanItemVariableBinding = {
   name: string
   value: string | null
@@ -279,14 +263,6 @@ export function deleteAuditCategory(id: number) {
   return apiRequest<void>(`/api/audit-categories/${id}`, {
     method: 'DELETE',
   })
-}
-
-export function listEnvironments() {
-  return apiRequest<Environment[]>('/api/environments')
-}
-
-export function listProjects(environmentId: number) {
-  return apiRequest<Project[]>(`/api/environments/${environmentId}/projects`)
 }
 
 export function listAuditPlans() {

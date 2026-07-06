@@ -2,7 +2,7 @@
 
 ## Purpose
 
-These files define a staged plan for a customised SQL audit query store and executor with a Java Spring Boot backend and a TanStack Router frontend. The app stores reusable SQL audit queries, organises them, and runs them against selected database environments and project-specific users.
+These files define a staged plan for a customised SQL audit query store and executor with a Java Spring Boot backend and a TanStack Router frontend. The app stores reusable SQL audit queries, organises them, and will run them against configured Oracle databases.
 
 ## Requested Stack
 
@@ -11,7 +11,7 @@ These files define a staged plan for a customised SQL audit query store and exec
 - Backend patterns: JPA for metadata, Spring MVC REST controllers, service layer for business logic.
 - Config: `application.properties` plus profile-specific properties.
 - Metadata database: H2 for local development, Oracle for deployed metadata storage.
-- Target audit databases: Oracle environments selected at application runtime.
+- Target audit databases: Oracle, selected at run time once connection setup exists.
 - Frontend: React, TypeScript, Vite, TanStack Router.
 
 ## Plan Sequence
@@ -46,7 +46,7 @@ These files define a staged plan for a customised SQL audit query store and exec
 - Plan 03: next
 - Plan 04: not started
 - Plan 05: not started
-- Plan 06: blocked by environment, project, and execution work
+- Plan 06: blocked by connection setup and execution work
 
 ## MVP Progression
 
@@ -57,21 +57,19 @@ flowchart LR
   navMeta --> queries[Queries_Categories]
   queries --> framing[Product_Framing]
   framing --> versions[Versioning_Variables]
-  versions --> context[Environments_Projects]
-  context --> plans[Plans_Execution]
+  versions --> connections[Database_Connections]
+  connections --> plans[Plans_Execution]
   plans --> overrides[Overrides_Scheduling]
   overrides --> verify[Verification]
 ```
 
 ## Domain Summary
 
-- **Environment:** the database target where audit SQL runs (dev, test, preprod, prod).
-- **Project:** the Oracle user/schema used to run SQL on a selected environment.
 - **Audit query:** a reusable, versioned SQL audit definition made from toggleable ordered sections and variables.
 - **Category:** a way to organize queries; one query can belong to many categories.
-- **Plan:** an ordered pipeline of queries that can be run together against a target.
-- **Plan run:** one execution of a plan for a selected environment and project.
-- **Query run:** one execution of a single query against a target.
+- **Plan:** an ordered pipeline of queries that can be run together.
+- **Plan run:** one execution of a plan.
+- **Query run:** one execution of a single query.
 
 ## Key MVP Constraint
 

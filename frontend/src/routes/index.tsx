@@ -58,9 +58,9 @@ function HomePage() {
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Store SQL audit queries, compose them into plans, and run them against
-          selected database targets. Each query is versioned; each plan run
-          records what executed and when.
+          Store SQL audit queries, compose them into plans, and run them when
+          execution is wired up. Each query is versioned; each plan run will
+          record what executed and when.
         </p>
       </header>
 
@@ -85,9 +85,8 @@ function HomePage() {
           <CardHeader>
             <CardTitle>Coming next</CardTitle>
             <CardDescription>
-              Target administration (environments &amp; projects), JDBC
-              execution, plan runs, query run history, and scheduled overnight
-              audits.
+              Database connection setup, JDBC execution, plan runs, query run
+              history, and scheduled overnight audits.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-xs text-muted-foreground">

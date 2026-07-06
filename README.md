@@ -1,6 +1,6 @@
 # Data Audit
 
-A Bamboo-style runner for SQL database auditing. Define reusable audit queries, compose them into run plans, and execute them against Oracle database targets (environment + project context).
+A Bamboo-style runner for SQL database auditing. Define reusable audit queries, compose them into run plans, and execute them against Oracle databases.
 
 ## What it is
 
@@ -8,10 +8,8 @@ A Bamboo-style runner for SQL database auditing. Define reusable audit queries, 
 |---------|------|
 | **Query** | A versioned SQL audit definition — ordered sections, variables, and rendered SQL |
 | **Plan** | An ordered pipeline of queries with per-step variable bindings |
-| **Environment** | Database target (dev, test, preprod, prod) |
-| **Project** | Oracle user/schema to run as on that environment |
-| **Query run** | One execution of a single query against a target |
-| **Plan run** | One execution of a plan against a target |
+| **Query run** | One execution of a single query |
+| **Plan run** | One execution of a plan |
 
 This is not a passive metadata catalog. The product goal is to **store, organize, and automate** SQL audit queries against live databases.
 
