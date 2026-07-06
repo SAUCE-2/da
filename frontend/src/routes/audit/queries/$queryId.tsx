@@ -2,6 +2,11 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { AuditQueryEditor } from './-components/AuditQueryEditor'
 
+function EditQueryPage() {
+  const { queryId } = Route.useParams()
+  return <AuditQueryEditor key={queryId} />
+}
+
 export const Route = createFileRoute('/audit/queries/$queryId')({
   params: {
     parse: (raw) => ({
@@ -11,5 +16,5 @@ export const Route = createFileRoute('/audit/queries/$queryId')({
       queryId: String(queryId),
     }),
   },
-  component: AuditQueryEditor,
+  component: EditQueryPage,
 })

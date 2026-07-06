@@ -1,4 +1,5 @@
-import type { AuditQuery } from '@/lib/audit-api'
+import type { AuditQuery, QueryVariableType } from '@/lib/audit-api'
+import { createClientId } from '@/lib/form-client-id'
 
 export type ClientSection = {
   clientId: string
@@ -8,15 +9,23 @@ export type ClientSection = {
   defaultEnabled: boolean
 }
 
+export type ClientVariable = {
+  clientId: string
+  name: string
+  type: QueryVariableType
+  defaultValue: string
+  required: boolean
+  sortOrder: number
+}
+
 export type QueryFormState = {
   name: string
   description: string
   active: boolean
   categoryIds: number[]
   sections: ClientSection[]
+  variables: ClientVariable[]
 }
-
-const createClientId = () => crypto.randomUUID()
 
 export function createBlankSection(sortOrder: number): ClientSection {
   return {
@@ -28,13 +37,25 @@ export function createBlankSection(sortOrder: number): ClientSection {
   }
 }
 
+export function createBlankVariable(sortOrder: number): ClientVariable {
+  return {
+    clientId: createClientId(),
+    name: '',
+    type: 'STRING',
+    defaultValue: '',
+    required: false,
+    sortOrder,
+  }
+}
+
 export function createBlankForm(): QueryFormState {
   return {
     name: '',
     description: '',
     active: true,
     categoryIds: [],
-    sections: [createBlankSection(10)],
+    sections: [createBlankSection(0)],
+    variables: [],
   }
 }
 
@@ -51,6 +72,14 @@ export function toFormState(query: AuditQuery): QueryFormState {
       sortOrder: section.sortOrder,
       defaultEnabled: section.defaultEnabled,
     })),
+    variables: query.variables.map((variable) => ({
+      clientId: createClientId(),
+      name: variable.name,
+      type: variable.type,
+      defaultValue: variable.defaultValue ?? '',
+      required: variable.required,
+      sortOrder: variable.sortOrder,
+    })),
   }
 }
 
@@ -58,10 +87,16 @@ export function toAuditQueryRequest(value: QueryFormState) {
   const sections = value.sections.map((section, index) => ({
     name: section.name,
     sqlFragment: section.sqlFragment,
-    sortOrder: Number.isFinite(section.sortOrder)
-      ? section.sortOrder
-      : (index + 1) * 10,
+    sortOrder: Number.isFinite(section.sortOrder) ? section.sortOrder : index,
     defaultEnabled: section.defaultEnabled,
+  }))
+
+  const variables = value.variables.map((variable, index) => ({
+    name: variable.name,
+    type: variable.type,
+    defaultValue: variable.defaultValue,
+    required: variable.required,
+    sortOrder: Number.isFinite(variable.sortOrder) ? variable.sortOrder : index,
   }))
 
   return {
@@ -69,6 +104,7 @@ export function toAuditQueryRequest(value: QueryFormState) {
     description: value.description,
     active: value.active,
     sections,
+    variables,
     categoryIds: value.categoryIds,
   }
 }
@@ -76,6 +112,14 @@ export function toAuditQueryRequest(value: QueryFormState) {
 export function reindexSections(sections: ClientSection[]) {
   return sections.map((section, index) => ({
     ...section,
-    sortOrder: (index + 1) * 10,
+    sortOrder: index,
   }))
 }
+
+export function reindexVariables(variables: ClientVariable[]) {
+  return variables.map((variable, index) => ({
+    ...variable,
+    sortOrder: index,
+  }))
+}
+

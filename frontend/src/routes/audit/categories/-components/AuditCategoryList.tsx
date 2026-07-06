@@ -28,7 +28,7 @@ export function AuditCategoryList({
       newLinkTo="/audit/categories"
       onNew={onNew}
       newLinkLabel="New category"
-      emptyMessage="Create one to organize query metadata."
+      emptyMessage="Create one to organize audit queries."
     >
       {sortedCategories.map((category) => {
         const queryCount = getQueryCount(category)

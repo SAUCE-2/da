@@ -1,11 +1,22 @@
 import { z } from 'zod'
 
+export type QueryVariableType = 'STRING' | 'NUMBER' | 'DATE'
+
 export type QuerySection = {
   id: number
   name: string
   sqlFragment: string
   sortOrder: number
   defaultEnabled: boolean
+}
+
+export type QueryVariable = {
+  id: number
+  name: string
+  type: QueryVariableType
+  defaultValue: string | null
+  required: boolean
+  sortOrder: number
 }
 
 export type AuditCategorySummary = {
@@ -23,8 +34,22 @@ export type AuditQuery = {
   name: string
   description: string | null
   active: boolean
+  versionId: number
+  versionNumber: number
   sections: QuerySection[]
+  variables: QueryVariable[]
   categories: AuditCategorySummary[]
+}
+
+export type AuditQueryVersionSummary = {
+  versionId: number
+  versionNumber: number
+  createdAt: string
+}
+
+export type AuditQueryVersion = AuditQueryVersionSummary & {
+  sections: QuerySection[]
+  variables: QueryVariable[]
 }
 
 export const querySectionRequestSchema = z.object({
@@ -39,6 +64,24 @@ export const querySectionRequestSchema = z.object({
     .min(1, 'Every query section needs a SQL fragment.'),
   sortOrder: z.number().finite(),
   defaultEnabled: z.boolean(),
+})
+
+export const queryVariableRequestSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Variable name is required.')
+    .max(100, 'Variable name must be 100 characters or fewer.')
+    .regex(
+      /^[a-zA-Z][a-zA-Z0-9_]*$/,
+      'Variable names must start with a letter and use letters, numbers, or underscores.',
+    ),
+  type: z.enum(['STRING', 'NUMBER', 'DATE']),
+  defaultValue: z
+    .string()
+    .max(1000, 'Default value must be 1000 characters or fewer.'),
+  required: z.boolean(),
+  sortOrder: z.number().finite(),
 })
 
 export const auditCategoryRequestSchema = z.object({
@@ -65,17 +108,89 @@ export const auditQueryRequestSchema = z.object({
   sections: z
     .array(querySectionRequestSchema)
     .min(1, 'At least one query section is required.'),
+  variables: z.array(queryVariableRequestSchema),
   categoryIds: z.array(z.number()),
 })
 
 export type QuerySectionRequest = z.infer<typeof querySectionRequestSchema>
+export type QueryVariableRequest = z.infer<typeof queryVariableRequestSchema>
 export type AuditCategoryRequest = z.infer<typeof auditCategoryRequestSchema>
 export type AuditQueryRequest = z.infer<typeof auditQueryRequestSchema>
 
+export type AuditQueryPreviewRequest = {
+  versionId?: number | null
+  variables?: Record<string, string>
+}
+
 export type AuditQueryPreview = {
   id: number
+  versionId: number
   sql: string
+  unresolvedVariables: string[]
 }
+
+export type Environment = {
+  id: number
+  name: string
+  code: string
+  active: boolean
+}
+
+export type Project = {
+  id: number
+  environmentId: number
+  name: string
+  code: string
+  schemaName: string | null
+  active: boolean
+}
+
+export type PlanItemVariableBinding = {
+  name: string
+  value: string | null
+}
+
+export type PlanItem = {
+  id: number
+  auditQueryId: number
+  auditQueryName: string
+  auditQueryVersionId: number | null
+  auditQueryVersionNumber: number | null
+  sortOrder: number
+  enabled: boolean
+  variableBindings: PlanItemVariableBinding[]
+}
+
+export type AuditPlan = {
+  id: number
+  name: string
+  description: string | null
+  active: boolean
+  items: PlanItem[]
+}
+
+export const planItemVariableBindingRequestSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  value: z.string().max(1000),
+})
+
+export const planItemRequestSchema = z.object({
+  auditQueryId: z.number(),
+  auditQueryVersionId: z.number().nullable().optional(),
+  sortOrder: z.number().finite(),
+  enabled: z.boolean(),
+  variableBindings: z.array(planItemVariableBindingRequestSchema),
+})
+
+export const auditPlanRequestSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  description: z.string().max(1000),
+  active: z.boolean(),
+  items: z.array(planItemRequestSchema),
+})
+
+export type PlanItemRequest = z.infer<typeof planItemRequestSchema>
+export type AuditPlanRequest = z.infer<typeof auditPlanRequestSchema>
 
 export function formatZodError(error: z.ZodError) {
   return error.issues[0]?.message ?? 'Validation failed.'
@@ -126,8 +241,20 @@ export function deleteAuditQuery(id: number) {
   })
 }
 
-export function getAuditQueryPreview(id: number) {
-  return apiRequest<AuditQueryPreview>(`/api/audit-queries/${id}/preview`)
+export function listAuditQueryVersions(queryId: number) {
+  return apiRequest<AuditQueryVersionSummary[]>(
+    `/api/audit-queries/${queryId}/versions`,
+  )
+}
+
+export function previewAuditQuery(
+  id: number,
+  request: AuditQueryPreviewRequest = {},
+) {
+  return apiRequest<AuditQueryPreview>(`/api/audit-queries/${id}/preview`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
 }
 
 export function listAuditCategories() {
@@ -154,10 +281,34 @@ export function deleteAuditCategory(id: number) {
   })
 }
 
-export type HealthResponse = {
-  status?: string
+export function listEnvironments() {
+  return apiRequest<Environment[]>('/api/environments')
 }
 
-export function getBackendHealth() {
-  return apiRequest<HealthResponse>('/api/health')
+export function listProjects(environmentId: number) {
+  return apiRequest<Project[]>(`/api/environments/${environmentId}/projects`)
+}
+
+export function listAuditPlans() {
+  return apiRequest<AuditPlan[]>('/api/audit-plans')
+}
+
+export function createAuditPlan(request: AuditPlanRequest) {
+  return apiRequest<AuditPlan>('/api/audit-plans', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
+export function updateAuditPlan(id: number, request: AuditPlanRequest) {
+  return apiRequest<AuditPlan>(`/api/audit-plans/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  })
+}
+
+export function deleteAuditPlan(id: number) {
+  return apiRequest<void>(`/api/audit-plans/${id}`, {
+    method: 'DELETE',
+  })
 }

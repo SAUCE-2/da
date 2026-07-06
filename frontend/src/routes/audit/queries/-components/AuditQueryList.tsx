@@ -25,7 +25,7 @@ export function AuditQueryList({
       newLinkTo="/audit/queries"
       onNew={onNew}
       newLinkLabel="New query"
-      emptyMessage="Create one to start building reusable metadata."
+      emptyMessage="Create a query to run against your database targets."
     >
       {sortedQueries.map((query) => (
         <AuditEntityListItem

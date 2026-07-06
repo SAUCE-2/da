@@ -5,7 +5,6 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -23,6 +22,7 @@ import type { QueryWorkspaceForm } from './use-audit-query-workspace'
 
 type QuerySectionsEditorProps = {
   form: QueryWorkspaceForm
+  embedded?: boolean
   onAddSection: () => void
   onRemoveSection: (clientId: string) => void
   onMoveSection: (clientId: string, direction: -1 | 1) => void
@@ -30,31 +30,22 @@ type QuerySectionsEditorProps = {
 
 export function QuerySectionsEditor({
   form,
+  embedded = false,
   onAddSection,
   onRemoveSection,
   onMoveSection,
 }: QuerySectionsEditorProps) {
   const sections = useStore(form.store, (state) => state.values.sections)
 
-  return (
-    <AuditEditorSection
-      title="Query sections"
-      description="Rendered by the backend in sort order when enabled by default."
-      action={
-        <Button type="button" variant="outline" size="sm" onClick={onAddSection}>
-          Add section
-        </Button>
-      }
-    >
-      <div className="flex flex-col gap-4">
-        {sections.map((section, index) => {
+  const content = (
+    <div className="flex flex-col gap-4">
+      {sections.map((section, index) => {
           const defaultEnabledId = `${section.clientId}-default-enabled`
 
           return (
             <Card key={section.clientId} size="sm">
               <CardHeader>
                 <CardTitle>Section {index + 1}</CardTitle>
-                <CardDescription>Sort order {section.sortOrder}</CardDescription>
                 <CardAction>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -77,11 +68,10 @@ export function QuerySectionsEditor({
                     </Button>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="destructive"
                       size="sm"
                       onClick={() => onRemoveSection(section.clientId)}
                       disabled={sections.length === 1}
-                      className="text-destructive hover:text-destructive"
                     >
                       Remove
                     </Button>
@@ -89,12 +79,12 @@ export function QuerySectionsEditor({
                 </CardAction>
               </CardHeader>
               <CardContent>
-                <FieldGroup className="grid gap-4 lg:grid-cols-[1fr_120px]">
+                <FieldGroup className="grid gap-4">
                   <form.Field
                     name={`sections[${index}].name`}
                     children={(field) => (
                       <Field>
-                        <FieldLabel>Section name</FieldLabel>
+                        <FieldLabel required>Section name</FieldLabel>
                         <Input
                           value={field.state.value}
                           onChange={(event) =>
@@ -108,26 +98,9 @@ export function QuerySectionsEditor({
                   />
 
                   <form.Field
-                    name={`sections[${index}].sortOrder`}
-                    children={(field) => (
-                      <Field>
-                        <FieldLabel>Sort order</FieldLabel>
-                        <Input
-                          type="number"
-                          value={field.state.value}
-                          onChange={(event) =>
-                            field.handleChange(Number(event.target.value))
-                          }
-                          onBlur={field.handleBlur}
-                        />
-                      </Field>
-                    )}
-                  />
-
-                  <form.Field
                     name={`sections[${index}].defaultEnabled`}
                     children={(field) => (
-                      <Field orientation="horizontal" className="lg:col-span-2">
+                      <Field orientation="horizontal">
                         <Switch
                           id={defaultEnabledId}
                           checked={field.state.value}
@@ -145,15 +118,15 @@ export function QuerySectionsEditor({
                   <form.Field
                     name={`sections[${index}].sqlFragment`}
                     children={(field) => (
-                      <Field className="min-h-0 lg:col-span-2">
-                        <FieldLabel>SQL fragment</FieldLabel>
+                      <Field className="min-h-0">
+                        <FieldLabel required>SQL fragment</FieldLabel>
                         <SqlFragmentTextarea
                           value={field.state.value}
                           onChange={(sqlFragment) =>
                             field.handleChange(sqlFragment)
                           }
                           className="min-h-48 font-mono"
-                          placeholder="Enter this section's SQL fragment"
+                          placeholder="Enter this section's SQL fragment. Use {{variableName}} for variables."
                         />
                       </Field>
                     )}
@@ -163,7 +136,24 @@ export function QuerySectionsEditor({
             </Card>
           )
         })}
-      </div>
+    </div>
+  )
+
+  if (embedded) {
+    return content
+  }
+
+  return (
+    <AuditEditorSection
+      title="Query sections"
+      description="Rendered by the backend in sort order when enabled by default."
+      action={
+        <Button type="button" variant="outline" size="sm" onClick={onAddSection}>
+          Add section
+        </Button>
+      }
+    >
+      {content}
     </AuditEditorSection>
   )
 }

@@ -59,10 +59,10 @@ export const Route = createFileRoute('/audit/categories')({
   staticData: {
     nav: {
       id: 'audit.categories',
-      label: 'Audit Categories',
+      label: 'Categories',
       icon: TagIcon,
-      subsectionId: 'audit',
-      order: 40,
+      subsectionId: 'config',
+      order: 30,
     },
   },
 })

@@ -22,7 +22,7 @@ export function AuditRouteQueryError({
   }, [queryErrorResetBoundary])
 
   return (
-    <div className="flex flex-col gap-3 p-6">
+    <div className="flex flex-col gap-3 p-3">
       <Alert variant="destructive">
         <AlertDescription>
           {error.message || fallbackMessage}

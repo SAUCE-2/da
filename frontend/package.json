@@ -21,8 +21,6 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.22.0",
     "next-themes": "^0.4.6",
-    "prettier": "^3.9.4",
-    "prettier-plugin-sql-cst": "^0.22.1",
     "radix-ui": "^1.6.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

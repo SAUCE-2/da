@@ -2,7 +2,7 @@
 
 ## Purpose
 
-These files define a staged plan for a customised SQL audit query store and executor with a Java Spring Boot backend and a TanStack Router frontend. The app stores reusable SQL audit checks, organises them, and runs them against selected database environments and project-specific users.
+These files define a staged plan for a customised SQL audit query store and executor with a Java Spring Boot backend and a TanStack Router frontend. The app stores reusable SQL audit queries, organises them, and runs them against selected database environments and project-specific users.
 
 ## Requested Stack
 
@@ -21,10 +21,19 @@ These files define a staged plan for a customised SQL audit query store and exec
 3. [Plan 01.5: Route Metadata Navigation](01.5-route-metadata-navigation.md)
 4. [Plan 02: Audit Queries And Categories](02-audit-queries-and-categories.md)
 5. [Plan 02.5: Product Framing And Misconceptions](02.5-product-framing-and-misconceptions.md)
-6. [Plan 03: Environments And Projects](03-environments-and-projects.md)
-7. [Plan 04: Suites And Execution](04-suites-and-execution.md)
-8. [Plan 05: Overrides And Scheduled Runs](05-overrides-and-scheduled-runs.md)
-9. [Plan 06: Verification And Hardening](06-verification-and-hardening.md)
+6. [Plan 02.6: Query Versioning And Variables](02.6-query-versioning-and-variables.md)
+7. [Plan 03: Environments And Projects](03-environments-and-projects.md)
+8. [Plan 04: Plans And Execution](04-suites-and-execution.md)
+9. [Plan 05: Overrides And Scheduled Runs](05-overrides-and-scheduled-runs.md)
+10. [Plan 06: Verification And Hardening](06-verification-and-hardening.md)
+
+## Frontend Conventions
+
+- [Frontend UI Conventions](frontend-ui-conventions.md)
+
+## Context Reference
+
+- [Runtime And Variable Context](runtime-and-variable-context.md)
 
 ## Plan Status
 
@@ -32,8 +41,9 @@ These files define a staged plan for a customised SQL audit query store and exec
 - Plan 01: done
 - Plan 01.5: done
 - Plan 02: done
-- Plan 02.5: next
-- Plan 03: not started
+- Plan 02.5: done
+- Plan 02.6: done
+- Plan 03: next
 - Plan 04: not started
 - Plan 05: not started
 - Plan 06: blocked by environment, project, and execution work
@@ -46,20 +56,22 @@ flowchart LR
   setup --> navMeta[Route_Metadata_Nav]
   navMeta --> queries[Queries_Categories]
   queries --> framing[Product_Framing]
-  framing --> context[Environments_Projects]
-  context --> suites[Suites_Execution]
-  suites --> overrides[Overrides_Scheduling]
+  framing --> versions[Versioning_Variables]
+  versions --> context[Environments_Projects]
+  context --> plans[Plans_Execution]
+  plans --> overrides[Overrides_Scheduling]
   overrides --> verify[Verification]
 ```
 
 ## Domain Summary
 
-- Environment: the selected database target where audit SQL runs, such as dev, test, preprod, or prod.
-- Project: the project-specific Oracle user/schema used to run SQL on a selected environment.
-- Audit query: a reusable SQL audit definition made from toggleable ordered sections.
-- Category: a way to organize queries; one query can belong to many categories.
-- Suite: an ordered list of queries that can be run together.
-- Suite run: one execution of a suite for a selected environment and project.
+- **Environment:** the database target where audit SQL runs (dev, test, preprod, prod).
+- **Project:** the Oracle user/schema used to run SQL on a selected environment.
+- **Audit query:** a reusable, versioned SQL audit definition made from toggleable ordered sections and variables.
+- **Category:** a way to organize queries; one query can belong to many categories.
+- **Plan:** an ordered pipeline of queries that can be run together against a target.
+- **Plan run:** one execution of a plan for a selected environment and project.
+- **Query run:** one execution of a single query against a target.
 
 ## Key MVP Constraint
 

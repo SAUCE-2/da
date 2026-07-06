@@ -49,18 +49,24 @@ export function createAuditWorkspaceContext<
     const navigate = useNavigate()
     const params = match?.params as ResolveParams<TDetailRoute> | undefined
     const rawParam = params?.[paramName]
-    const urlEntityId = rawParam ? Number(rawParam) : null
+    const urlEntityId =
+      rawParam !== undefined && rawParam !== null && rawParam !== ''
+        ? Number(rawParam)
+        : null
 
-    const [selectedId, setSelectedId] = useState<number | null>(null)
+    const [selectionOverride, setSelectionOverride] = useState<
+      number | null | undefined
+    >(undefined)
 
     useEffect(() => {
-      if (urlEntityId !== null) {
-        setSelectedId(urlEntityId)
-      }
+      setSelectionOverride(undefined)
     }, [urlEntityId])
 
+    const selectedId =
+      selectionOverride !== undefined ? selectionOverride : urlEntityId
+
     function selectEntity(id: number | null) {
-      setSelectedId(id)
+      setSelectionOverride(id)
       if (urlEntityId !== null) {
         void navigate({ to: indexRoute, replace: true })
       }

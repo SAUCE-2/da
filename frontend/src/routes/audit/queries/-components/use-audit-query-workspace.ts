@@ -1,7 +1,8 @@
 import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 
+import { mergePreviewVariableOverrides } from '@/lib/audit-variable-utils'
 import {
   auditQueryRequestSchema,
   formatZodError,
@@ -21,7 +22,9 @@ import {
 import {
   createBlankForm,
   createBlankSection,
+  createBlankVariable,
   reindexSections,
+  reindexVariables,
   toAuditQueryRequest,
   toFormState,
 } from './query-form'
@@ -30,26 +33,32 @@ import { useQueryWorkspaceSelection } from './query-workspace-context'
 export function useAuditQueryWorkspace() {
   const { selectedQueryId, selectQuery } = useQueryWorkspaceSelection()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [previewVariableOverrides, setPreviewVariableOverrides] = useState<
+    Record<string, string>
+  >({})
 
   const persistQuery = usePersistAuditQuery()
   const removeQuery = useRemoveAuditQuery()
 
-  const { data: queries = [] } = useQuery(auditQueriesListOptions())
+  const { data: queries = [], isFetched } = useQuery(auditQueriesListOptions())
   const { data: categories = [] } = useQuery(auditCategoriesListOptions())
-  const previewQuery = useQuery(auditQueryPreviewOptions(selectedQueryId))
 
   const selectedQuery =
     queries.find((query) => query.id === selectedQueryId) ?? null
   const isNotFound =
+    isFetched &&
     selectedQueryId !== null &&
     selectedQueryId !== OPTIMISTIC_ID &&
     selectedQuery === null
-  const previewErrorMessage = previewQuery.isError
-    ? getErrorMessage(previewQuery.error, 'Unable to load SQL preview.')
-    : null
+
+  const defaultFormValues = useMemo(
+    () =>
+      selectedQuery ? toFormState(selectedQuery) : createBlankForm(),
+    [selectedQuery],
+  )
 
   const form = useForm({
-    defaultValues: createBlankForm(),
+    defaultValues: defaultFormValues,
     validators: {
       onSubmit: ({ value }) => {
         const result = auditQueryRequestSchema.safeParse(
@@ -78,6 +87,7 @@ export function useAuditQueryWorkspace() {
           selectQuery(saved.id)
         }
         form.reset(toFormState(saved))
+        setPreviewVariableOverrides({})
       } catch {
         if (wasCreate) {
           selectQuery(null)
@@ -86,17 +96,36 @@ export function useAuditQueryWorkspace() {
     },
   })
 
-  const isDirty = useStore(form.store, (state) => state.isDirty)
+  const formVariables = useStore(form.store, (state) => state.values.variables)
+  const previewVariableValues = useMemo(
+    () => mergePreviewVariableOverrides(formVariables, previewVariableOverrides),
+    [formVariables, previewVariableOverrides],
+  )
+  const previewRequest = useMemo(
+    () => ({ variables: previewVariableValues }),
+    [previewVariableValues],
+  )
 
-  useEffect(() => {
+  const previewQuery = useQuery(
+    auditQueryPreviewOptions(selectedQueryId, previewRequest),
+  )
+
+  const isDirty = useStore(form.store, (state) => state.isDirty)
+  const previewErrorMessage = previewQuery.isError
+    ? getErrorMessage(previewQuery.error, 'Unable to load SQL preview.')
+    : null
+
+  useLayoutEffect(() => {
     if (selectedQueryId === null) {
       form.reset(createBlankForm())
+      setPreviewVariableOverrides({})
       setErrorMessage(null)
       return
     }
 
     if (selectedQuery) {
       form.reset(toFormState(selectedQuery))
+      setPreviewVariableOverrides({})
       setErrorMessage(null)
     }
   }, [selectedQueryId, selectedQuery, form])
@@ -130,7 +159,7 @@ export function useAuditQueryWorkspace() {
     const lastSortOrder = sections.at(-1)?.sortOrder ?? 0
     form.setFieldValue('sections', [
       ...sections,
-      createBlankSection(lastSortOrder + 10),
+      createBlankSection(lastSortOrder + 1),
     ])
   }
 
@@ -172,13 +201,36 @@ export function useAuditQueryWorkspace() {
     form.setFieldValue('sections', reindexSections(nextSections))
   }
 
+  function addVariable() {
+    const variables = form.getFieldValue('variables')
+    const lastSortOrder = variables.at(-1)?.sortOrder ?? 0
+    form.setFieldValue('variables', [
+      ...variables,
+      createBlankVariable(lastSortOrder + 1),
+    ])
+  }
+
+  function removeVariable(clientId: string) {
+    const variables = form.getFieldValue('variables')
+    form.setFieldValue(
+      'variables',
+      reindexVariables(variables.filter((variable) => variable.clientId !== clientId)),
+    )
+  }
+
+  function updatePreviewVariable(name: string, value: string) {
+    setPreviewVariableOverrides((current) => ({ ...current, [name]: value }))
+  }
+
   return {
     selectedQueryId,
+    selectedQuery,
     selectedQueryName: selectedQuery?.name ?? null,
     isNotFound,
     form,
     categories,
     preview: previewQuery.data ?? null,
+    previewVariableValues,
     isDirty,
     isSaving: persistQuery.isPending,
     isPreviewLoading: previewQuery.isFetching,
@@ -189,6 +241,9 @@ export function useAuditQueryWorkspace() {
     addSection,
     removeSection,
     moveSection,
+    addVariable,
+    removeVariable,
+    updatePreviewVariable,
   }
 }
 

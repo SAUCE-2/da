@@ -13,7 +13,7 @@ export function AuditEntityNotFound({
   onBack,
 }: AuditEntityNotFoundProps) {
   return (
-    <div className="flex flex-col gap-3 p-6">
+    <div className="flex flex-col gap-3 p-3">
       <Alert variant="destructive">
         <AlertDescription>{message}</AlertDescription>
       </Alert>

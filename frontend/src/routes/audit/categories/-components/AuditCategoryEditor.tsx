@@ -5,7 +5,6 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { pluralize } from '@/lib/utils'
 
@@ -41,7 +40,7 @@ export function AuditCategoryEditor() {
   const title =
     selectedCategoryId === null ? 'Create category' : 'Edit category'
   const description =
-    'Categories are metadata only and can be assigned to audit queries from the query editor.'
+    'Organize queries for browsing and plan building. Assign categories from the query editor.'
 
   return (
     <form
@@ -53,9 +52,11 @@ export function AuditCategoryEditor() {
       className="flex min-h-0 flex-1 flex-col"
     >
       {errorMessage ? (
-        <Alert variant="destructive" className="mx-6 mt-3">
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
+        <div className="border-b p-3">
+          <Alert variant="destructive">
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        </div>
       ) : null}
       <AuditEditorHeader
         title={title}
@@ -86,7 +87,7 @@ export function AuditCategoryEditor() {
               name="name"
               children={(field) => (
                 <Field>
-                  <FieldLabel>Name</FieldLabel>
+                  <FieldLabel required>Name</FieldLabel>
                   <Input
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -116,15 +117,12 @@ export function AuditCategoryEditor() {
         </AuditEditorSection>
 
         {selectedCategory ? (
-          <>
-            <Separator />
-            <AuditEditorSection title="Usage">
+          <AuditEditorSection title="Usage">
               <p className="text-sm text-muted-foreground">
                 Assigned to {selectedQueryCount}{' '}
                 {pluralize(selectedQueryCount, 'query')}.
               </p>
             </AuditEditorSection>
-          </>
         ) : null}
       </div>
     </form>

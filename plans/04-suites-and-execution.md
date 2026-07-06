@@ -57,7 +57,9 @@ erDiagram
     long id
     long suiteRunId
     long auditQueryId
+    long auditQueryVersionId
     string renderedSql
+    string variableValuesJson
     string status
     int rowCount
     string errorMessage
@@ -70,7 +72,9 @@ erDiagram
 
 - A run must specify `suiteId`, `environmentId`, and `projectId`.
 - Backend validates that the project belongs to the environment.
-- Backend renders SQL from enabled query sections.
+- Backend resolves `auditQueryVersionId` per suite item (pinned version or current from Plan 02.6).
+- Backend merges variable values in order: run-time overrides → suite item bindings → variable defaults (Plan 02.6). See [Runtime And Variable Context](runtime-and-variable-context.md) for the full resolution model including plan-level overrides and pre-run confirmation (future).
+- Backend renders SQL from enabled query sections, then substitutes `{{variableName}}` placeholders (Plan 02.6).
 - Backend executes only one suite item at a time.
 - Failed query behavior is configurable in the suite item or suite:
   - MVP default: stop the suite on first failed query.

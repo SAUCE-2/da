@@ -33,9 +33,16 @@ function buildOptimisticQuery(request: AuditQueryRequest): AuditQuery {
     name: request.name,
     description: request.description || null,
     active: request.active,
+    versionId: OPTIMISTIC_ID,
+    versionNumber: 1,
     sections: request.sections.map((section, index) => ({
       id: index,
       ...section,
+    })),
+    variables: request.variables.map((variable, index) => ({
+      id: index,
+      ...variable,
+      defaultValue: variable.defaultValue || null,
     })),
     categories: [],
   }
@@ -53,6 +60,11 @@ function applyRequestToQuery(
     sections: request.sections.map((section, index) => ({
       id: query.sections[index]?.id ?? index,
       ...section,
+    })),
+    variables: request.variables.map((variable, index) => ({
+      id: query.variables[index]?.id ?? index,
+      ...variable,
+      defaultValue: variable.defaultValue || null,
     })),
   }
 }
@@ -123,8 +135,16 @@ export function usePersistAuditQuery() {
       }
       toast.error(getErrorMessage(error, 'Unable to save audit query.'))
     },
-    onSettled: () => {
+    onSettled: (_data, _error, variables) => {
       void refreshAuditMetadata()
+      if (variables.id !== null) {
+        void queryClient.invalidateQueries({
+          queryKey: auditQueryKeys.preview(variables.id),
+        })
+        void queryClient.invalidateQueries({
+          queryKey: auditQueryKeys.versions(variables.id),
+        })
+      }
     },
   })
 }
@@ -180,10 +200,10 @@ export function usePersistAuditCategory() {
           current.map((category) =>
             category.id === id
               ? {
-                  ...category,
-                  name: request.name,
-                  description: request.description || null,
-                }
+                ...category,
+                name: request.name,
+                description: request.description || null,
+              }
               : category,
           ),
         )

@@ -42,8 +42,8 @@ const NAV_SUBSECTION_DISPLAY: Record<string, NavSubsectionDisplay> = {
     title: 'Core',
     icon: SquaresFourIcon,
   },
-  audit: {
-    title: 'Audit',
+  config: {
+    title: 'Config',
     icon: ClipboardTextIcon,
   },
 }
@@ -57,8 +57,17 @@ function getSubsectionDisplay(subsectionId: string) {
   )
 }
 
+function normalizePath(path: string) {
+  if (path === '/') return '/'
+  return path.replace(/\/$/, '')
+}
+
 function isNavItemActive(item: NavItem, currentPath: string) {
-  return item.to === currentPath
+  const itemPath = normalizePath(item.to)
+  const current = normalizePath(currentPath)
+
+  if (itemPath === current) return true
+  return current.startsWith(`${itemPath}/`)
 }
 
 function SidebarCollapseAction() {
@@ -208,13 +217,13 @@ export function AppSidebar({ sections }: { sections: NavSection[] }) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="Data Audit">
               <Link to="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center bg-sidebar-primary text-sidebar-primary-foreground">
                   <ClipboardTextIcon className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Data Audit</span>
                   <span className="truncate text-xs text-sidebar-foreground/70">
-                    Metadata console
+                    SQL audit runner
                   </span>
                 </div>
               </Link>
