@@ -25,7 +25,7 @@ type QuerySqlTabProps = {
   isPreviewLoading: boolean
   onAddSection: () => void
   onRemoveSection: (clientId: string) => void
-  onReorderSection: (activeId: string, overId: string) => void
+  onReorderSection: (fromIndex: number, toIndex: number) => void
   updatePreviewVariable: (name: string, value: string) => void
 }
 

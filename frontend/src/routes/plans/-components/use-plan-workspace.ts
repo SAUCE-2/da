@@ -1,4 +1,3 @@
-import { arrayMove } from '@dnd-kit/sortable'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useLayoutEffect, useState } from 'react'
@@ -138,19 +137,13 @@ export function usePlanWorkspace() {
     )
   }
 
-  function reorderItem(activeId: string, overId: string) {
+  function reorderItem(fromIndex: number, toIndex: number) {
     const items = form.getFieldValue('items')
-    const oldIndex = items.findIndex((item) => item.clientId === activeId)
-    const newIndex = items.findIndex((item) => item.clientId === overId)
+    const next = [...items]
+    const [removed] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, removed)
 
-    if (oldIndex < 0 || newIndex < 0) {
-      return
-    }
-
-    form.setFieldValue(
-      'items',
-      reindexPlanItems(arrayMove(items, oldIndex, newIndex)),
-    )
+    form.setFieldValue('items', reindexPlanItems(next))
   }
 
   function handleQueryChange(clientId: string, queryId: number | null) {

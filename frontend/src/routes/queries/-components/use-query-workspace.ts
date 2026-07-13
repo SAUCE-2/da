@@ -1,4 +1,3 @@
-import { arrayMove } from '@dnd-kit/sortable'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
@@ -181,19 +180,13 @@ export function useQueryWorkspace() {
     form.setFieldValue('sections', nextSections)
   }
 
-  function reorderSection(activeId: string, overId: string) {
+  function reorderSection(fromIndex: number, toIndex: number) {
     const sections = form.getFieldValue('sections')
-    const oldIndex = sections.findIndex((section) => section.clientId === activeId)
-    const newIndex = sections.findIndex((section) => section.clientId === overId)
+    const next = [...sections]
+    const [removed] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, removed)
 
-    if (oldIndex < 0 || newIndex < 0) {
-      return
-    }
-
-    form.setFieldValue(
-      'sections',
-      reindexSections(arrayMove(sections, oldIndex, newIndex)),
-    )
+    form.setFieldValue('sections', reindexSections(next))
   }
 
   function addVariable() {

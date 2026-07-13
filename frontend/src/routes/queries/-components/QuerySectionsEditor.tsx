@@ -26,7 +26,7 @@ type QuerySectionsEditorProps = {
   embedded?: boolean
   onAddSection: () => void
   onRemoveSection: (clientId: string) => void
-  onReorderSection: (activeId: string, overId: string) => void
+  onReorderSection: (fromIndex: number, toIndex: number) => void
 }
 
 export function QuerySectionsEditor({

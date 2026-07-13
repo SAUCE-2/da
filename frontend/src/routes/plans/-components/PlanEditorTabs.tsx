@@ -16,7 +16,7 @@ type PlanEditorTabsProps = {
   queries: Query[]
   onAddItem: () => void
   onRemoveItem: (clientId: string) => void
-  onReorderItem: (activeId: string, overId: string) => void
+  onReorderItem: (fromIndex: number, toIndex: number) => void
   onQueryChange: (clientId: string, queryId: number | null) => void
 }
 
