@@ -20,12 +20,8 @@ public abstract class QueryMapper {
 	private CategoryMapper categoryMapper;
 
 	@Mapping(target = "id", source = "query.id")
-	@Mapping(target = "name", source = "query.name")
-	@Mapping(target = "description", source = "query.description")
-	@Mapping(target = "active", source = "query.active")
-	@Mapping(target = "versionId", source = "currentVersion.id")
-	@Mapping(target = "versionNumber", source = "currentVersion.versionNumber")
-	@Mapping(target = "sections", source = "currentVersion", qualifiedByName = "mapSections")
+		@Mapping(target = "versionId", source = "currentVersion.id")
+		@Mapping(target = "sections", source = "currentVersion", qualifiedByName = "mapSections")
 	@Mapping(target = "variables", source = "currentVersion", qualifiedByName = "mapVariables")
 	@Mapping(target = "categories", source = "query.categories", qualifiedByName = "mapSortedCategories")
 	public abstract QueryResponse toResponse(Query query, QueryVersion currentVersion);
