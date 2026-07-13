@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge'
 import type { Query } from '@/lib/api'
-import { sortByName } from '@/lib/utils'
 
 import { EntityListItem } from '@/components/workspace/EntityListItem'
 import { EntityListPanel } from '@/components/workspace/EntityListPanel'
@@ -16,7 +15,9 @@ export function QueryList({
   selectedQueryId,
   onNew,
 }: QueryListProps) {
-  const sortedQueries = sortByName(queries, (query) => query.name)
+  const sortedQueries = [...queries].sort((left, right) =>
+    left.name.localeCompare(right.name),
+  )
 
   return (
     <EntityListPanel

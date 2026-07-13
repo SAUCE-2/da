@@ -80,7 +80,7 @@ curl -s -X POST http://localhost:8080/api/queries/1/preview \
   -d '{"variables":{"startDate":"2024-01-01"}}'
 ```
 
-Full request/response shapes are documented in Swagger UI or at `/v3/api-docs`. Swagger UI defaults to the **schema** view (field types and validation constraints), not auto-generated example JSON. Examples are stripped from the generated OpenAPI spec via `OpenApiConfiguration`.
+Full request/response shapes are documented in Swagger UI or at `/v3/api-docs`. Swagger UI defaults to the **schema** view (field types and validation constraints) via `springdoc.swagger-ui.defaultModelRendering=model` in `application.properties`.
 
 ### API surface
 
@@ -92,15 +92,13 @@ Full request/response shapes are documented in Swagger UI or at `/v3/api-docs`. 
 
 ## Regenerate the frontend API client
 
-After changing controllers or DTOs, refresh the OpenAPI spec and regenerate TypeScript types for the frontend:
+After changing controllers or DTOs, regenerate TypeScript types for the frontend (requires the backend running on port 8080):
 
 ```bash
-# With the backend running on port 8080
-curl -s http://localhost:8080/v3/api-docs \
-  -o ../frontend/openapi/openapi.json
-
 cd ../frontend && npm run openapi:generate
 ```
+
+The script fetches the live spec from `http://localhost:8080/v3/api-docs`. Override with `OPENAPI_URL` if needed.
 
 ## Project layout
 
@@ -112,7 +110,7 @@ src/main/java/com/test/backend/
 ├── entity/              JPA entities (Lombok getters/setters)
 ├── dto/                 Request/response records (validation annotations)
 ├── mapper/              MapStruct entity ↔ DTO mappers
-└── domain/query/        SQL rendering and {{variable}} substitution
+└── query/               SQL rendering and {{variable}} substitution
 ```
 
 ## Common tasks

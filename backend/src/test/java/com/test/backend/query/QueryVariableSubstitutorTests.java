@@ -1,6 +1,6 @@
-package com.test.backend.domain.query;
+package com.test.backend.query;
 
-import com.test.backend.domain.query.QueryVariableSubstitutor;
+import com.test.backend.query.QueryVariableSubstitutor;
 import com.test.backend.entity.query.QueryVariable;
 import com.test.backend.entity.query.QueryVariableType;
 import static org.junit.jupiter.api.Assertions.assertEquals;

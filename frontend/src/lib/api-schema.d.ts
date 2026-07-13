@@ -234,7 +234,7 @@ export interface components {
             name: string;
             description?: string;
             active?: boolean;
-            items?: components["schemas"]["PlanItemRequest"][];
+            items: components["schemas"]["PlanItemRequest"][];
         };
         PlanItemResponse: {
             /** Format: int64 */
@@ -376,8 +376,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
-            200: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -444,8 +444,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
-            200: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -490,8 +490,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
-            200: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };

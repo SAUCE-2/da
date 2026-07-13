@@ -1,6 +1,6 @@
 package com.test.backend.service.query;
 
-import com.test.backend.domain.query.QuerySqlRenderer;
+import com.test.backend.query.QuerySqlRenderer;
 import com.test.backend.dto.query.QueryPreviewRequest;
 import com.test.backend.dto.query.QueryPreviewResponse;
 import com.test.backend.dto.query.QueryRequest;

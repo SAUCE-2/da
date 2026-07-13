@@ -70,7 +70,10 @@ export function PlanEditorTabs({
       </TabsContent>
 
       <TabsContent value="variables" className="mt-0 min-h-0 flex-1">
-        <PlanVariablesEditor form={form} queries={queries} />
+        <PlanVariablesEditor
+          form={form}
+          queries={queries}
+        />
       </TabsContent>
     </Tabs>
   )

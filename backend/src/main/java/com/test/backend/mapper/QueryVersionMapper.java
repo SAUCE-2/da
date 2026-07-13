@@ -1,6 +1,6 @@
 package com.test.backend.mapper;
 
-import com.test.backend.domain.query.QuerySqlRenderer;
+import com.test.backend.query.QuerySqlRenderer;
 import com.test.backend.dto.query.QuerySectionResponse;
 import com.test.backend.dto.query.QueryVariableResponse;
 import com.test.backend.dto.query.QueryVersionResponse;

@@ -1,6 +1,4 @@
 import type { Query, Plan } from '@/lib/api'
-import { variableDefaultsFromDefinitions } from '@/lib/variable-utils'
-import { createClientId } from '@/lib/form-client-id'
 
 export type ClientPlanItem = {
   clientId: string
@@ -19,7 +17,7 @@ export type PlanFormState = {
 
 export function createBlankPlanItem(sortOrder: number): ClientPlanItem {
   return {
-    clientId: createClientId(),
+    clientId: crypto.randomUUID(),
     queryId: null,
     sortOrder,
     enabled: true,
@@ -42,7 +40,7 @@ export function toPlanFormState(plan: Plan): PlanFormState {
     description: plan.description ?? '',
     active: plan.active,
     items: plan.items.map((item) => ({
-      clientId: createClientId(),
+      clientId: crypto.randomUUID(),
       queryId: item.queryId,
       sortOrder: item.sortOrder,
       enabled: item.enabled,
@@ -80,7 +78,16 @@ export function seedVariableBindings(
   if (!query) {
     return {}
   }
-  return variableDefaultsFromDefinitions(query.variables)
+
+  const bindings: Record<string, string> = {}
+  for (const variable of query.variables) {
+    const name = variable.name.trim()
+    if (!name) {
+      continue
+    }
+    bindings[name] = variable.defaultValue ?? ''
+  }
+  return bindings
 }
 
 export function reindexPlanItems(items: ClientPlanItem[]) {

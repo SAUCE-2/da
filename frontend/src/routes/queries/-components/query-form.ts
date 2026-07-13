@@ -1,5 +1,4 @@
 import type { Query, QueryVariableType } from '@/lib/api'
-import { createClientId } from '@/lib/form-client-id'
 
 export type ClientSection = {
   clientId: string
@@ -29,7 +28,7 @@ export type QueryFormState = {
 
 export function createBlankSection(sortOrder: number): ClientSection {
   return {
-    clientId: createClientId(),
+    clientId: crypto.randomUUID(),
     name: '',
     sqlFragment: '',
     sortOrder,
@@ -39,7 +38,7 @@ export function createBlankSection(sortOrder: number): ClientSection {
 
 export function createBlankVariable(sortOrder: number): ClientVariable {
   return {
-    clientId: createClientId(),
+    clientId: crypto.randomUUID(),
     name: '',
     type: 'STRING',
     defaultValue: '',
@@ -66,14 +65,14 @@ export function toFormState(query: Query): QueryFormState {
     active: query.active,
     categoryIds: query.categories.map((category) => category.id),
     sections: query.sections.map((section) => ({
-      clientId: createClientId(),
+      clientId: crypto.randomUUID(),
       name: section.name,
       sqlFragment: section.sqlFragment,
       sortOrder: section.sortOrder,
       defaultEnabled: section.defaultEnabled,
     })),
     variables: query.variables.map((variable) => ({
-      clientId: createClientId(),
+      clientId: crypto.randomUUID(),
       name: variable.name,
       type: variable.type,
       defaultValue: variable.defaultValue ?? '',

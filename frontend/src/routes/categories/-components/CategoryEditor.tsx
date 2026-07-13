@@ -5,7 +5,7 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { pluralize } from '@/lib/utils'
+import pluralize from 'pluralize'
 
 import { EntityEditorShell } from '@/components/workspace/EntityEditorShell'
 import { EditorSection } from '@/components/workspace/EditorSection'
@@ -41,7 +41,7 @@ export function CategoryEditor() {
         <>
           This will permanently delete &quot;
           {selectedCategory?.name ?? 'this category'}&quot;. It is assigned to{' '}
-          {selectedQueryCount} {pluralize(selectedQueryCount, 'query')}.
+          {selectedQueryCount} {pluralize('query', selectedQueryCount)}.
         </>
       }
       onSubmit={(event) => {
@@ -89,7 +89,7 @@ export function CategoryEditor() {
         <EditorSection title="Usage">
           <p className="text-sm text-muted-foreground">
             Assigned to {selectedQueryCount}{' '}
-            {pluralize(selectedQueryCount, 'query')}.
+            {pluralize('query', selectedQueryCount)}.
           </p>
         </EditorSection>
       ) : null}

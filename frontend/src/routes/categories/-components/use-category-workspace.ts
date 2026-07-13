@@ -2,8 +2,6 @@ import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { useLayoutEffect, useState } from 'react'
 
-import { useClearSubmitErrorOnDirty } from '@/hooks/use-clear-submit-error-on-dirty'
-
 import { categoryRequestSchema } from '@/lib/schemas'
 import { categoriesListOptions } from '@/lib/queries/categories'
 import {
@@ -69,8 +67,6 @@ export function useCategoryWorkspace() {
       }
     },
   })
-
-  useClearSubmitErrorOnDirty(form)
 
   useLayoutEffect(() => {
     if (selectedCategoryId === null) {

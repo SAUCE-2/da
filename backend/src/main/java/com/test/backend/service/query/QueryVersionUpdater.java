@@ -1,6 +1,6 @@
 package com.test.backend.service.query;
 
-import com.test.backend.domain.query.QuerySqlRenderer;
+import com.test.backend.query.QuerySqlRenderer;
 import com.test.backend.dto.query.QueryRequest;
 import com.test.backend.dto.query.QuerySectionRequest;
 import com.test.backend.dto.query.QueryVariableRequest;
@@ -118,7 +118,7 @@ public class QueryVersionUpdater {
 	private QuerySection toSectionEntity(QuerySectionRequest request, boolean defaultEnabled) {
 		return new QuerySection(
 				request.name(),
-				request.sqlFragment(),
+				QuerySqlRenderer.trimFragmentBoundaries(request.sqlFragment()),
 				request.sortOrder(),
 				defaultEnabled);
 	}

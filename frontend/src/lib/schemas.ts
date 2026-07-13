@@ -1,4 +1,13 @@
 import { z } from 'zod'
+import { fromError } from 'zod-validation-error'
+
+export function formatZodError(error: z.ZodError) {
+  return fromError(error, {
+    prefix: null,
+    includePath: false,
+    issueSeparator: ' ',
+  }).toString()
+}
 
 export const querySectionRequestSchema = z.object({
   name: z

@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import type { Category } from '@/lib/api'
-import { pluralize, sortByName } from '@/lib/utils'
+import pluralize from 'pluralize'
 
 import { EntityListItem } from '@/components/workspace/EntityListItem'
 import { EntityListPanel } from '@/components/workspace/EntityListPanel'
@@ -18,7 +18,9 @@ export function CategoryList({
   getQueryCount,
   onNew,
 }: CategoryListProps) {
-  const sortedCategories = sortByName(categories, (category) => category.name)
+  const sortedCategories = [...categories].sort((left, right) =>
+    left.name.localeCompare(right.name),
+  )
 
   return (
     <EntityListPanel
@@ -42,7 +44,7 @@ export function CategoryList({
             isActive={category.id === selectedCategoryId}
             badge={
               <Badge variant="secondary" className="shrink-0">
-                {queryCount} {pluralize(queryCount, 'query')}
+                {queryCount} {pluralize('query', queryCount)}
               </Badge>
             }
           />

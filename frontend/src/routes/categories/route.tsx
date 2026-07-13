@@ -1,14 +1,16 @@
 import { TagIcon } from '@phosphor-icons/react/Tag'
-import { createFileRoute } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
+import { RouteQueryError } from '@/components/workspace/RouteQueryError'
 import {
-  EntityWorkspaceLayout,
-  entityWorkspaceLoader,
-} from '@/components/workspace/entity-workspace-layout'
+  Sidebar,
+  SidebarInset,
+  SidebarProvider,
+} from '@/components/ui/sidebar'
 import { categoriesListOptions } from '@/lib/queries/categories'
 import { queriesListOptions } from '@/lib/queries/queries'
 
-import { RouteQueryError } from '@/components/workspace/RouteQueryError'
 import { CategoryList } from './-components/CategoryList'
 import {
   CategoryWorkspaceProvider,
@@ -16,34 +18,44 @@ import {
 } from './-components/category-workspace-context'
 import { useCategoryQueryCounts } from './-components/use-category-query-counts'
 
-function CategoriesWorkspaceLayout() {
+function CategoriesWorkspace() {
+  const { selectedId, selectEntity } = useCategoryWorkspaceSelectionBase()
+  const { data: categories = [] } = useQuery(categoriesListOptions())
   const getQueryCount = useCategoryQueryCounts()
 
   return (
-    <EntityWorkspaceLayout
-      Provider={CategoryWorkspaceProvider}
-      useSelection={useCategoryWorkspaceSelectionBase}
-      listOptions={categoriesListOptions}
-      renderList={({ items, selectedId, onNew }) => (
-        <CategoryList
-          categories={items}
-          selectedCategoryId={selectedId}
-          getQueryCount={getQueryCount}
-          onNew={onNew}
-        />
-      )}
-    />
+    <SidebarProvider defaultOpen>
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <Sidebar
+          collapsible="none"
+          className="md:w-[min(300px,30%)] md:min-w-[260px] border-r"
+        >
+          <CategoryList
+            categories={categories}
+            selectedCategoryId={selectedId}
+            getQueryCount={getQueryCount}
+            onNew={() => selectEntity(null)}
+          />
+        </Sidebar>
+        <SidebarInset className="min-h-0 overflow-hidden">
+          <Outlet />
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   )
 }
 
 export const Route = createFileRoute('/categories')({
   loader: ({ context }) =>
-    entityWorkspaceLoader(
-      context.queryClient,
-      categoriesListOptions,
-      queriesListOptions,
-    ),
-  component: CategoriesWorkspaceLayout,
+    Promise.all([
+      context.queryClient.ensureQueryData(categoriesListOptions()),
+      context.queryClient.ensureQueryData(queriesListOptions()),
+    ]),
+  component: () => (
+    <CategoryWorkspaceProvider>
+      <CategoriesWorkspace />
+    </CategoryWorkspaceProvider>
+  ),
   errorComponent: ({ error }) => (
     <RouteQueryError
       error={error}

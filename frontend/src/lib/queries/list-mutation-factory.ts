@@ -5,7 +5,6 @@ import {
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { getErrorMessage } from '@/lib/get-error-message'
 import { queryClient } from '@/lib/query-client'
 
 export const OPTIMISTIC_ID = 0
@@ -93,7 +92,11 @@ export function createPersistListMutation<TEntity, TRequest>(
         if (context?.previous) {
           queryClient.setQueryData(config.listKey, context.previous)
         }
-        toast.error(getErrorMessage(error, config.errorMessage))
+        toast.error(
+          error instanceof Error && error.message
+            ? error.message
+            : config.errorMessage,
+        )
       },
       onSettled: (data, error, variables) => {
         config.onSettled?.(data, error, variables)
@@ -134,7 +137,11 @@ export function createRemoveListMutation(config: RemoveListMutationConfig) {
         if (context?.previous) {
           queryClient.setQueryData(config.listKey, context.previous)
         }
-        toast.error(getErrorMessage(error, config.errorMessage))
+        toast.error(
+          error instanceof Error && error.message
+            ? error.message
+            : config.errorMessage,
+        )
       },
       onSettled: () => {
         config.onSettled?.()

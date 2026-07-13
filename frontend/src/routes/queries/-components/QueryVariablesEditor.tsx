@@ -79,9 +79,7 @@ export function QueryVariablesEditor({
                           <FieldLabel required>Name</FieldLabel>
                           <Input
                             value={field.state.value}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
+                            onChange={(event) => field.handleChange(event.target.value)}
                             onBlur={field.handleBlur}
                             placeholder="status"
                           />
@@ -99,11 +97,11 @@ export function QueryVariablesEditor({
                           <FieldLabel required>Type</FieldLabel>
                           <Select
                             value={field.state.value}
-                            onValueChange={(value) =>
+                            onValueChange={(value) => {
                               field.handleChange(
                                 value as 'STRING' | 'NUMBER' | 'DATE',
                               )
-                            }
+                            }}
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue />
@@ -125,9 +123,7 @@ export function QueryVariablesEditor({
                           <FieldLabel>Default value</FieldLabel>
                           <Input
                             value={field.state.value}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
+                            onChange={(event) => field.handleChange(event.target.value)}
                             onBlur={field.handleBlur}
                             placeholder="Optional default"
                           />
@@ -142,9 +138,7 @@ export function QueryVariablesEditor({
                           <Switch
                             id={requiredId}
                             checked={field.state.value}
-                            onCheckedChange={(checked) =>
-                              field.handleChange(checked)
-                            }
+                            onCheckedChange={(checked) => field.handleChange(checked)}
                           />
                           <FieldLabel htmlFor={requiredId}>
                             Required at run time

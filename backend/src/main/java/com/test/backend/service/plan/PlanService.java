@@ -1,6 +1,6 @@
 package com.test.backend.service.plan;
 
-import com.test.backend.domain.query.QuerySqlRenderer;
+import com.test.backend.query.QuerySqlRenderer;
 import com.test.backend.dto.plan.PlanItemRequest;
 import com.test.backend.dto.plan.PlanItemResponse;
 import com.test.backend.dto.plan.PlanItemVariableBindingRequest;

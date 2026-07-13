@@ -21,7 +21,7 @@ public interface PlanMapper {
 	@Mapping(target = "queryName", source = "item.query.name")
 	@Mapping(target = "queryVersionId", source = "versionId")
 	@Mapping(target = "queryVersionNumber", source = "versionNumber")
-		PlanItemResponse toItemResponse(PlanItem item, Long versionId, Integer versionNumber);
+	PlanItemResponse toItemResponse(PlanItem item, Long versionId, Integer versionNumber);
 
 	default PlanResponse toResponse(Plan plan, List<PlanItemResponse> items) {
 		return new PlanResponse(

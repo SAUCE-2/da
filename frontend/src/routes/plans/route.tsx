@@ -1,36 +1,57 @@
 import { StackIcon } from '@phosphor-icons/react/Stack'
-import { createFileRoute } from '@tanstack/react-router'
-
-import {
-  EntityWorkspaceLayout,
-  entityWorkspaceLoader,
-} from '@/components/workspace/entity-workspace-layout'
-import { queriesListOptions } from '@/lib/queries/queries'
-import { plansListOptions } from '@/lib/queries/plans'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 import { RouteQueryError } from '@/components/workspace/RouteQueryError'
+import {
+  Sidebar,
+  SidebarInset,
+  SidebarProvider,
+} from '@/components/ui/sidebar'
+import { plansListOptions } from '@/lib/queries/plans'
+import { queriesListOptions } from '@/lib/queries/queries'
+
 import { PlanList } from './-components/PlanList'
 import {
   PlanWorkspaceProvider,
   usePlanWorkspaceSelectionBase,
 } from './-components/plan-workspace-context'
 
+function PlansWorkspace() {
+  const { selectedId, selectEntity } = usePlanWorkspaceSelectionBase()
+  const { data: plans = [] } = useQuery(plansListOptions())
+
+  return (
+    <SidebarProvider defaultOpen>
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <Sidebar
+          collapsible="none"
+          className="md:w-[min(300px,30%)] md:min-w-[260px] border-r"
+        >
+          <PlanList
+            plans={plans}
+            selectedPlanId={selectedId}
+            onNew={() => selectEntity(null)}
+          />
+        </Sidebar>
+        <SidebarInset className="min-h-0 overflow-hidden">
+          <Outlet />
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  )
+}
+
 export const Route = createFileRoute('/plans')({
   loader: ({ context }) =>
-    entityWorkspaceLoader(
-      context.queryClient,
-      plansListOptions,
-      queriesListOptions,
-    ),
+    Promise.all([
+      context.queryClient.ensureQueryData(plansListOptions()),
+      context.queryClient.ensureQueryData(queriesListOptions()),
+    ]),
   component: () => (
-    <EntityWorkspaceLayout
-      Provider={PlanWorkspaceProvider}
-      useSelection={usePlanWorkspaceSelectionBase}
-      listOptions={plansListOptions}
-      renderList={({ items, selectedId, onNew }) => (
-        <PlanList plans={items} selectedPlanId={selectedId} onNew={onNew} />
-      )}
-    />
+    <PlanWorkspaceProvider>
+      <PlansWorkspace />
+    </PlanWorkspaceProvider>
   ),
   errorComponent: ({ error }) => (
     <RouteQueryError

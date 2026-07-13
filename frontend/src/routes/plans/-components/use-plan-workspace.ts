@@ -1,15 +1,9 @@
 import { arrayMove } from '@dnd-kit/sortable'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 
-import { useClearSubmitErrorOnDirty } from '@/hooks/use-clear-submit-error-on-dirty'
-
-import { planRequestSchema } from '@/lib/schemas'
-import {
-  readSubmitError,
-  submitValidationError,
-} from '@/lib/form-submit-validation'
+import { formatZodError, planRequestSchema } from '@/lib/schemas'
 import { OPTIMISTIC_ID } from '@/lib/queries/mutations'
 import { queriesListOptions } from '@/lib/queries/queries'
 import {
@@ -27,6 +21,11 @@ import {
   toPlanFormState,
 } from './plan-form'
 import { usePlanWorkspaceSelection } from './plan-workspace-context'
+
+function readSubmitError(errorMap: unknown) {
+  const err = (errorMap as { onSubmit?: unknown })?.onSubmit
+  return typeof err === 'string' && err.length > 0 ? err : null
+}
 
 export function usePlanWorkspace() {
   const { selectedPlanId, selectPlan } = usePlanWorkspaceSelection()
@@ -55,7 +54,7 @@ export function usePlanWorkspace() {
           return 'Select a query for every step in the plan.'
         }
         const result = planRequestSchema.safeParse(toPlanRequest(value))
-        return result.success ? undefined : submitValidationError(result.error)
+        return result.success ? undefined : formatZodError(result.error)
       },
     },
     onSubmit: async ({ value }) => {
@@ -83,11 +82,19 @@ export function usePlanWorkspace() {
     },
   })
 
+  const formValues = useStore(form.store, (state) => state.values)
   const submitError = useStore(form.store, (state) =>
     readSubmitError(state.errorMap),
   )
 
-  useClearSubmitErrorOnDirty(form)
+  useEffect(() => {
+    const errorMap = form.state.errorMap as { onSubmit?: unknown }
+    if (typeof errorMap.onSubmit !== 'string' || errorMap.onSubmit.length === 0) {
+      return
+    }
+
+    form.setErrorMap({ ...errorMap, onSubmit: undefined })
+  }, [formValues, form])
 
   useLayoutEffect(() => {
     if (selectedPlanId === null) {

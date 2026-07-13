@@ -17,7 +17,10 @@ type PlanVariablesEditorProps = {
   queries: Query[]
 }
 
-export function PlanVariablesEditor({ form, queries }: PlanVariablesEditorProps) {
+export function PlanVariablesEditor({
+  form,
+  queries,
+}: PlanVariablesEditorProps) {
   const items = useStore(form.store, (state) => state.values.items)
 
   const itemsWithVariables = items

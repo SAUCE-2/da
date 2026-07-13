@@ -115,9 +115,7 @@ export function PlanItemsEditor({
                         <Field orientation="horizontal">
                           <Switch
                             checked={field.state.value}
-                            onCheckedChange={(checked) =>
-                              field.handleChange(checked)
-                            }
+                            onCheckedChange={(checked) => field.handleChange(checked)}
                           />
                           <FieldLabel>Enabled in plan</FieldLabel>
                         </Field>

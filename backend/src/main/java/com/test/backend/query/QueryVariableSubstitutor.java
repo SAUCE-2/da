@@ -1,4 +1,4 @@
-package com.test.backend.domain.query;
+package com.test.backend.query;
 
 import com.test.backend.entity.query.QueryVariable;
 import java.util.ArrayList;

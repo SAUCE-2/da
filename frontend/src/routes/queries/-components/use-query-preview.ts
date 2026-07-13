@@ -1,11 +1,37 @@
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
 
-import { getErrorMessage } from '@/lib/get-error-message'
 import { queryPreviewOptions } from '@/lib/queries/queries'
-import { mergePreviewVariableOverrides } from '@/lib/variable-utils'
 
 import type { ClientVariable } from './query-form'
+
+function buildPreviewVariableValues(
+  variables: ClientVariable[],
+  overrides: Record<string, string>,
+) {
+  const defaults: Record<string, string> = {}
+
+  for (const variable of variables) {
+    const name = variable.name.trim()
+    if (!name) {
+      continue
+    }
+    defaults[name] = overrides[name] ?? variable.defaultValue ?? ''
+  }
+
+  const namedVariables = variables
+    .map((variable) => variable.name.trim())
+    .filter(Boolean)
+
+  const prunedOverrides: Record<string, string> = {}
+  for (const name of namedVariables) {
+    if (name in overrides) {
+      prunedOverrides[name] = overrides[name]
+    }
+  }
+
+  return { ...defaults, ...prunedOverrides }
+}
 
 export function useQueryPreview(
   selectedQueryId: number | null,
@@ -16,7 +42,7 @@ export function useQueryPreview(
   >({})
 
   const previewVariableValues = useMemo(
-    () => mergePreviewVariableOverrides(formVariables, previewVariableOverrides),
+    () => buildPreviewVariableValues(formVariables, previewVariableOverrides),
     [formVariables, previewVariableOverrides],
   )
   const previewRequest = useMemo(
@@ -29,7 +55,9 @@ export function useQueryPreview(
   )
 
   const previewErrorMessage = previewQuery.isError
-    ? getErrorMessage(previewQuery.error, 'Unable to load SQL preview.')
+    ? previewQuery.error instanceof Error && previewQuery.error.message
+      ? previewQuery.error.message
+      : 'Unable to load SQL preview.'
     : null
 
   function updatePreviewVariable(name: string, value: string) {

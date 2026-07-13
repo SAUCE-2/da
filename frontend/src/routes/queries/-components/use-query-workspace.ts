@@ -1,15 +1,9 @@
 import { arrayMove } from '@dnd-kit/sortable'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useLayoutEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 
-import { useClearSubmitErrorOnDirty } from '@/hooks/use-clear-submit-error-on-dirty'
-import { queryRequestSchema } from '@/lib/schemas'
-import { formatZodError } from '@/lib/api'
-import {
-  readSubmitError,
-  submitValidationError,
-} from '@/lib/form-submit-validation'
+import { formatZodError, queryRequestSchema } from '@/lib/schemas'
 import { categoriesListOptions } from '@/lib/queries/categories'
 import {
   OPTIMISTIC_ID,
@@ -29,6 +23,11 @@ import {
 } from './query-form'
 import { useQueryPreview } from './use-query-preview'
 import { useQueryWorkspaceSelection } from './query-workspace-context'
+
+function readSubmitError(errorMap: unknown) {
+  const err = (errorMap as { onSubmit?: unknown })?.onSubmit
+  return typeof err === 'string' && err.length > 0 ? err : null
+}
 
 export function useQueryWorkspace() {
   const { selectedQueryId, selectQuery } = useQueryWorkspaceSelection()
@@ -59,7 +58,7 @@ export function useQueryWorkspace() {
     validators: {
       onSubmit: ({ value }) => {
         const result = queryRequestSchema.safeParse(toQueryRequest(value))
-        return result.success ? undefined : submitValidationError(result.error)
+        return result.success ? undefined : formatZodError(result.error)
       },
     },
     onSubmit: async ({ value }) => {
@@ -89,6 +88,7 @@ export function useQueryWorkspace() {
   })
 
   const formVariables = useStore(form.store, (state) => state.values.variables)
+  const formValues = useStore(form.store, (state) => state.values)
   const {
     preview,
     previewVariableValues,
@@ -103,7 +103,14 @@ export function useQueryWorkspace() {
     readSubmitError(state.errorMap),
   )
 
-  useClearSubmitErrorOnDirty(form)
+  useEffect(() => {
+    const errorMap = form.state.errorMap as { onSubmit?: unknown }
+    if (typeof errorMap.onSubmit !== 'string' || errorMap.onSubmit.length === 0) {
+      return
+    }
+
+    form.setErrorMap({ ...errorMap, onSubmit: undefined })
+  }, [formValues, form])
 
   useLayoutEffect(() => {
     if (selectedQueryId === null) {

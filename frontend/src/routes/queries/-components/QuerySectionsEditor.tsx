@@ -16,9 +16,9 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 import { EditorSection } from '@/components/workspace/EditorSection'
-import { SqlFragmentTextarea } from './SqlFragmentTextarea'
 import type { QueryWorkspaceForm } from './use-query-workspace'
 
 type QuerySectionsEditorProps = {
@@ -74,9 +74,7 @@ export function QuerySectionsEditor({
                       <FieldLabel required>Section name</FieldLabel>
                       <Input
                         value={field.state.value}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
+                        onChange={(event) => field.handleChange(event.target.value)}
                         onBlur={field.handleBlur}
                         placeholder="Section name"
                       />
@@ -91,9 +89,7 @@ export function QuerySectionsEditor({
                       <Switch
                         id={defaultEnabledId}
                         checked={field.state.value}
-                        onCheckedChange={(checked) =>
-                          field.handleChange(checked)
-                        }
+                        onCheckedChange={(checked) => field.handleChange(checked)}
                       />
                       <FieldLabel htmlFor={defaultEnabledId}>
                         Enabled in default preview
@@ -107,11 +103,10 @@ export function QuerySectionsEditor({
                   children={(field) => (
                     <Field className="min-h-0">
                       <FieldLabel required>SQL fragment</FieldLabel>
-                      <SqlFragmentTextarea
+                      <Textarea
                         value={field.state.value}
-                        onChange={(sqlFragment) =>
-                          field.handleChange(sqlFragment)
-                        }
+                        onChange={(event) => field.handleChange(event.target.value)}
+                        onBlur={field.handleBlur}
                         className="min-h-48 font-mono"
                         placeholder="Enter this section's SQL fragment. Use {{variableName}} for variables."
                       />
