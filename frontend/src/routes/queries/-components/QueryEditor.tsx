@@ -5,9 +5,10 @@ import { EditorActions } from '@/components/workspace/EditorActions'
 import { EntityEditorShell } from '@/components/workspace/EntityEditorShell'
 
 import { QueryEditorTabs } from './QueryEditorTabs'
+import { useQueryWorkspaceSelection } from './query-workspace-context'
 import { useQueryWorkspace } from './use-query-workspace'
 
-export function QueryEditor() {
+function QueryEditorBody() {
   const {
     selectedQueryId,
     selectedQuery,
@@ -69,6 +70,7 @@ export function QueryEditor() {
       }}
     >
       <QueryEditorTabs
+        key={String(selectedQueryId ?? 'new')}
         form={form}
         selectedQueryId={selectedQueryId}
         categories={categories}
@@ -87,4 +89,10 @@ export function QueryEditor() {
       />
     </EntityEditorShell>
   )
+}
+
+export function QueryEditor() {
+  const { selectedQueryId } = useQueryWorkspaceSelection()
+
+  return <QueryEditorBody key={String(selectedQueryId ?? 'new')} />
 }

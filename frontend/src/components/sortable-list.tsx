@@ -16,6 +16,22 @@ type SortableListProps<T extends { clientId: string }> = {
   className?: string
 }
 
+function SortableListItem<T extends { clientId: string }>({
+  item,
+  index,
+  renderItem,
+}: {
+  item: T
+  index: number
+  renderItem: SortableListProps<T>['renderItem']
+}) {
+  return (
+    <SortableRow id={item.clientId} index={index}>
+      {(dragHandle) => renderItem(item, index, dragHandle)}
+    </SortableRow>
+  )
+}
+
 export function SortableList<T extends { clientId: string }>({
   items,
   onReorder,
@@ -36,17 +52,18 @@ export function SortableList<T extends { clientId: string }>({
         }
       }}
     >
-      <div className={className}>{items.map(renderSortableItem)}</div>
+      <div className={className}>
+        {items.map((item, index) => (
+          <SortableListItem
+            key={item.clientId}
+            item={item}
+            index={index}
+            renderItem={renderItem}
+          />
+        ))}
+      </div>
     </DragDropProvider>
   )
-
-  function renderSortableItem(item: T, index: number) {
-    return (
-      <SortableRow key={item.clientId} id={item.clientId} index={index}>
-        {(dragHandle) => renderItem(item, index, dragHandle)}
-      </SortableRow>
-    )
-  }
 }
 
 function SortableRow({

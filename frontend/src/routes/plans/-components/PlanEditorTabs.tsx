@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { Query } from '@/lib/api'
@@ -30,10 +30,6 @@ export function PlanEditorTabs({
   onQueryChange,
 }: PlanEditorTabsProps) {
   const [activeTab, setActiveTab] = useState<PlanEditorTab>('details')
-
-  useEffect(() => {
-    setActiveTab('details')
-  }, [selectedPlanId])
 
   return (
     <Tabs

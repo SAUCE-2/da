@@ -1,6 +1,6 @@
 import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { formatZodError, planRequestSchema } from '@/lib/schemas'
 import { OPTIMISTIC_ID } from '@/lib/queries/mutations'
@@ -44,8 +44,15 @@ export function usePlanWorkspace() {
     selectedPlanId !== OPTIMISTIC_ID &&
     selectedPlan === null
 
+  const initialFormValues =
+    selectedPlanId === null
+      ? createBlankPlanForm()
+      : selectedPlan
+        ? toPlanFormState(selectedPlan)
+        : createBlankPlanForm()
+
   const form = useForm({
-    defaultValues: createBlankPlanForm(),
+    defaultValues: initialFormValues,
     validators: {
       onSubmit: ({ value }) => {
         const unselected = value.items.find((item) => item.queryId === null)
@@ -94,19 +101,6 @@ export function usePlanWorkspace() {
 
     form.setErrorMap({ ...errorMap, onSubmit: undefined })
   }, [formValues, form])
-
-  useLayoutEffect(() => {
-    if (selectedPlanId === null) {
-      form.reset(createBlankPlanForm())
-      setErrorMessage(null)
-      return
-    }
-
-    if (selectedPlan) {
-      form.reset(toPlanFormState(selectedPlan))
-      setErrorMessage(null)
-    }
-  }, [selectedPlanId, selectedPlan, form])
 
   function handleDelete() {
     if (selectedPlanId === null) {

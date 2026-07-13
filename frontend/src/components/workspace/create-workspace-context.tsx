@@ -1,7 +1,8 @@
 import {
   createContext,
+  useCallback,
   useContext,
-  useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from 'react'
@@ -57,28 +58,36 @@ export function createWorkspaceContext<
     const [selectionOverride, setSelectionOverride] = useState<
       number | null | undefined
     >(undefined)
+    const [prevUrlEntityId, setPrevUrlEntityId] = useState(urlEntityId)
 
-    useEffect(() => {
+    if (urlEntityId !== prevUrlEntityId) {
+      setPrevUrlEntityId(urlEntityId)
       setSelectionOverride(undefined)
-    }, [urlEntityId])
+    }
 
     const selectedId =
       selectionOverride !== undefined ? selectionOverride : urlEntityId
 
-    function selectEntity(id: number | null) {
-      setSelectionOverride(id)
-      if (urlEntityId !== null) {
-        void navigate({ to: indexRoute, replace: true })
-      }
-    }
+    const selectEntity = useCallback(
+      (id: number | null) => {
+        setSelectionOverride(id)
+        if (urlEntityId !== null) {
+          void navigate({ to: indexRoute, replace: true })
+        }
+      },
+      [urlEntityId, navigate, indexRoute],
+    )
+
+    const value = useMemo(
+      () => ({
+        selectedId,
+        selectEntity,
+      }),
+      [selectedId, selectEntity],
+    )
 
     return (
-      <WorkspaceContext.Provider
-        value={{
-          selectedId,
-          selectEntity,
-        }}
-      >
+      <WorkspaceContext.Provider value={value}>
         {children}
       </WorkspaceContext.Provider>
     )

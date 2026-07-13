@@ -1,6 +1,6 @@
 import { useForm, useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { formatZodError, queryRequestSchema } from '@/lib/schemas'
 import { categoriesListOptions } from '@/lib/queries/categories'
@@ -46,14 +46,15 @@ export function useQueryWorkspace() {
     selectedQueryId !== OPTIMISTIC_ID &&
     selectedQuery === null
 
-  const defaultFormValues = useMemo(
-    () =>
-      selectedQuery ? toFormState(selectedQuery) : createBlankForm(),
-    [selectedQuery],
-  )
+  const initialFormValues =
+    selectedQueryId === null
+      ? createBlankForm()
+      : selectedQuery
+        ? toFormState(selectedQuery)
+        : createBlankForm()
 
   const form = useForm({
-    defaultValues: defaultFormValues,
+    defaultValues: initialFormValues,
     validators: {
       onSubmit: ({ value }) => {
         const result = queryRequestSchema.safeParse(toQueryRequest(value))
@@ -110,21 +111,6 @@ export function useQueryWorkspace() {
 
     form.setErrorMap({ ...errorMap, onSubmit: undefined })
   }, [formValues, form])
-
-  useLayoutEffect(() => {
-    if (selectedQueryId === null) {
-      form.reset(createBlankForm())
-      resetPreviewOverrides()
-      setErrorMessage(null)
-      return
-    }
-
-    if (selectedQuery) {
-      form.reset(toFormState(selectedQuery))
-      resetPreviewOverrides()
-      setErrorMessage(null)
-    }
-  }, [selectedQueryId, selectedQuery, form, resetPreviewOverrides])
 
   function handleDelete() {
     if (selectedQueryId === null) {

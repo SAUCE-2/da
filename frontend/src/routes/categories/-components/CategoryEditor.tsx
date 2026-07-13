@@ -9,9 +9,10 @@ import pluralize from 'pluralize'
 
 import { EntityEditorShell } from '@/components/workspace/EntityEditorShell'
 import { EditorSection } from '@/components/workspace/EditorSection'
+import { useCategoryWorkspaceSelection } from './category-workspace-context'
 import { useCategoryWorkspace } from './use-category-workspace'
 
-export function CategoryEditor() {
+function CategoryEditorBody() {
   const {
     selectedCategoryId,
     selectedCategory,
@@ -95,4 +96,10 @@ export function CategoryEditor() {
       ) : null}
     </EntityEditorShell>
   )
+}
+
+export function CategoryEditor() {
+  const { selectedCategoryId } = useCategoryWorkspaceSelection()
+
+  return <CategoryEditorBody key={String(selectedCategoryId ?? 'new')} />
 }

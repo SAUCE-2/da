@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { Category, QueryPreview } from '@/lib/api'
@@ -46,10 +46,6 @@ export function QueryEditorTabs({
   updatePreviewVariable,
 }: QueryEditorTabsProps) {
   const [activeTab, setActiveTab] = useState<QueryEditorTab>('details')
-
-  useEffect(() => {
-    setActiveTab('details')
-  }, [selectedQueryId])
 
   return (
     <Tabs

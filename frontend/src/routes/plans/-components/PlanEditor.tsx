@@ -1,9 +1,10 @@
 import { EntityEditorShell } from '@/components/workspace/EntityEditorShell'
 
 import { PlanEditorTabs } from './PlanEditorTabs'
+import { usePlanWorkspaceSelection } from './plan-workspace-context'
 import { usePlanWorkspace } from './use-plan-workspace'
 
-export function PlanEditor() {
+function PlanEditorBody() {
   const {
     selectedPlanId,
     selectedPlanName,
@@ -46,6 +47,7 @@ export function PlanEditor() {
       }}
     >
       <PlanEditorTabs
+        key={String(selectedPlanId ?? 'new')}
         form={form}
         selectedPlanId={selectedPlanId}
         queries={queries}
@@ -56,4 +58,10 @@ export function PlanEditor() {
       />
     </EntityEditorShell>
   )
+}
+
+export function PlanEditor() {
+  const { selectedPlanId } = usePlanWorkspaceSelection()
+
+  return <PlanEditorBody key={String(selectedPlanId ?? 'new')} />
 }

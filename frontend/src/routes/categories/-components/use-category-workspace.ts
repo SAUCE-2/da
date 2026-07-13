@@ -1,6 +1,6 @@
 import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useLayoutEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { categoryRequestSchema } from '@/lib/schemas'
 import { categoriesListOptions } from '@/lib/queries/categories'
@@ -38,8 +38,15 @@ export function useCategoryWorkspace() {
     selectedCategoryId !== OPTIMISTIC_ID &&
     selectedCategory === null
 
+  const initialFormValues =
+    selectedCategoryId === null
+      ? createBlankForm()
+      : selectedCategory
+        ? toFormState(selectedCategory)
+        : createBlankForm()
+
   const form = useForm({
-    defaultValues: createBlankForm(),
+    defaultValues: initialFormValues,
     validators: {
       onSubmit: categoryRequestSchema,
     },
@@ -67,19 +74,6 @@ export function useCategoryWorkspace() {
       }
     },
   })
-
-  useLayoutEffect(() => {
-    if (selectedCategoryId === null) {
-      form.reset(createBlankForm())
-      setErrorMessage(null)
-      return
-    }
-
-    if (selectedCategory) {
-      form.reset(toFormState(selectedCategory))
-      setErrorMessage(null)
-    }
-  }, [selectedCategoryId, selectedCategory, form])
 
   function handleDelete() {
     if (selectedCategoryId === null) {
