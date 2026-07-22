@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { PlanEditor } from './-components/PlanEditor'
-
-export const Route = createFileRoute('/plans/')({
-  component: PlanEditor,
-})
+export const Route = createFileRoute("/plans/")({
+	beforeLoad: () => {
+		throw redirect({ to: "/plans/new" });
+	},
+});

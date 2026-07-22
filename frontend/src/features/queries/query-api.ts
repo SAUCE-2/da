@@ -1,0 +1,51 @@
+import type { Query, QueryPreview, QueryPreviewRequest } from "@/lib/api-types";
+import { httpClient, type paths, unwrapData } from "@/lib/http-client";
+
+type QueryCreateBody = NonNullable<
+	paths["/api/queries"]["post"]["requestBody"]
+>["content"]["application/json"];
+
+type QueryUpdateBody = NonNullable<
+	paths["/api/queries/{id}"]["put"]["requestBody"]
+>["content"]["application/json"];
+
+export async function listQueries(): Promise<Query[]> {
+	const data = await httpClient
+		.GET("/api/queries")
+		.then(({ data }) => unwrapData(data));
+	return data as Query[];
+}
+
+export async function createQuery(request: QueryCreateBody): Promise<Query> {
+	const data = await httpClient
+		.POST("/api/queries", { body: request })
+		.then(({ data }) => unwrapData(data));
+	return data as Query;
+}
+
+export async function updateQuery(
+	id: number,
+	request: QueryUpdateBody,
+): Promise<Query> {
+	const data = await httpClient
+		.PUT("/api/queries/{id}", { params: { path: { id } }, body: request })
+		.then(({ data }) => unwrapData(data));
+	return data as Query;
+}
+
+export async function deleteQuery(id: number): Promise<void> {
+	await httpClient.DELETE("/api/queries/{id}", { params: { path: { id } } });
+}
+
+export async function previewQuery(
+	id: number,
+	request: QueryPreviewRequest = {},
+): Promise<QueryPreview> {
+	const data = await httpClient
+		.POST("/api/queries/{id}/preview", {
+			params: { path: { id } },
+			body: request,
+		})
+		.then(({ data }) => unwrapData(data));
+	return data as QueryPreview;
+}

@@ -1,27 +1,30 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Data Audit — SQL audit runner</title>
-    <script>
-      (function () {
-        try {
-          var theme = localStorage.getItem("theme") || "system"
-          var resolved = theme
-          if (theme === "system") {
-            resolved = window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light"
-          }
-          document.documentElement.classList.add(resolved)
-          document.documentElement.style.colorScheme = resolved
-        } catch (e) {}
-      })()
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Data Audit — SQL audit runner</title>
+		<script>
+			(() => {
+				try {
+					const theme = localStorage.getItem("theme") || "system";
+					let resolved = theme;
+					if (theme === "system") {
+						resolved = window.matchMedia("(prefers-color-scheme: dark)")
+							.matches
+							? "dark"
+							: "light";
+					}
+					document.documentElement.classList.add(resolved);
+					document.documentElement.style.colorScheme = resolved;
+				} catch {
+					/* ignore storage / matchMedia failures */
+				}
+			})();
+		</script>
+	</head>
+	<body>
+		<div id="root"></div>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
 </html>

@@ -1,20 +1,20 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-import { PlanEditor } from './-components/PlanEditor'
+import { PlanEditor } from "@/features/plans/PlanEditor";
+
+export const Route = createFileRoute("/plans/$planId")({
+	params: {
+		parse: (params) => ({
+			planId: Number(params.planId),
+		}),
+		stringify: (params) => ({
+			planId: String(params.planId),
+		}),
+	},
+	component: EditPlanPage,
+});
 
 function EditPlanPage() {
-  const { planId } = Route.useParams()
-  return <PlanEditor key={planId} />
+	const { planId } = Route.useParams();
+	return <PlanEditor key={planId} entityId={planId} />;
 }
-
-export const Route = createFileRoute('/plans/$planId')({
-  params: {
-    parse: (raw) => ({
-      planId: Number(raw.planId),
-    }),
-    stringify: ({ planId }) => ({
-      planId: String(planId),
-    }),
-  },
-  component: EditPlanPage,
-})

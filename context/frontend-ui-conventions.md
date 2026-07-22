@@ -2,6 +2,16 @@
 
 Cross-cutting reference for frontend layout and editor patterns in the Data Audit app. This is not a numbered execution plan — use it when building or refactoring UI that goes beyond simple CRUD forms.
 
+## State ownership
+
+| Concern | Source of truth |
+|---------|-----------------|
+| Create vs edit selection | URL (`/…/new` or `/…/$id`) |
+| Server lists and mutations | TanStack Query (`src/lib/queries/`) |
+| Form field values | TanStack Form (feature `use-*-workspace.ts` hooks) |
+
+Do not add a React context for selection. Route files pass `entityId: number | null` into editors.
+
 ## When To Use Which Pattern
 
 | Complexity | Pattern | Example |
@@ -29,10 +39,13 @@ Use top-level tabs when a single entity has multiple independent concerns that u
 
 ## Shared Layout Primitives
 
-- **`MasterDetailLayout`** — list + detail pane for entities (queries, categories, plans).
+- **`MasterDetailLayout`** — list pane + detail pane for queries, categories, and plans. Visual layout only; selection comes from the URL.
+- **`EntityListPanel` / `EntityListItem`** — entity list navigation; active state comes from the current route.
 - **`EditorHeader`** — title, description, and action row (save, delete, run).
 - **`EditorSection`** — bordered section with title/description for stacked simple editors.
 - **`TabPanelSection`** (inline in tabbed editors) — lighter sub-section grouping inside a tab panel without full border stack.
+
+“Workspace” in older docs means this master-detail **UI** pattern, not a state-management architecture.
 
 ## Tabs Component
 
@@ -42,6 +55,8 @@ Use top-level tabs when a single entity has multiple independent concerns that u
 
 ## Anti-Patterns
 
+- Selection React context or URL + local override hybrids.
+- Nested `SidebarProvider` for the entity list (app nav already has one in `__root.tsx`).
 - Tabs for linear wizards where each step must be completed in order.
 - Tabs that hide required create fields on a non-default tab without clear affordance.
 - Mixing unrelated save scopes per tab (each tab should contribute to one entity save).
@@ -53,3 +68,4 @@ Use top-level tabs when a single entity has multiple independent concerns that u
 - [Plan 01.5: Route Metadata Navigation](01.5-route-metadata-navigation.md) — nav shell and route metadata
 - [Plan 02.6: Query Versioning And Variables](02.6-query-versioning-and-variables.md) — query editor feature scope
 - [Runtime And Variable Context](runtime-and-variable-context.md) — variable confirmation and plan overrides (future)
+- [Frontend README](../frontend/README.md) — onboarding entry point for new developers

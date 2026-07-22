@@ -4,702 +4,702 @@
  */
 
 export interface paths {
-    "/api/queries/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getQuery"];
-        put: operations["updateQuery"];
-        post?: never;
-        delete: operations["deleteQuery"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/plans/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getPlan"];
-        put: operations["updatePlan"];
-        post?: never;
-        delete: operations["deletePlan"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/categories/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateCategory"];
-        post?: never;
-        delete: operations["deleteCategory"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/queries": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listQueries"];
-        put?: never;
-        post: operations["createQuery"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/queries/{id}/preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["previewQuery"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/plans": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listPlans"];
-        put?: never;
-        post: operations["createPlan"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listCategories"];
-        put?: never;
-        post: operations["createCategory"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/queries/{id}/versions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listVersions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/queries/{id}/versions/{versionId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getVersion"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+	"/api/queries/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: operations["getQuery"];
+		put: operations["updateQuery"];
+		post?: never;
+		delete: operations["deleteQuery"];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/plans/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: operations["getPlan"];
+		put: operations["updatePlan"];
+		post?: never;
+		delete: operations["deletePlan"];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/categories/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put: operations["updateCategory"];
+		post?: never;
+		delete: operations["deleteCategory"];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/queries": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: operations["listQueries"];
+		put?: never;
+		post: operations["createQuery"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/queries/{id}/preview": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: operations["previewQuery"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/plans": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: operations["listPlans"];
+		put?: never;
+		post: operations["createPlan"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/categories": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: operations["listCategories"];
+		put?: never;
+		post: operations["createCategory"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/queries/{id}/versions": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: operations["listVersions"];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/queries/{id}/versions/{versionId}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: operations["getVersion"];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        QueryRequest: {
-            name: string;
-            description?: string;
-            active?: boolean;
-            sections: components["schemas"]["QuerySectionRequest"][];
-            variables?: components["schemas"]["QueryVariableRequest"][];
-            categoryIds?: number[];
-        };
-        QuerySectionRequest: {
-            name: string;
-            sqlFragment: string;
-            /** Format: int32 */
-            sortOrder?: number;
-            defaultEnabled?: boolean;
-        };
-        QueryVariableRequest: {
-            name: string;
-            /** @enum {string} */
-            type: "STRING" | "NUMBER" | "DATE";
-            defaultValue?: string;
-            required?: boolean;
-            /** Format: int32 */
-            sortOrder?: number;
-        };
-        CategorySummaryResponse: {
-            /** Format: int64 */
-            id?: number;
-            name?: string;
-            description?: string;
-        };
-        QueryResponse: {
-            /** Format: int64 */
-            id?: number;
-            name?: string;
-            description?: string;
-            active?: boolean;
-            /** Format: int64 */
-            versionId?: number;
-            /** Format: int32 */
-            versionNumber?: number;
-            sections?: components["schemas"]["QuerySectionResponse"][];
-            variables?: components["schemas"]["QueryVariableResponse"][];
-            categories?: components["schemas"]["CategorySummaryResponse"][];
-        };
-        QuerySectionResponse: {
-            /** Format: int64 */
-            id?: number;
-            name?: string;
-            sqlFragment?: string;
-            /** Format: int32 */
-            sortOrder?: number;
-            defaultEnabled?: boolean;
-        };
-        QueryVariableResponse: {
-            /** Format: int64 */
-            id?: number;
-            name?: string;
-            /** @enum {string} */
-            type?: "STRING" | "NUMBER" | "DATE";
-            defaultValue?: string;
-            required?: boolean;
-            /** Format: int32 */
-            sortOrder?: number;
-        };
-        PlanItemRequest: {
-            /** Format: int64 */
-            queryId: number;
-            /** Format: int64 */
-            queryVersionId?: number;
-            /** Format: int32 */
-            sortOrder?: number;
-            enabled?: boolean;
-            variableBindings?: components["schemas"]["PlanItemVariableBindingRequest"][];
-        };
-        PlanItemVariableBindingRequest: {
-            name: string;
-            value?: string;
-        };
-        PlanRequest: {
-            name: string;
-            description?: string;
-            active?: boolean;
-            items: components["schemas"]["PlanItemRequest"][];
-        };
-        PlanItemResponse: {
-            /** Format: int64 */
-            id?: number;
-            /** Format: int64 */
-            queryId?: number;
-            queryName?: string;
-            /** Format: int64 */
-            queryVersionId?: number;
-            /** Format: int32 */
-            queryVersionNumber?: number;
-            /** Format: int32 */
-            sortOrder?: number;
-            enabled?: boolean;
-            variableBindings?: components["schemas"]["PlanItemVariableBindingResponse"][];
-        };
-        PlanItemVariableBindingResponse: {
-            name?: string;
-            value?: string;
-        };
-        PlanResponse: {
-            /** Format: int64 */
-            id?: number;
-            name?: string;
-            description?: string;
-            active?: boolean;
-            items?: components["schemas"]["PlanItemResponse"][];
-        };
-        CategoryRequest: {
-            name: string;
-            description?: string;
-        };
-        CategoryResponse: {
-            /** Format: int64 */
-            id?: number;
-            name?: string;
-            description?: string;
-            /** Format: int64 */
-            queryCount?: number;
-        };
-        QueryPreviewRequest: {
-            /** Format: int64 */
-            versionId?: number;
-            variables?: {
-                [key: string]: string;
-            };
-        };
-        QueryPreviewResponse: {
-            /** Format: int64 */
-            id?: number;
-            /** Format: int64 */
-            versionId?: number;
-            sql?: string;
-            unresolvedVariables?: string[];
-        };
-        QueryVersionSummaryResponse: {
-            /** Format: int64 */
-            versionId?: number;
-            /** Format: int32 */
-            versionNumber?: number;
-            /** Format: date-time */
-            createdAt?: string;
-        };
-        QueryVersionResponse: {
-            /** Format: int64 */
-            versionId?: number;
-            /** Format: int32 */
-            versionNumber?: number;
-            /** Format: date-time */
-            createdAt?: string;
-            sections?: components["schemas"]["QuerySectionResponse"][];
-            variables?: components["schemas"]["QueryVariableResponse"][];
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+	schemas: {
+		QueryRequest: {
+			name: string;
+			description?: string;
+			active?: boolean;
+			sections: components["schemas"]["QuerySectionRequest"][];
+			variables?: components["schemas"]["QueryVariableRequest"][];
+			categoryIds?: number[];
+		};
+		QuerySectionRequest: {
+			name: string;
+			sqlFragment: string;
+			/** Format: int32 */
+			sortOrder?: number;
+			defaultEnabled?: boolean;
+		};
+		QueryVariableRequest: {
+			name: string;
+			/** @enum {string} */
+			type: "STRING" | "NUMBER" | "DATE";
+			defaultValue?: string;
+			required?: boolean;
+			/** Format: int32 */
+			sortOrder?: number;
+		};
+		CategorySummaryResponse: {
+			/** Format: int64 */
+			id?: number;
+			name?: string;
+			description?: string;
+		};
+		QueryResponse: {
+			/** Format: int64 */
+			id?: number;
+			name?: string;
+			description?: string;
+			active?: boolean;
+			/** Format: int64 */
+			versionId?: number;
+			/** Format: int32 */
+			versionNumber?: number;
+			sections?: components["schemas"]["QuerySectionResponse"][];
+			variables?: components["schemas"]["QueryVariableResponse"][];
+			categories?: components["schemas"]["CategorySummaryResponse"][];
+		};
+		QuerySectionResponse: {
+			/** Format: int64 */
+			id?: number;
+			name?: string;
+			sqlFragment?: string;
+			/** Format: int32 */
+			sortOrder?: number;
+			defaultEnabled?: boolean;
+		};
+		QueryVariableResponse: {
+			/** Format: int64 */
+			id?: number;
+			name?: string;
+			/** @enum {string} */
+			type?: "STRING" | "NUMBER" | "DATE";
+			defaultValue?: string;
+			required?: boolean;
+			/** Format: int32 */
+			sortOrder?: number;
+		};
+		PlanItemRequest: {
+			/** Format: int64 */
+			queryId: number;
+			/** Format: int64 */
+			queryVersionId?: number;
+			/** Format: int32 */
+			sortOrder?: number;
+			enabled?: boolean;
+			variableBindings?: components["schemas"]["PlanItemVariableBindingRequest"][];
+		};
+		PlanItemVariableBindingRequest: {
+			name: string;
+			value?: string;
+		};
+		PlanRequest: {
+			name: string;
+			description?: string;
+			active?: boolean;
+			items: components["schemas"]["PlanItemRequest"][];
+		};
+		PlanItemResponse: {
+			/** Format: int64 */
+			id?: number;
+			/** Format: int64 */
+			queryId?: number;
+			queryName?: string;
+			/** Format: int64 */
+			queryVersionId?: number;
+			/** Format: int32 */
+			queryVersionNumber?: number;
+			/** Format: int32 */
+			sortOrder?: number;
+			enabled?: boolean;
+			variableBindings?: components["schemas"]["PlanItemVariableBindingResponse"][];
+		};
+		PlanItemVariableBindingResponse: {
+			name?: string;
+			value?: string;
+		};
+		PlanResponse: {
+			/** Format: int64 */
+			id?: number;
+			name?: string;
+			description?: string;
+			active?: boolean;
+			items?: components["schemas"]["PlanItemResponse"][];
+		};
+		CategoryRequest: {
+			name: string;
+			description?: string;
+		};
+		CategoryResponse: {
+			/** Format: int64 */
+			id?: number;
+			name?: string;
+			description?: string;
+			/** Format: int64 */
+			queryCount?: number;
+		};
+		QueryPreviewRequest: {
+			/** Format: int64 */
+			versionId?: number;
+			variables?: {
+				[key: string]: string;
+			};
+		};
+		QueryPreviewResponse: {
+			/** Format: int64 */
+			id?: number;
+			/** Format: int64 */
+			versionId?: number;
+			sql?: string;
+			unresolvedVariables?: string[];
+		};
+		QueryVersionSummaryResponse: {
+			/** Format: int64 */
+			versionId?: number;
+			/** Format: int32 */
+			versionNumber?: number;
+			/** Format: date-time */
+			createdAt?: string;
+		};
+		QueryVersionResponse: {
+			/** Format: int64 */
+			versionId?: number;
+			/** Format: int32 */
+			versionNumber?: number;
+			/** Format: date-time */
+			createdAt?: string;
+			sections?: components["schemas"]["QuerySectionResponse"][];
+			variables?: components["schemas"]["QueryVariableResponse"][];
+		};
+	};
+	responses: never;
+	parameters: never;
+	requestBodies: never;
+	headers: never;
+	pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getQuery: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["QueryResponse"];
-                };
-            };
-        };
-    };
-    updateQuery: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["QueryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["QueryResponse"];
-                };
-            };
-        };
-    };
-    deleteQuery: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    getPlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PlanResponse"];
-                };
-            };
-        };
-    };
-    updatePlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlanRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PlanResponse"];
-                };
-            };
-        };
-    };
-    deletePlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    updateCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CategoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"];
-                };
-            };
-        };
-    };
-    deleteCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    listQueries: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["QueryResponse"][];
-                };
-            };
-        };
-    };
-    createQuery: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["QueryRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["QueryResponse"];
-                };
-            };
-        };
-    };
-    previewQuery: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["QueryPreviewRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["QueryPreviewResponse"];
-                };
-            };
-        };
-    };
-    listPlans: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PlanResponse"][];
-                };
-            };
-        };
-    };
-    createPlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlanRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PlanResponse"];
-                };
-            };
-        };
-    };
-    listCategories: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"][];
-                };
-            };
-        };
-    };
-    createCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CategoryRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"];
-                };
-            };
-        };
-    };
-    listVersions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["QueryVersionSummaryResponse"][];
-                };
-            };
-        };
-    };
-    getVersion: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-                versionId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["QueryVersionResponse"];
-                };
-            };
-        };
-    };
+	getQuery: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["QueryResponse"];
+				};
+			};
+		};
+	};
+	updateQuery: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["QueryRequest"];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["QueryResponse"];
+				};
+			};
+		};
+	};
+	deleteQuery: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description No Content */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	getPlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["PlanResponse"];
+				};
+			};
+		};
+	};
+	updatePlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["PlanRequest"];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["PlanResponse"];
+				};
+			};
+		};
+	};
+	deletePlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description No Content */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	updateCategory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["CategoryRequest"];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["CategoryResponse"];
+				};
+			};
+		};
+	};
+	deleteCategory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description No Content */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	listQueries: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["QueryResponse"][];
+				};
+			};
+		};
+	};
+	createQuery: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["QueryRequest"];
+			};
+		};
+		responses: {
+			/** @description Created */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["QueryResponse"];
+				};
+			};
+		};
+	};
+	previewQuery: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody?: {
+			content: {
+				"application/json": components["schemas"]["QueryPreviewRequest"];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["QueryPreviewResponse"];
+				};
+			};
+		};
+	};
+	listPlans: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["PlanResponse"][];
+				};
+			};
+		};
+	};
+	createPlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["PlanRequest"];
+			};
+		};
+		responses: {
+			/** @description Created */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["PlanResponse"];
+				};
+			};
+		};
+	};
+	listCategories: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["CategoryResponse"][];
+				};
+			};
+		};
+	};
+	createCategory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["CategoryRequest"];
+			};
+		};
+		responses: {
+			/** @description Created */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["CategoryResponse"];
+				};
+			};
+		};
+	};
+	listVersions: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["QueryVersionSummaryResponse"][];
+				};
+			};
+		};
+	};
+	getVersion: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: number;
+				versionId: number;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"*/*": components["schemas"]["QueryVersionResponse"];
+				};
+			};
+		};
+	};
 }

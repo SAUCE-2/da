@@ -1,5 +1,3 @@
-"use client"
-
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -100,10 +98,8 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
 
 function FieldLabel({
   className,
-  required,
-  children,
   ...props
-}: React.ComponentProps<typeof Label> & { required?: boolean }) {
+}: React.ComponentProps<typeof Label>) {
   return (
     <Label
       data-slot="field-label"
@@ -113,10 +109,7 @@ function FieldLabel({
         className
       )}
       {...props}
-    >
-      {children}
-      {required ? <span className="text-destructive">*</span> : null}
-    </Label>
+    />
   )
 }
 

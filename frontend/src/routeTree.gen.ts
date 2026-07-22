@@ -16,8 +16,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as QueriesIndexRouteImport } from './routes/queries/index'
 import { Route as PlansIndexRouteImport } from './routes/plans/index'
 import { Route as CategoriesIndexRouteImport } from './routes/categories/index'
+import { Route as QueriesNewRouteImport } from './routes/queries/new'
 import { Route as QueriesQueryIdRouteImport } from './routes/queries/$queryId'
+import { Route as PlansNewRouteImport } from './routes/plans/new'
 import { Route as PlansPlanIdRouteImport } from './routes/plans/$planId'
+import { Route as CategoriesNewRouteImport } from './routes/categories/new'
 import { Route as CategoriesCategoryIdRouteImport } from './routes/categories/$categoryId'
 
 const QueriesRouteRoute = QueriesRouteRouteImport.update({
@@ -55,15 +58,30 @@ const CategoriesIndexRoute = CategoriesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CategoriesRouteRoute,
 } as any)
+const QueriesNewRoute = QueriesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => QueriesRouteRoute,
+} as any)
 const QueriesQueryIdRoute = QueriesQueryIdRouteImport.update({
   id: '/$queryId',
   path: '/$queryId',
   getParentRoute: () => QueriesRouteRoute,
 } as any)
+const PlansNewRoute = PlansNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => PlansRouteRoute,
+} as any)
 const PlansPlanIdRoute = PlansPlanIdRouteImport.update({
   id: '/$planId',
   path: '/$planId',
   getParentRoute: () => PlansRouteRoute,
+} as any)
+const CategoriesNewRoute = CategoriesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => CategoriesRouteRoute,
 } as any)
 const CategoriesCategoryIdRoute = CategoriesCategoryIdRouteImport.update({
   id: '/$categoryId',
@@ -77,8 +95,11 @@ export interface FileRoutesByFullPath {
   '/plans': typeof PlansRouteRouteWithChildren
   '/queries': typeof QueriesRouteRouteWithChildren
   '/categories/$categoryId': typeof CategoriesCategoryIdRoute
+  '/categories/new': typeof CategoriesNewRoute
   '/plans/$planId': typeof PlansPlanIdRoute
+  '/plans/new': typeof PlansNewRoute
   '/queries/$queryId': typeof QueriesQueryIdRoute
+  '/queries/new': typeof QueriesNewRoute
   '/categories/': typeof CategoriesIndexRoute
   '/plans/': typeof PlansIndexRoute
   '/queries/': typeof QueriesIndexRoute
@@ -86,8 +107,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categories/$categoryId': typeof CategoriesCategoryIdRoute
+  '/categories/new': typeof CategoriesNewRoute
   '/plans/$planId': typeof PlansPlanIdRoute
+  '/plans/new': typeof PlansNewRoute
   '/queries/$queryId': typeof QueriesQueryIdRoute
+  '/queries/new': typeof QueriesNewRoute
   '/categories': typeof CategoriesIndexRoute
   '/plans': typeof PlansIndexRoute
   '/queries': typeof QueriesIndexRoute
@@ -99,8 +123,11 @@ export interface FileRoutesById {
   '/plans': typeof PlansRouteRouteWithChildren
   '/queries': typeof QueriesRouteRouteWithChildren
   '/categories/$categoryId': typeof CategoriesCategoryIdRoute
+  '/categories/new': typeof CategoriesNewRoute
   '/plans/$planId': typeof PlansPlanIdRoute
+  '/plans/new': typeof PlansNewRoute
   '/queries/$queryId': typeof QueriesQueryIdRoute
+  '/queries/new': typeof QueriesNewRoute
   '/categories/': typeof CategoriesIndexRoute
   '/plans/': typeof PlansIndexRoute
   '/queries/': typeof QueriesIndexRoute
@@ -113,8 +140,11 @@ export interface FileRouteTypes {
     | '/plans'
     | '/queries'
     | '/categories/$categoryId'
+    | '/categories/new'
     | '/plans/$planId'
+    | '/plans/new'
     | '/queries/$queryId'
+    | '/queries/new'
     | '/categories/'
     | '/plans/'
     | '/queries/'
@@ -122,8 +152,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/categories/$categoryId'
+    | '/categories/new'
     | '/plans/$planId'
+    | '/plans/new'
     | '/queries/$queryId'
+    | '/queries/new'
     | '/categories'
     | '/plans'
     | '/queries'
@@ -134,8 +167,11 @@ export interface FileRouteTypes {
     | '/plans'
     | '/queries'
     | '/categories/$categoryId'
+    | '/categories/new'
     | '/plans/$planId'
+    | '/plans/new'
     | '/queries/$queryId'
+    | '/queries/new'
     | '/categories/'
     | '/plans/'
     | '/queries/'
@@ -199,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriesIndexRouteImport
       parentRoute: typeof CategoriesRouteRoute
     }
+    '/queries/new': {
+      id: '/queries/new'
+      path: '/new'
+      fullPath: '/queries/new'
+      preLoaderRoute: typeof QueriesNewRouteImport
+      parentRoute: typeof QueriesRouteRoute
+    }
     '/queries/$queryId': {
       id: '/queries/$queryId'
       path: '/$queryId'
@@ -206,12 +249,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QueriesQueryIdRouteImport
       parentRoute: typeof QueriesRouteRoute
     }
+    '/plans/new': {
+      id: '/plans/new'
+      path: '/new'
+      fullPath: '/plans/new'
+      preLoaderRoute: typeof PlansNewRouteImport
+      parentRoute: typeof PlansRouteRoute
+    }
     '/plans/$planId': {
       id: '/plans/$planId'
       path: '/$planId'
       fullPath: '/plans/$planId'
       preLoaderRoute: typeof PlansPlanIdRouteImport
       parentRoute: typeof PlansRouteRoute
+    }
+    '/categories/new': {
+      id: '/categories/new'
+      path: '/new'
+      fullPath: '/categories/new'
+      preLoaderRoute: typeof CategoriesNewRouteImport
+      parentRoute: typeof CategoriesRouteRoute
     }
     '/categories/$categoryId': {
       id: '/categories/$categoryId'
@@ -225,11 +282,13 @@ declare module '@tanstack/react-router' {
 
 interface CategoriesRouteRouteChildren {
   CategoriesCategoryIdRoute: typeof CategoriesCategoryIdRoute
+  CategoriesNewRoute: typeof CategoriesNewRoute
   CategoriesIndexRoute: typeof CategoriesIndexRoute
 }
 
 const CategoriesRouteRouteChildren: CategoriesRouteRouteChildren = {
   CategoriesCategoryIdRoute: CategoriesCategoryIdRoute,
+  CategoriesNewRoute: CategoriesNewRoute,
   CategoriesIndexRoute: CategoriesIndexRoute,
 }
 
@@ -239,11 +298,13 @@ const CategoriesRouteRouteWithChildren = CategoriesRouteRoute._addFileChildren(
 
 interface PlansRouteRouteChildren {
   PlansPlanIdRoute: typeof PlansPlanIdRoute
+  PlansNewRoute: typeof PlansNewRoute
   PlansIndexRoute: typeof PlansIndexRoute
 }
 
 const PlansRouteRouteChildren: PlansRouteRouteChildren = {
   PlansPlanIdRoute: PlansPlanIdRoute,
+  PlansNewRoute: PlansNewRoute,
   PlansIndexRoute: PlansIndexRoute,
 }
 
@@ -253,11 +314,13 @@ const PlansRouteRouteWithChildren = PlansRouteRoute._addFileChildren(
 
 interface QueriesRouteRouteChildren {
   QueriesQueryIdRoute: typeof QueriesQueryIdRoute
+  QueriesNewRoute: typeof QueriesNewRoute
   QueriesIndexRoute: typeof QueriesIndexRoute
 }
 
 const QueriesRouteRouteChildren: QueriesRouteRouteChildren = {
   QueriesQueryIdRoute: QueriesQueryIdRoute,
+  QueriesNewRoute: QueriesNewRoute,
   QueriesIndexRoute: QueriesIndexRoute,
 }
 
