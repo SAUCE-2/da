@@ -29,6 +29,7 @@ function buildOptimisticPlan(request: PlanRequest): Plan {
 			enabled: item.enabled,
 			queryVersionId: null,
 			queryVersionNumber: null,
+			disabledLines: item.disabledLines ?? [],
 			variableBindings: item.variableBindings.map((binding) => ({
 				name: binding.name,
 				value: binding.value ?? null,
@@ -51,6 +52,8 @@ function applyRequestToPlan(plan: Plan, request: PlanRequest): Plan {
 			enabled: item.enabled,
 			queryVersionId: plan.items[index]?.queryVersionId ?? null,
 			queryVersionNumber: plan.items[index]?.queryVersionNumber ?? null,
+			disabledLines:
+				item.disabledLines ?? plan.items[index]?.disabledLines ?? [],
 			variableBindings: item.variableBindings.map((binding) => ({
 				name: binding.name,
 				value: binding.value ?? null,

@@ -156,16 +156,10 @@ export interface components {
 			name: string;
 			description?: string;
 			active?: boolean;
-			sections: components["schemas"]["QuerySectionRequest"][];
+			query: string;
+			defaultDisabledLines?: number[];
 			variables?: components["schemas"]["QueryVariableRequest"][];
 			categoryIds?: number[];
-		};
-		QuerySectionRequest: {
-			name: string;
-			sqlFragment: string;
-			/** Format: int32 */
-			sortOrder?: number;
-			defaultEnabled?: boolean;
 		};
 		QueryVariableRequest: {
 			name: string;
@@ -192,18 +186,21 @@ export interface components {
 			versionId?: number;
 			/** Format: int32 */
 			versionNumber?: number;
-			sections?: components["schemas"]["QuerySectionResponse"][];
+			query?: string;
+			queryHash?: string;
+			defaultDisabledLines?: number[];
+			sections?: components["schemas"]["QuerySectionOutlineResponse"][];
 			variables?: components["schemas"]["QueryVariableResponse"][];
 			categories?: components["schemas"]["CategorySummaryResponse"][];
 		};
-		QuerySectionResponse: {
-			/** Format: int64 */
-			id?: number;
+		QuerySectionOutlineResponse: {
 			name?: string;
-			sqlFragment?: string;
 			/** Format: int32 */
-			sortOrder?: number;
-			defaultEnabled?: boolean;
+			level?: number;
+			/** Format: int32 */
+			startLine?: number;
+			/** Format: int32 */
+			endLine?: number;
 		};
 		QueryVariableResponse: {
 			/** Format: int64 */
@@ -224,6 +221,7 @@ export interface components {
 			/** Format: int32 */
 			sortOrder?: number;
 			enabled?: boolean;
+			disabledLines?: number[];
 			variableBindings?: components["schemas"]["PlanItemVariableBindingRequest"][];
 		};
 		PlanItemVariableBindingRequest: {
@@ -249,6 +247,7 @@ export interface components {
 			/** Format: int32 */
 			sortOrder?: number;
 			enabled?: boolean;
+			disabledLines?: number[];
 			variableBindings?: components["schemas"]["PlanItemVariableBindingResponse"][];
 		};
 		PlanItemVariableBindingResponse: {
@@ -281,6 +280,7 @@ export interface components {
 			variables?: {
 				[key: string]: string;
 			};
+			disabledLines?: number[];
 		};
 		QueryPreviewResponse: {
 			/** Format: int64 */
@@ -305,8 +305,34 @@ export interface components {
 			versionNumber?: number;
 			/** Format: date-time */
 			createdAt?: string;
-			sections?: components["schemas"]["QuerySectionResponse"][];
+			name?: string;
+			description?: string;
+			query?: string;
+			queryHash?: string;
+			defaultDisabledLines?: number[];
+			sections?: components["schemas"]["QuerySectionOutlineResponse"][];
 			variables?: components["schemas"]["QueryVariableResponse"][];
+		};
+		QueryVersionDiffResponse: {
+			/** Format: int64 */
+			fromVersionId?: number;
+			/** Format: int32 */
+			fromVersionNumber?: number;
+			/** Format: int64 */
+			toVersionId?: number;
+			/** Format: int32 */
+			toVersionNumber?: number;
+			fromQuery?: string;
+			toQuery?: string;
+			lines?: components["schemas"]["QueryVersionDiffLine"][];
+		};
+		QueryVersionDiffLine: {
+			op?: string;
+			text?: string;
+			/** Format: int32 */
+			fromLine?: number;
+			/** Format: int32 */
+			toLine?: number;
 		};
 	};
 	responses: never;

@@ -20,7 +20,12 @@ public abstract class QueryMapper {
 	private CategoryMapper categoryMapper;
 
 	@Mapping(target = "id", source = "query.id")
+	@Mapping(target = "name", source = "currentVersion.name")
+	@Mapping(target = "description", source = "currentVersion.description")
 	@Mapping(target = "versionId", source = "currentVersion.id")
+	@Mapping(target = "query", source = "currentVersion.queryText")
+	@Mapping(target = "queryHash", source = "currentVersion.queryHash")
+	@Mapping(target = "defaultDisabledLines", source = "currentVersion", qualifiedByName = "mapDefaultDisabledLines")
 	@Mapping(target = "sections", source = "currentVersion", qualifiedByName = "mapSections")
 	@Mapping(target = "variables", source = "currentVersion", qualifiedByName = "mapVariables")
 	@Mapping(target = "categories", source = "query.categories", qualifiedByName = "mapSortedCategories")

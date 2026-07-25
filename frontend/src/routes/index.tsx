@@ -21,7 +21,7 @@ const QUICK_LINKS = [
 		to: "/queries",
 		label: "Queries",
 		description:
-			"Define reusable SQL audit queries with variables and ordered sections.",
+			"Define reusable SQL audit queries with variables and toggleable sections.",
 		icon: FileMagnifyingGlassIcon,
 	},
 	{

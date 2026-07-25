@@ -11,7 +11,10 @@ public record QueryResponse(
 		boolean active,
 		Long versionId,
 		int versionNumber,
-		List<QuerySectionResponse> sections,
+		String query,
+		String queryHash,
+		List<Integer> defaultDisabledLines,
+		List<QuerySectionOutlineResponse> sections,
 		List<QueryVariableResponse> variables,
 		List<CategorySummaryResponse> categories) {
 }

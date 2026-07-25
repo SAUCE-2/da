@@ -3,10 +3,8 @@ package com.test.backend.repository.query;
 import com.test.backend.entity.category.Category;
 import com.test.backend.entity.query.Query;
 import com.test.backend.entity.query.QueryVersion;
-import com.test.backend.entity.query.QuerySection;
+import com.test.backend.query.QueryDocumentParser;
 import com.test.backend.repository.category.CategoryRepository;
-import com.test.backend.repository.query.QueryRepository;
-import com.test.backend.repository.query.QueryVersionRepository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -37,12 +35,16 @@ class MetadataPersistenceTests {
 	private EntityManager entityManager;
 
 	@Test
-	void persistsQueryVersionsSectionsAndCategories() {
+	void persistsQueryVersionsTextAndCategories() {
 		Category category = categoryRepository.save(new Category("Group Alpha", "Grouping metadata"));
 		Query query = new Query("Definition Alpha", "Persistence example", true);
 		QueryVersion version = query.addVersion(1);
-		version.addSection(new QuerySection("Block B", "FRAGMENT_B", 20, true));
-		version.addSection(new QuerySection("Block A", "FRAGMENT_A", 10, false));
+		version.setName("Definition Alpha");
+		version.setDescription("Persistence example");
+		String queryText = "--# Block A\nFRAGMENT_A\n--# Block B\nFRAGMENT_B";
+		version.setQueryText(queryText);
+		version.setQueryHash(QueryDocumentParser.queryHash(queryText));
+		version.setDefaultDisabledLines("1,2");
 		query.replaceCategories(new LinkedHashSet<>(List.of(category)));
 
 		Long queryId = queryRepository.saveAndFlush(query).getId();
@@ -54,11 +56,12 @@ class MetadataPersistenceTests {
 		QueryVersion reloadedVersion = queryVersionRepository.findById(version.getId()).orElseThrow();
 
 		assertEquals("Definition Alpha", reloaded.getName());
+		assertEquals("Definition Alpha", reloadedVersion.getName());
+		assertEquals("Persistence example", reloadedVersion.getDescription());
 		assertTrue(reloaded.isActive());
 		assertEquals(1, reloadedVersion.getVersionNumber());
-		assertEquals(2, reloadedVersion.getSections().size());
-		assertEquals("Block A", reloadedVersion.getSections().getFirst().getName());
-		assertEquals(false, reloadedVersion.getSections().getFirst().isDefaultEnabled());
+		assertEquals(queryText, reloadedVersion.getQueryText());
+		assertEquals("1,2", reloadedVersion.getDefaultDisabledLines());
 		assertEquals(1, reloaded.getCategories().size());
 		assertEquals("Group Alpha", reloaded.getCategories().iterator().next().getName());
 	}

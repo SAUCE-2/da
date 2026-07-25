@@ -1,4 +1,10 @@
-import type { Query, QueryPreview, QueryPreviewRequest } from "@/lib/api-types";
+import type {
+	Query,
+	QueryPreview,
+	QueryPreviewRequest,
+	QueryVersion,
+	QueryVersionSummary,
+} from "@/lib/api-types";
 import { httpClient, type paths, unwrapData } from "@/lib/http-client";
 
 type QueryCreateBody = NonNullable<
@@ -48,4 +54,25 @@ export async function previewQuery(
 		})
 		.then(({ data }) => unwrapData(data));
 	return data as QueryPreview;
+}
+
+export async function listQueryVersions(
+	id: number,
+): Promise<QueryVersionSummary[]> {
+	const data = await httpClient
+		.GET("/api/queries/{id}/versions", { params: { path: { id } } })
+		.then(({ data }) => unwrapData(data));
+	return data as QueryVersionSummary[];
+}
+
+export async function getQueryVersion(
+	id: number,
+	versionId: number,
+): Promise<QueryVersion> {
+	const data = await httpClient
+		.GET("/api/queries/{id}/versions/{versionId}", {
+			params: { path: { id, versionId } },
+		})
+		.then(({ data }) => unwrapData(data));
+	return data as QueryVersion;
 }

@@ -1,14 +1,14 @@
 import { useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditorActions } from "@/components/workspace/EditorActions";
 import { EntityEditorShell } from "@/components/workspace/EntityEditorShell";
-import type { Category, QueryPreview } from "@/lib/api-types";
+import type { Category } from "@/lib/api-types";
 
 import { QueryDetailsTab } from "./QueryDetailsTab";
 import { QuerySqlTab } from "./QuerySqlTab";
 import { QueryVariablesTab } from "./QueryVariablesTab";
+import { QueryVersionNav } from "./QueryVersionNav";
 import type { ClientVariable } from "./query-form";
 import { type QueryEditorForm, useQueryEditor } from "./use-query-editor";
 
@@ -20,17 +20,10 @@ type QueryEditorTab = "details" | "query" | "variables";
 
 type QueryEditorPanelsProps = {
 	form: QueryEditorForm;
-	selectedQueryId: number | null;
 	categories: Category[];
 	formVariables: ClientVariable[];
-	preview: QueryPreview | null;
 	previewVariableValues: Record<string, string>;
-	isDirty: boolean;
-	isPreviewLoading: boolean;
 	toggleCategory: (categoryId: number) => void;
-	onAddSection: () => void;
-	onRemoveSection: (clientId: string) => void;
-	onReorderSection: (fromIndex: number, toIndex: number) => void;
 	onAddVariable: () => void;
 	onRemoveVariable: (clientId: string) => void;
 	updatePreviewVariable: (name: string, value: string) => void;
@@ -38,17 +31,10 @@ type QueryEditorPanelsProps = {
 
 function QueryEditorPanels({
 	form,
-	selectedQueryId,
 	categories,
 	formVariables,
-	preview,
 	previewVariableValues,
-	isDirty,
-	isPreviewLoading,
 	toggleCategory,
-	onAddSection,
-	onRemoveSection,
-	onReorderSection,
 	onAddVariable,
 	onRemoveVariable,
 	updatePreviewVariable,
@@ -78,15 +64,8 @@ function QueryEditorPanels({
 			<TabsContent value="query" className="mt-0 min-h-0 flex-1">
 				<QuerySqlTab
 					form={form}
-					selectedQueryId={selectedQueryId}
 					formVariables={formVariables}
-					preview={preview}
 					previewVariableValues={previewVariableValues}
-					isDirty={isDirty}
-					isPreviewLoading={isPreviewLoading}
-					onAddSection={onAddSection}
-					onRemoveSection={onRemoveSection}
-					onReorderSection={onReorderSection}
 					updatePreviewVariable={updatePreviewVariable}
 				/>
 			</TabsContent>
@@ -112,17 +91,23 @@ export function QueryEditor({ entityId }: QueryEditorProps) {
 		form,
 		categories,
 		formVariables,
-		preview,
 		previewVariableValues,
-		isDirty,
 		isSaving,
-		isPreviewLoading,
+		isLoadingVersion,
+		isRestoring,
+		versions,
+		viewingVersionId,
+		viewingVersionNumber,
+		isViewingHistorical,
+		canGoPrevious,
+		canGoNext,
+		loadVersion,
+		goToPreviousVersion,
+		goToNextVersion,
+		handleRestore,
 		handleDelete,
 		handleBack,
 		toggleCategory,
-		addSection,
-		removeSection,
-		reorderSection,
 		addVariable,
 		removeVariable,
 		updatePreviewVariable,
@@ -139,7 +124,25 @@ export function QueryEditor({ entityId }: QueryEditorProps) {
 			actions={
 				<div className="flex flex-wrap items-center gap-2">
 					{selectedQuery ? (
-						<Badge variant="secondary">v{selectedQuery.versionNumber}</Badge>
+						<QueryVersionNav
+							versions={versions}
+							viewingVersionId={viewingVersionId}
+							viewingVersionNumber={viewingVersionNumber}
+							currentVersionId={selectedQuery.versionId}
+							isViewingHistorical={isViewingHistorical}
+							canGoPrevious={canGoPrevious}
+							canGoNext={canGoNext}
+							isLoadingVersion={isLoadingVersion}
+							isRestoring={isRestoring}
+							onPrevious={goToPreviousVersion}
+							onNext={goToNextVersion}
+							onSelectVersion={(versionId) => {
+								void loadVersion(versionId);
+							}}
+							onRestore={() => {
+								void handleRestore();
+							}}
+						/>
 					) : null}
 					<EditorActions
 						entityId={selectedQueryId}
@@ -163,19 +166,12 @@ export function QueryEditor({ entityId }: QueryEditorProps) {
 			}}
 		>
 			<QueryEditorPanels
-				key={String(selectedQueryId ?? "new")}
+				key={`${String(selectedQueryId ?? "new")}-${String(viewingVersionId ?? "current")}`}
 				form={form}
-				selectedQueryId={selectedQueryId}
 				categories={categories}
 				formVariables={formVariables}
-				preview={preview}
 				previewVariableValues={previewVariableValues}
-				isDirty={isDirty}
-				isPreviewLoading={isPreviewLoading}
 				toggleCategory={toggleCategory}
-				onAddSection={addSection}
-				onRemoveSection={removeSection}
-				onReorderSection={reorderSection}
 				onAddVariable={addVariable}
 				onRemoveVariable={removeVariable}
 				updatePreviewVariable={updatePreviewVariable}

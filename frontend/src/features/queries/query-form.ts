@@ -1,13 +1,5 @@
 import type { Query, QueryVariableType } from "@/lib/api-types";
 
-export type ClientSection = {
-	clientId: string;
-	name: string;
-	sqlFragment: string;
-	sortOrder: number;
-	defaultEnabled: boolean;
-};
-
 export type ClientVariable = {
 	clientId: string;
 	name: string;
@@ -22,19 +14,15 @@ export type QueryFormValues = {
 	description: string;
 	active: boolean;
 	categoryIds: number[];
-	sections: ClientSection[];
+	query: string;
+	defaultDisabledLines: number[];
 	variables: ClientVariable[];
 };
 
-export function createEmptySection(sortOrder: number): ClientSection {
-	return {
-		clientId: crypto.randomUUID(),
-		name: "",
-		sqlFragment: "",
-		sortOrder,
-		defaultEnabled: true,
-	};
-}
+const DEFAULT_QUERY = `--# Base
+select 1
+from dual
+`;
 
 export function createEmptyVariable(sortOrder: number): ClientVariable {
 	return {
@@ -53,7 +41,8 @@ export function createEmptyQueryForm(): QueryFormValues {
 		description: "",
 		active: true,
 		categoryIds: [],
-		sections: [createEmptySection(0)],
+		query: DEFAULT_QUERY,
+		defaultDisabledLines: [],
 		variables: [],
 	};
 }
@@ -64,13 +53,8 @@ export function queryToFormValues(query: Query): QueryFormValues {
 		description: query.description ?? "",
 		active: query.active,
 		categoryIds: query.categories.map((category) => category.id),
-		sections: query.sections.map((section) => ({
-			clientId: crypto.randomUUID(),
-			name: section.name,
-			sqlFragment: section.sqlFragment,
-			sortOrder: section.sortOrder,
-			defaultEnabled: section.defaultEnabled,
-		})),
+		query: query.query,
+		defaultDisabledLines: [...query.defaultDisabledLines],
 		variables: query.variables.map((variable) => ({
 			clientId: crypto.randomUUID(),
 			name: variable.name,
@@ -83,13 +67,6 @@ export function queryToFormValues(query: Query): QueryFormValues {
 }
 
 export function formValuesToQueryRequest(value: QueryFormValues) {
-	const sections = value.sections.map((section, index) => ({
-		name: section.name,
-		sqlFragment: section.sqlFragment,
-		sortOrder: Number.isFinite(section.sortOrder) ? section.sortOrder : index,
-		defaultEnabled: section.defaultEnabled,
-	}));
-
 	const variables = value.variables.map((variable, index) => ({
 		name: variable.name,
 		type: variable.type,
@@ -102,17 +79,11 @@ export function formValuesToQueryRequest(value: QueryFormValues) {
 		name: value.name,
 		description: value.description,
 		active: value.active,
-		sections,
+		query: value.query,
+		defaultDisabledLines: value.defaultDisabledLines,
 		variables,
 		categoryIds: value.categoryIds,
 	};
-}
-
-export function reindexSections(sections: ClientSection[]) {
-	return sections.map((section, index) => ({
-		...section,
-		sortOrder: index,
-	}));
 }
 
 export function reindexVariables(variables: ClientVariable[]) {
@@ -120,31 +91,6 @@ export function reindexVariables(variables: ClientVariable[]) {
 		...variable,
 		sortOrder: index,
 	}));
-}
-
-export function addSectionToForm(sections: ClientSection[]) {
-	const lastSortOrder = sections.at(-1)?.sortOrder ?? 0;
-	return [...sections, createEmptySection(lastSortOrder + 1)];
-}
-
-export function removeSectionFromForm(
-	sections: ClientSection[],
-	clientId: string,
-) {
-	return reindexSections(
-		sections.filter((section) => section.clientId !== clientId),
-	);
-}
-
-export function reorderSectionsInForm(
-	sections: ClientSection[],
-	fromIndex: number,
-	toIndex: number,
-) {
-	const next = [...sections];
-	const [removed] = next.splice(fromIndex, 1);
-	next.splice(toIndex, 0, removed);
-	return reindexSections(next);
 }
 
 export function addVariableToForm(variables: ClientVariable[]) {
@@ -159,6 +105,38 @@ export function removeVariableFromForm(
 	return reindexVariables(
 		variables.filter((variable) => variable.clientId !== clientId),
 	);
+}
+
+export function versionDocumentToFormFields(version: {
+	name: string;
+	description: string | null;
+	query: string;
+	defaultDisabledLines: number[];
+	variables: Array<{
+		name: string;
+		type: QueryVariableType;
+		defaultValue: string | null;
+		required: boolean;
+		sortOrder: number;
+	}>;
+}): Pick<
+	QueryFormValues,
+	"name" | "description" | "query" | "defaultDisabledLines" | "variables"
+> {
+	return {
+		name: version.name,
+		description: version.description ?? "",
+		query: version.query,
+		defaultDisabledLines: [...version.defaultDisabledLines],
+		variables: version.variables.map((variable) => ({
+			clientId: crypto.randomUUID(),
+			name: variable.name,
+			type: variable.type,
+			defaultValue: variable.defaultValue ?? "",
+			required: variable.required,
+			sortOrder: variable.sortOrder,
+		})),
+	};
 }
 
 export function toggleCategoryId(categoryIds: number[], categoryId: number) {

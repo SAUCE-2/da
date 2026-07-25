@@ -1,5 +1,6 @@
 package com.test.backend.mapper;
 
+import com.test.backend.query.QueryDocumentParser;
 import com.test.backend.dto.plan.PlanItemResponse;
 import com.test.backend.dto.plan.PlanItemVariableBindingResponse;
 import com.test.backend.dto.plan.PlanResponse;
@@ -10,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface PlanMapper {
@@ -21,7 +23,13 @@ public interface PlanMapper {
 	@Mapping(target = "queryName", source = "item.query.name")
 	@Mapping(target = "queryVersionId", source = "versionId")
 	@Mapping(target = "queryVersionNumber", source = "versionNumber")
+	@Mapping(target = "disabledLines", source = "item", qualifiedByName = "mapDisabledLines")
 	PlanItemResponse toItemResponse(PlanItem item, Long versionId, Integer versionNumber);
+
+	@Named("mapDisabledLines")
+	default List<Integer> mapDisabledLines(PlanItem item) {
+		return QueryDocumentParser.parseDisabledLines(item.getDisabledLines());
+	}
 
 	default PlanResponse toResponse(Plan plan, List<PlanItemResponse> items) {
 		return new PlanResponse(

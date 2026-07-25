@@ -7,6 +7,11 @@ public record QueryVersionResponse(
 		Long versionId,
 		int versionNumber,
 		Instant createdAt,
-		List<QuerySectionResponse> sections,
+		String name,
+		String description,
+		String query,
+		String queryHash,
+		List<Integer> defaultDisabledLines,
+		List<QuerySectionOutlineResponse> sections,
 		List<QueryVariableResponse> variables) {
 }

@@ -1,6 +1,6 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldLabel } from "@/components/workspace/FieldLabel";
 
@@ -48,10 +48,12 @@ export function EntityMetadataFields({
 					handleBlur?: () => void;
 				}) => (
 					<Field orientation="horizontal">
-						<Switch
+						<Checkbox
 							id={activeFieldId}
 							checked={field.state.value as boolean}
-							onCheckedChange={(checked) => field.handleChange(checked)}
+							onCheckedChange={(checked) =>
+								field.handleChange(checked === true)
+							}
 						/>
 						<FieldLabel htmlFor={activeFieldId}>{activeLabel}</FieldLabel>
 					</Field>

@@ -1,15 +1,17 @@
 package com.test.backend.service.query;
 
+import com.test.backend.query.QueryDocumentParser;
+import com.test.backend.query.QueryLineRemapper;
 import com.test.backend.query.QuerySqlRenderer;
 import com.test.backend.dto.query.QueryPreviewRequest;
 import com.test.backend.dto.query.QueryPreviewResponse;
 import com.test.backend.dto.query.QueryRequest;
 import com.test.backend.dto.query.QueryResponse;
+import com.test.backend.dto.query.QueryVersionDiffResponse;
 import com.test.backend.dto.query.QueryVersionResponse;
 import com.test.backend.dto.query.QueryVersionSummaryResponse;
 import com.test.backend.entity.category.Category;
 import com.test.backend.entity.query.Query;
-import com.test.backend.entity.query.QuerySection;
 import com.test.backend.entity.query.QueryVariable;
 import com.test.backend.entity.query.QueryVersion;
 import com.test.backend.mapper.QueryMapper;
@@ -59,19 +61,22 @@ public class QueryService {
 	public QueryResponse createQuery(QueryRequest request) {
 		Query query = new Query(request.name(), request.description(), activeOrDefault(request.active()));
 		QueryVersion version = query.addVersion(1);
-		versionUpdater.populateVersion(version, request, List.of(), Map.of(), List.of(), Map.of());
+		versionUpdater.populateVersion(version, request, List.of(), Map.of());
 		query.replaceCategories(resolveCategories(request.categoryIds()));
 		Query saved = queryRepository.saveAndFlush(query);
-		saved.setCurrentVersionId(version.getId());
+		QueryVersion persistedVersion = saved.getVersions().stream()
+				.filter(candidate -> candidate.getVersionNumber() == 1)
+				.findFirst()
+				.orElse(version);
+		saved.setCurrentVersionId(persistedVersion.getId());
 		queryRepository.save(saved);
-		return queryMapper.toResponse(saved, version);
+		return queryMapper.toResponse(saved, persistedVersion);
 	}
 
 	@Transactional
 	public QueryResponse updateQuery(Long id, QueryRequest request) {
 		Query query = getQueryEntity(id);
 		QueryVersion previousVersion = versionResolver.requireCurrentVersion(query);
-		List<QuerySection> previousSections = versionUpdater.sortedSections(previousVersion);
 		List<QueryVariable> previousVariables = versionUpdater.sortedVariables(previousVersion);
 
 		query.setName(request.name());
@@ -81,19 +86,22 @@ public class QueryService {
 		}
 		query.replaceCategories(resolveCategories(request.categoryIds()));
 
-		QueryVersion nextVersion = query.addVersion(previousVersion.getVersionNumber() + 1);
+		int nextNumber = previousVersion.getVersionNumber() + 1;
+		QueryVersion nextVersion = query.addVersion(nextNumber);
 		versionUpdater.populateVersion(
 				nextVersion,
 				request,
-				previousSections,
-				versionUpdater.indexSectionsByName(previousSections),
 				previousVariables,
 				versionUpdater.indexVariablesByName(previousVariables));
 
 		Query saved = queryRepository.saveAndFlush(query);
-		saved.setCurrentVersionId(nextVersion.getId());
+		QueryVersion persistedVersion = saved.getVersions().stream()
+				.filter(candidate -> candidate.getVersionNumber() == nextNumber)
+				.findFirst()
+				.orElse(nextVersion);
+		saved.setCurrentVersionId(persistedVersion.getId());
 		queryRepository.save(saved);
-		return queryMapper.toResponse(saved, nextVersion);
+		return queryMapper.toResponse(saved, persistedVersion);
 	}
 
 	@Transactional
@@ -122,12 +130,39 @@ public class QueryService {
 	}
 
 	@Transactional(readOnly = true)
+	public QueryVersionDiffResponse diffVersions(Long queryId, Long fromVersionId, Long toVersionId) {
+		QueryVersion from = versionResolver.requireVersion(queryId, fromVersionId);
+		QueryVersion to = versionResolver.requireVersion(queryId, toVersionId);
+		List<QueryVersionDiffResponse.DiffLine> lines = QueryLineRemapper.diffQueries(
+						from.getQueryText(),
+						to.getQueryText())
+				.stream()
+				.map(line -> new QueryVersionDiffResponse.DiffLine(
+						line.op().name(),
+						line.text(),
+						line.fromLine(),
+						line.toLine()))
+				.toList();
+		return new QueryVersionDiffResponse(
+				from.getId(),
+				from.getVersionNumber(),
+				to.getId(),
+				to.getVersionNumber(),
+				from.getQueryText(),
+				to.getQueryText(),
+				lines);
+	}
+
+	@Transactional(readOnly = true)
 	public QueryPreviewResponse previewQuery(Long id, QueryPreviewRequest request) {
 		Query query = getQueryEntity(id);
 		Long versionId = request == null ? null : request.versionId();
 		QueryVersion version = versionResolver.requireVersion(query, versionId);
 		Map<String, String> variables = request == null || request.variables() == null ? Map.of() : request.variables();
-		QuerySqlRenderer.PreviewSql preview = QuerySqlRenderer.renderPreviewSql(version, true, variables);
+		List<Integer> disabledLines = request == null || request.disabledLines() == null
+				? QueryDocumentParser.parseDisabledLines(version.getDefaultDisabledLines())
+				: request.disabledLines();
+		QuerySqlRenderer.PreviewSql preview = QuerySqlRenderer.renderPreviewSql(version, disabledLines, variables);
 		return new QueryPreviewResponse(
 				query.getId(),
 				version.getId(),

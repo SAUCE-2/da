@@ -1,19 +1,5 @@
 import { z } from "zod";
 
-export const querySectionRequestSchema = z.object({
-	name: z
-		.string()
-		.trim()
-		.min(1, "Section name is required.")
-		.max(200, "Section name must be 200 characters or fewer."),
-	sqlFragment: z
-		.string()
-		.trim()
-		.min(1, "Every query section needs a SQL fragment."),
-	sortOrder: z.number().finite(),
-	defaultEnabled: z.boolean(),
-});
-
 export const queryVariableRequestSchema = z.object({
 	name: z
 		.string()
@@ -42,13 +28,11 @@ export const queryRequestSchema = z.object({
 		.string()
 		.max(1000, "Description must be 1000 characters or fewer."),
 	active: z.boolean(),
-	sections: z
-		.array(querySectionRequestSchema)
-		.min(1, "At least one query section is required."),
+	query: z.string().trim().min(1, "Query text is required."),
+	defaultDisabledLines: z.array(z.number().int().positive()),
 	variables: z.array(queryVariableRequestSchema),
 	categoryIds: z.array(z.number()),
 });
 
-export type QuerySectionRequest = z.infer<typeof querySectionRequestSchema>;
 export type QueryVariableRequest = z.infer<typeof queryVariableRequestSchema>;
 export type QueryRequest = z.infer<typeof queryRequestSchema>;

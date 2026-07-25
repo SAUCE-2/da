@@ -10,5 +10,6 @@ public record PlanItemRequest(
 		Long queryVersionId,
 		int sortOrder,
 		Boolean enabled,
+		List<Integer> disabledLines,
 		List<@Valid PlanItemVariableBindingRequest> variableBindings) {
 }

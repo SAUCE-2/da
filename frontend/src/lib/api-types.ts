@@ -6,10 +6,10 @@ export type QueryVariableType = NonNullable<
 	Schemas["QueryVariableResponse"]["type"]
 >;
 
-export type QuerySection = Required<
+export type QuerySectionOutline = Required<
 	Pick<
-		Schemas["QuerySectionResponse"],
-		"id" | "name" | "sqlFragment" | "sortOrder" | "defaultEnabled"
+		Schemas["QuerySectionOutlineResponse"],
+		"name" | "level" | "startLine" | "endLine"
 	>
 >;
 
@@ -35,13 +35,39 @@ export type Category = CategorySummary & {
 export type Query = Required<
 	Pick<
 		Schemas["QueryResponse"],
-		"id" | "name" | "active" | "versionId" | "versionNumber"
+		| "id"
+		| "name"
+		| "active"
+		| "versionId"
+		| "versionNumber"
+		| "query"
+		| "queryHash"
 	>
 > & {
 	description: string | null;
-	sections: QuerySection[];
+	defaultDisabledLines: number[];
+	sections: QuerySectionOutline[];
 	variables: QueryVariable[];
 	categories: CategorySummary[];
+};
+
+export type QueryVersionSummary = Required<
+	Pick<
+		Schemas["QueryVersionSummaryResponse"],
+		"versionId" | "versionNumber" | "createdAt"
+	>
+>;
+
+export type QueryVersion = Required<
+	Pick<
+		Schemas["QueryVersionResponse"],
+		"versionId" | "versionNumber" | "createdAt" | "name" | "query" | "queryHash"
+	>
+> & {
+	description: string | null;
+	defaultDisabledLines: number[];
+	sections: QuerySectionOutline[];
+	variables: QueryVariable[];
 };
 
 export type QueryPreviewRequest = Schemas["QueryPreviewRequest"];
@@ -66,6 +92,7 @@ export type PlanItem = Required<
 > & {
 	queryVersionId: number | null;
 	queryVersionNumber: number | null;
+	disabledLines: number[];
 	variableBindings: PlanItemVariableBinding[];
 };
 

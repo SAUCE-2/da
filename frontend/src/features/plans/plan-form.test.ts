@@ -25,6 +25,7 @@ const samplePlan: Plan = {
 			enabled: true,
 			queryVersionId: 3,
 			queryVersionNumber: 2,
+			disabledLines: [2],
 			variableBindings: [{ name: "status", value: "active" }],
 		},
 		{
@@ -35,6 +36,7 @@ const samplePlan: Plan = {
 			enabled: false,
 			queryVersionId: null,
 			queryVersionNumber: null,
+			disabledLines: [],
 			variableBindings: [],
 		},
 	],
@@ -47,6 +49,9 @@ const sampleQuery: Query = {
 	active: true,
 	versionId: 3,
 	versionNumber: 2,
+	query: "select 1",
+	queryHash: "x",
+	defaultDisabledLines: [],
 	sections: [],
 	variables: [
 		{
@@ -94,6 +99,7 @@ describe("plan-form", () => {
 					queryId: 7,
 					sortOrder: 0,
 					enabled: true,
+					disabledLines: [2],
 					variableBindings: { status: "active" },
 				},
 				{
@@ -101,6 +107,7 @@ describe("plan-form", () => {
 					queryId: 8,
 					sortOrder: 1,
 					enabled: false,
+					disabledLines: [],
 					variableBindings: {},
 				},
 			],
@@ -118,6 +125,7 @@ describe("plan-form", () => {
 					queryId: 7,
 					sortOrder: 0,
 					enabled: true,
+					disabledLines: [2],
 					variableBindings: { status: "active" },
 				},
 				{
@@ -125,6 +133,7 @@ describe("plan-form", () => {
 					queryId: null,
 					sortOrder: 1,
 					enabled: true,
+					disabledLines: [],
 					variableBindings: {},
 				},
 			],
@@ -139,6 +148,7 @@ describe("plan-form", () => {
 					queryId: 7,
 					sortOrder: 0,
 					enabled: true,
+					disabledLines: [2],
 					variableBindings: [{ name: "status", value: "active" }],
 				},
 			],

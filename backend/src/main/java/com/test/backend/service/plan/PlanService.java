@@ -1,5 +1,7 @@
 package com.test.backend.service.plan;
 
+import com.test.backend.query.QueryDocumentParser;
+import com.test.backend.query.QueryLineRemapper;
 import com.test.backend.query.QuerySqlRenderer;
 import com.test.backend.dto.plan.PlanItemRequest;
 import com.test.backend.dto.plan.PlanItemResponse;
@@ -19,6 +21,7 @@ import com.test.backend.service.query.QueryVersionResolver;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -57,19 +60,25 @@ public class PlanService {
 				request.name(),
 				request.description(),
 				activeOrDefault(request.active()));
-		plan.replaceItems(toReplacementItems(request.items()));
+		plan.replaceItems(toReplacementItems(request.items(), null));
 		return toResponse(planRepository.save(plan));
 	}
 
 	@Transactional
 	public PlanResponse updatePlan(Long id, PlanRequest request) {
 		Plan plan = getPlanEntity(id);
+		Map<Long, PlanItem> previousByQueryId = plan.getItems().stream()
+				.collect(Collectors.toMap(
+						item -> item.getQuery().getId(),
+						item -> item,
+						(left, right) -> left,
+						LinkedHashMap::new));
 		plan.setName(request.name());
 		plan.setDescription(request.description());
 		if (request.active() != null) {
 			plan.setActive(request.active());
 		}
-		plan.replaceItems(toReplacementItems(request.items()));
+		plan.replaceItems(toReplacementItems(request.items(), previousByQueryId));
 		return toResponse(plan);
 	}
 
@@ -81,14 +90,18 @@ public class PlanService {
 		planRepository.deleteById(id);
 	}
 
-	private List<PlanItem> toReplacementItems(List<PlanItemRequest> requests) {
+	private List<PlanItem> toReplacementItems(
+			List<PlanItemRequest> requests,
+			Map<Long, PlanItem> previousByQueryId) {
 		if (requests == null) {
 			return List.of();
 		}
-		return requests.stream().map(this::toPlanItem).toList();
+		return requests.stream()
+				.map(request -> toPlanItem(request, previousByQueryId))
+				.toList();
 	}
 
-	private PlanItem toPlanItem(PlanItemRequest request) {
+	private PlanItem toPlanItem(PlanItemRequest request, Map<Long, PlanItem> previousByQueryId) {
 		Query query = queryRepository.findById(request.queryId())
 				.orElseThrow(() -> new ResponseStatusException(
 						HttpStatus.BAD_REQUEST,
@@ -101,9 +114,38 @@ public class PlanService {
 				request.enabled() == null || request.enabled());
 		item.setQueryVersion(version);
 
+		List<Integer> disabledLines = resolveDisabledLines(request, version, previousByQueryId);
+		item.setDisabledLines(QueryDocumentParser.formatDisabledLines(disabledLines));
+
 		List<PlanItemVariable> bindings = seedVariableBindings(version, request.variableBindings());
 		item.replaceVariableBindings(bindings);
 		return item;
+	}
+
+	private List<Integer> resolveDisabledLines(
+			PlanItemRequest request,
+			QueryVersion version,
+			Map<Long, PlanItem> previousByQueryId) {
+		if (request.disabledLines() != null) {
+			return request.disabledLines();
+		}
+
+		PlanItem previous = previousByQueryId == null ? null : previousByQueryId.get(request.queryId());
+		if (previous == null) {
+			return QueryDocumentParser.parseDisabledLines(version.getDefaultDisabledLines());
+		}
+
+		QueryVersion previousVersion = previous.getQueryVersion();
+		List<Integer> previousDisabled = QueryDocumentParser.parseDisabledLines(previous.getDisabledLines());
+		if (previousVersion == null || Objects.equals(previousVersion.getId(), version.getId())) {
+			return previousDisabled;
+		}
+
+		QueryLineRemapper.RemapResult remapped = QueryLineRemapper.remapDisabledLines(
+				previousVersion.getQueryText(),
+				version.getQueryText(),
+				previousDisabled);
+		return remapped.remappedDisabledLines();
 	}
 
 	private List<PlanItemVariable> seedVariableBindings(

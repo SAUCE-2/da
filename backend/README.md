@@ -141,7 +141,14 @@ Use `@Mapping` for non-obvious field names. Lombok and MapStruct run together vi
 
 ### Work with query versions
 
-Each `PUT /api/queries/{id}` creates a **new immutable version** (incremented `versionNumber`). The query's `currentVersionId` points at the latest version. Use `GET /api/queries/{id}/versions` to list history and `POST /api/queries/{id}/preview` to render SQL with variable substitution.
+Each `PUT /api/queries/{id}` creates a **new immutable version** (incremented `versionNumber`) storing `name`, `description`, the SQL **query**, `queryHash`, and `defaultDisabledLines`. Section outline is derived from `--#` / `--##` comment headers in the query. The parent `queries` row keeps denormalized current `name`/`description` for list/sort; `currentVersionId` points at the latest version.
+
+- `GET /api/queries/{id}/versions` — list history
+- `GET /api/queries/{id}/versions/{versionId}` — full version including name/description
+- `GET /api/queries/{id}/versions/{a}/diff/{b}` — line diff between two versions
+- `POST /api/queries/{id}/preview` — render SQL by dropping disabled lines, stripping section markers, and substituting `{{variables}}`
+
+Oracle schema changes for this model live in `scripts/oracle-query-document-rework.sql`, `scripts/oracle-rename-body-to-query.sql`, and `scripts/oracle-version-name-description.sql`.
 
 ### Inspect local data
 

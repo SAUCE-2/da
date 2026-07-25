@@ -1,7 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import type { ClientVariable } from "./query-form";
-import { queryPreviewOptions } from "./query-server-state";
 
 export function buildPreviewVariableValues(
 	variables: ClientVariable[],
@@ -31,10 +29,7 @@ export function buildPreviewVariableValues(
 	return { ...defaults, ...prunedOverrides };
 }
 
-export function useQueryPreview(
-	selectedQueryId: number | null,
-	formVariables: ClientVariable[],
-) {
+export function useQueryPreview(formVariables: ClientVariable[]) {
 	const [previewVariableOverrides, setPreviewVariableOverrides] = useState<
 		Record<string, string>
 	>({});
@@ -43,20 +38,6 @@ export function useQueryPreview(
 		() => buildPreviewVariableValues(formVariables, previewVariableOverrides),
 		[formVariables, previewVariableOverrides],
 	);
-	const previewRequest = useMemo(
-		() => ({ variables: previewVariableValues }),
-		[previewVariableValues],
-	);
-
-	const previewQuery = useQuery(
-		queryPreviewOptions(selectedQueryId, previewRequest),
-	);
-
-	const previewErrorMessage = previewQuery.isError
-		? previewQuery.error instanceof Error && previewQuery.error.message
-			? previewQuery.error.message
-			: "Unable to load SQL preview."
-		: null;
 
 	function updatePreviewVariable(name: string, value: string) {
 		setPreviewVariableOverrides((current) => ({ ...current, [name]: value }));
@@ -67,10 +48,8 @@ export function useQueryPreview(
 	}, []);
 
 	return {
-		preview: previewQuery.data ?? null,
 		previewVariableValues,
-		isPreviewLoading: previewQuery.isFetching,
-		previewErrorMessage,
+		previewErrorMessage: null as string | null,
 		updatePreviewVariable,
 		resetPreviewOverrides,
 	};

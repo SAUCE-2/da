@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
@@ -46,9 +47,25 @@ public class QueryVersion {
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt = Instant.now();
 
-	@OneToMany(mappedBy = "queryVersion", cascade = CascadeType.ALL, orphanRemoval = true)
-	@OrderBy("sortOrder ASC, id ASC")
-	private List<QuerySection> sections = new ArrayList<>();
+	@Column(nullable = false, length = 200)
+	private String name = "";
+
+	@Column(length = 1000)
+	private String description;
+
+	@Lob
+	@Column(name = "query", nullable = false)
+	private String queryText = "";
+
+	@Column(name = "query_hash", nullable = false, length = 64)
+	private String queryHash = "";
+
+	/**
+	 * Comma-separated 1-based line numbers disabled by default for this version.
+	 * Runtime overlays (plan items / preview) may override this set.
+	 */
+	@Column(name = "default_disabled_lines", length = 4000)
+	private String defaultDisabledLines = "";
 
 	@OneToMany(mappedBy = "queryVersion", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("sortOrder ASC, id ASC")
@@ -57,16 +74,6 @@ public class QueryVersion {
 	public QueryVersion(Query query, int versionNumber) {
 		this.query = query;
 		this.versionNumber = versionNumber;
-	}
-
-	public void replaceSections(List<QuerySection> replacementSections) {
-		sections.clear();
-		replacementSections.forEach(this::addSection);
-	}
-
-	public void addSection(QuerySection section) {
-		section.setQueryVersion(this);
-		sections.add(section);
 	}
 
 	public void replaceVariables(List<QueryVariable> replacementVariables) {

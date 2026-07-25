@@ -1,3 +1,4 @@
+import { CodeBlock } from "@/components/ui/code-block";
 import { cn } from "@/lib/utils";
 
 type FormattedSqlDisplayProps = {
@@ -12,14 +13,14 @@ export function FormattedSqlDisplay({
 	emptyMessage = "-- No SQL to display.",
 	className,
 }: FormattedSqlDisplayProps) {
+	const value = sql.trim() ? sql : emptyMessage;
+
 	return (
-		<pre
-			className={cn(
-				"max-h-[420px] overflow-auto border bg-muted/50 p-3 font-mono text-sm whitespace-pre-wrap",
-				className,
-			)}
-		>
-			{sql.trim() ? sql : emptyMessage}
-		</pre>
+		<CodeBlock
+			value={value}
+			readOnly
+			showCopy={Boolean(sql.trim())}
+			className={cn("max-h-105 min-h-0", className)}
+		/>
 	);
 }

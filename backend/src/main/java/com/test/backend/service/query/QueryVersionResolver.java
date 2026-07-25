@@ -50,7 +50,7 @@ public class QueryVersionResolver {
 	}
 
 	public void initializeGraph(QueryVersion version) {
-		version.getSections().size();
+		version.getQueryText();
 		version.getVariables().size();
 	}
 

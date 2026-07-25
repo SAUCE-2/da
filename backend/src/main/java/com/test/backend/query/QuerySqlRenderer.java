@@ -6,23 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Renders stored section fragments into executable SQL.
- * <p>
- * Boundary trimming only — no layout formatting. Execution paths should call
- * {@link #renderVersionSql(QueryVersion, boolean, Map)} and execute the returned SQL.
+ * Renders a query version into executable SQL by dropping disabled lines,
+ * stripping {@code --#} section markers, then substituting variables.
  */
 public final class QuerySqlRenderer {
 
 	private QuerySqlRenderer() {
-	}
-
-	public static String renderQuerySql(List<com.test.backend.entity.query.QuerySection> sections, boolean defaultEnabledOnly) {
-		return sections.stream()
-				.sorted(QuerySqlRenderer::compareSections)
-				.filter(section -> !defaultEnabledOnly || section.isDefaultEnabled())
-				.map(com.test.backend.entity.query.QuerySection::getSqlFragment)
-				.map(QuerySqlRenderer::trimFragmentBoundaries)
-				.collect(java.util.stream.Collectors.joining("\n"));
 	}
 
 	public record RenderedQuerySql(String sql) {
@@ -31,59 +20,49 @@ public final class QuerySqlRenderer {
 	public record PreviewSql(String sql, List<String> unresolvedVariables) {
 	}
 
+	public static String renderQuerySql(String query, List<Integer> disabledLines) {
+		return QueryDocumentParser.renderQuery(query, disabledLines);
+	}
+
 	public static RenderedQuerySql renderVersionSql(
 			QueryVersion version,
-			boolean defaultEnabledOnly,
+			List<Integer> disabledLines,
 			Map<String, String> variableValues) {
-		String concatenated = renderQuerySql(version.getSections(), defaultEnabledOnly);
+		String rendered = renderQuerySql(version.getQueryText(), resolveDisabledLines(version, disabledLines));
 		List<QueryVariable> variables = version.getVariables().stream()
 				.sorted(QuerySqlRenderer::compareVariables)
 				.toList();
 		if (variables.isEmpty()) {
-			QueryVariableSubstitutor.rejectUnresolvedPlaceholders(concatenated);
-			return new RenderedQuerySql(concatenated);
+			QueryVariableSubstitutor.rejectUnresolvedPlaceholders(rendered);
+			return new RenderedQuerySql(rendered);
 		}
 
 		Map<String, String> resolvedValues = QueryVariableSubstitutor.resolveVariableValues(variables, variableValues);
-		String sql = QueryVariableSubstitutor.substituteVariables(concatenated, variables, resolvedValues);
+		String sql = QueryVariableSubstitutor.substituteVariables(rendered, variables, resolvedValues);
 		return new RenderedQuerySql(sql);
 	}
 
 	public static PreviewSql renderPreviewSql(
 			QueryVersion version,
-			boolean defaultEnabledOnly,
+			List<Integer> disabledLines,
 			Map<String, String> variableValues) {
-		String concatenated = renderQuerySql(version.getSections(), defaultEnabledOnly);
+		String rendered = renderQuerySql(version.getQueryText(), resolveDisabledLines(version, disabledLines));
 		List<QueryVariable> variables = version.getVariables().stream()
 				.sorted(QuerySqlRenderer::compareVariables)
 				.toList();
 		if (variables.isEmpty()) {
 			return new PreviewSql(
-					concatenated,
-					QueryVariableSubstitutor.findUnresolvedPlaceholders(concatenated));
+					rendered,
+					QueryVariableSubstitutor.findUnresolvedPlaceholders(rendered));
 		}
 
 		Map<String, String> resolvedValues = QueryVariableSubstitutor.resolveVariableValues(variables, variableValues);
-		String sql = QueryVariableSubstitutor.substituteVariablesPreview(concatenated, variables, resolvedValues);
+		String sql = QueryVariableSubstitutor.substituteVariablesPreview(rendered, variables, resolvedValues);
 		return new PreviewSql(sql, QueryVariableSubstitutor.findUnresolvedPlaceholders(sql));
 	}
 
 	public static String trimFragmentBoundaries(String sqlFragment) {
-		return sqlFragment
-				.replace("\r\n", "\n")
-				.replace('\r', '\n')
-				.replaceAll("\\A(?:[\\t ]*\\n)+", "")
-				.replaceAll("\\n[\\t \\n]*\\z", "");
-	}
-
-	public static int compareSections(
-			com.test.backend.entity.query.QuerySection left,
-			com.test.backend.entity.query.QuerySection right) {
-		int orderComparison = Integer.compare(left.getSortOrder(), right.getSortOrder());
-		if (orderComparison != 0) {
-			return orderComparison;
-		}
-		return Long.compare(idOrMax(left.getId()), idOrMax(right.getId()));
+		return QueryDocumentParser.trimFragmentBoundaries(sqlFragment);
 	}
 
 	public static int compareVariables(QueryVariable left, QueryVariable right) {
@@ -92,6 +71,13 @@ public final class QuerySqlRenderer {
 			return orderComparison;
 		}
 		return Long.compare(idOrMax(left.getId()), idOrMax(right.getId()));
+	}
+
+	private static List<Integer> resolveDisabledLines(QueryVersion version, List<Integer> disabledLines) {
+		if (disabledLines != null) {
+			return disabledLines;
+		}
+		return QueryDocumentParser.parseDisabledLines(version.getDefaultDisabledLines());
 	}
 
 	private static long idOrMax(Long id) {

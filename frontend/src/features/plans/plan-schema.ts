@@ -10,6 +10,7 @@ export const planItemRequestSchema = z.object({
 	queryVersionId: z.number().optional(),
 	sortOrder: z.number().finite(),
 	enabled: z.boolean(),
+	disabledLines: z.array(z.number().int().positive()).optional(),
 	variableBindings: z.array(planItemVariableBindingRequestSchema),
 });
 

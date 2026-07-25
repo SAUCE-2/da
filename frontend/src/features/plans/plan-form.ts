@@ -5,6 +5,7 @@ export type ClientPlanItem = {
 	queryId: number | null;
 	sortOrder: number;
 	enabled: boolean;
+	disabledLines: number[];
 	variableBindings: Record<string, string>;
 };
 
@@ -21,6 +22,7 @@ export function createEmptyPlanItem(sortOrder: number): ClientPlanItem {
 		queryId: null,
 		sortOrder,
 		enabled: true,
+		disabledLines: [],
 		variableBindings: {},
 	};
 }
@@ -44,6 +46,7 @@ export function planToFormValues(plan: Plan): PlanFormValues {
 			queryId: item.queryId,
 			sortOrder: item.sortOrder,
 			enabled: item.enabled,
+			disabledLines: [...(item.disabledLines ?? [])],
 			variableBindings: Object.fromEntries(
 				item.variableBindings.map((binding) => [
 					binding.name,
@@ -68,6 +71,7 @@ export function formValuesToPlanRequest(value: PlanFormValues) {
 				queryId: item.queryId,
 				sortOrder: Number.isFinite(item.sortOrder) ? item.sortOrder : index,
 				enabled: item.enabled,
+				disabledLines: item.disabledLines,
 				variableBindings: Object.entries(item.variableBindings).map(
 					([name, value]) => ({ name, value }),
 				),
@@ -91,6 +95,13 @@ export function seedVariableBindings(
 		bindings[name] = variable.defaultValue ?? "";
 	}
 	return bindings;
+}
+
+export function seedDisabledLines(query: Query | undefined): number[] {
+	if (!query) {
+		return [];
+	}
+	return [...query.defaultDisabledLines];
 }
 
 export function reindexPlanItems(items: ClientPlanItem[]) {
@@ -131,6 +142,9 @@ export function changeItemQuery(
 			? {
 					...item,
 					queryId,
+					disabledLines: seedDisabledLines(
+						queries.find((query) => query.id === queryId),
+					),
 					variableBindings: seedVariableBindings(
 						queries.find((query) => query.id === queryId),
 					),

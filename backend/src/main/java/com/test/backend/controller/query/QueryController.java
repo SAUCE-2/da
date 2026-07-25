@@ -4,6 +4,7 @@ import com.test.backend.dto.query.QueryPreviewRequest;
 import com.test.backend.dto.query.QueryPreviewResponse;
 import com.test.backend.dto.query.QueryRequest;
 import com.test.backend.dto.query.QueryResponse;
+import com.test.backend.dto.query.QueryVersionDiffResponse;
 import com.test.backend.dto.query.QueryVersionResponse;
 import com.test.backend.dto.query.QueryVersionSummaryResponse;
 import com.test.backend.service.query.QueryService;
@@ -63,6 +64,14 @@ public class QueryController {
 	@GetMapping("/{id}/versions/{versionId}")
 	public QueryVersionResponse getVersion(@PathVariable Long id, @PathVariable Long versionId) {
 		return queryService.getVersion(id, versionId);
+	}
+
+	@GetMapping("/{id}/versions/{fromVersionId}/diff/{toVersionId}")
+	public QueryVersionDiffResponse diffVersions(
+			@PathVariable Long id,
+			@PathVariable Long fromVersionId,
+			@PathVariable Long toVersionId) {
+		return queryService.diffVersions(id, fromVersionId, toVersionId);
 	}
 
 	@PostMapping("/{id}/preview")

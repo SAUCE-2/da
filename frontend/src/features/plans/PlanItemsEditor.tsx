@@ -7,8 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldGroup } from "@/components/ui/field";
-import { FieldLabel } from "@/components/workspace/FieldLabel";
 import {
 	Select,
 	SelectContent,
@@ -16,8 +16,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { EditorSection } from "@/components/workspace/EditorSection";
+import { FieldLabel } from "@/components/workspace/FieldLabel";
 import { SortableList } from "@/components/workspace/SortableList";
 import type { Query } from "@/lib/api-types";
 import type { PlanEditorForm } from "./use-plan-editor";
@@ -109,17 +109,24 @@ export function PlanItemsEditor({
 										</Field>
 
 										<form.Field name={`items[${index}].enabled`}>
-											{(field) => (
-												<Field orientation="horizontal">
-													<Switch
-														checked={field.state.value}
-														onCheckedChange={(checked) =>
-															field.handleChange(checked)
-														}
-													/>
-													<FieldLabel>Enabled in plan</FieldLabel>
-												</Field>
-											)}
+											{(field) => {
+												const enabledId = `${item.clientId}-enabled`;
+
+												return (
+													<Field orientation="horizontal">
+														<Checkbox
+															id={enabledId}
+															checked={field.state.value}
+															onCheckedChange={(checked) =>
+																field.handleChange(checked === true)
+															}
+														/>
+														<FieldLabel htmlFor={enabledId}>
+															Enabled in plan
+														</FieldLabel>
+													</Field>
+												);
+											}}
 										</form.Field>
 
 										{selectedQuery && selectedQuery.variables.length > 0 ? (

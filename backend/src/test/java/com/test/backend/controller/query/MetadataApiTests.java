@@ -68,31 +68,14 @@ class MetadataApiTests {
 						  "description": "Initial definition metadata",
 						  "active": false,
 						  "categoryIds": [%d],
-						  "sections": [
-						    {
-						      "name": "Block C",
-						      "sqlFragment": "FRAGMENT_C",
-						      "sortOrder": 30,
-						      "defaultEnabled": false
-						    },
-						    {
-						      "name": "Block A",
-						      "sqlFragment": "FRAGMENT_A",
-						      "sortOrder": 10,
-						      "defaultEnabled": false
-						    },
-						    {
-						      "name": "Block B",
-						      "sqlFragment": "FRAGMENT_B",
-						      "sortOrder": 20,
-						      "defaultEnabled": true
-						    }
-						  ]
+						  "query": "--# Block A\\nFRAGMENT_A\\n--# Block B\\nFRAGMENT_B\\n--# Block C\\nFRAGMENT_C",
+						  "defaultDisabledLines": [1, 2, 5, 6]
 						}
 						""".formatted(categoryId)))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.name").value("Definition Delta"))
 				.andExpect(jsonPath("$.sections[0].name").value("Block A"))
+				.andExpect(jsonPath("$.query").exists())
 				.andExpect(jsonPath("$.categories[0].name").value("Group Beta"))
 				.andReturn();
 		long queryId = ((Number) JsonPath.read(queryResult.getResponse().getContentAsString(), "$.id")).longValue();
@@ -104,26 +87,15 @@ class MetadataApiTests {
 						  "name": "Definition Delta Updated",
 						  "description": "Updated metadata",
 						  "categoryIds": [%d],
-						  "sections": [
-						    {
-						      "name": "Block A Updated",
-						      "sqlFragment": "FRAGMENT_A_UPDATED",
-						      "sortOrder": 10
-						    },
-						    {
-						      "name": "Block B Updated",
-						      "sqlFragment": "FRAGMENT_B_UPDATED\\n",
-						      "sortOrder": 20
-						    }
-						  ]
+						  "query": "--# Block A Updated\\nFRAGMENT_A_UPDATED\\n--# Block B Updated\\nFRAGMENT_B_UPDATED",
+						  "defaultDisabledLines": [1, 2]
 						}
 						""".formatted(categoryId)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Definition Delta Updated"))
 				.andExpect(jsonPath("$.active").value(false))
 				.andExpect(jsonPath("$.sections.length()").value(2))
-				.andExpect(jsonPath("$.sections[0].defaultEnabled").value(false))
-				.andExpect(jsonPath("$.sections[1].defaultEnabled").value(true));
+				.andExpect(jsonPath("$.defaultDisabledLines[0]").value(1));
 
 		mockMvc.perform(get("/api/queries"))
 				.andExpect(status().isOk())

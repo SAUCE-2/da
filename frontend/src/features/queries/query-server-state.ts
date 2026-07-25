@@ -11,7 +11,9 @@ import { queryClient } from "@/lib/query-client";
 import {
 	createQuery,
 	deleteQuery,
+	getQueryVersion,
 	listQueries,
+	listQueryVersions,
 	previewQuery,
 	updateQuery,
 } from "./query-api";
@@ -22,6 +24,9 @@ export { OPTIMISTIC_ID };
 export const queryKeys = {
 	all: ["queries"] as const,
 	list: () => [...queryKeys.all, "list"] as const,
+	versions: (id: number) => [...queryKeys.all, "versions", id] as const,
+	version: (id: number, versionId: number) =>
+		[...queryKeys.all, "version", id, versionId] as const,
 	preview: (id: number | null, request: Record<string, unknown> = {}) =>
 		[...queryKeys.all, "preview", id ?? "new", request] as const,
 };
@@ -41,10 +46,10 @@ function buildOptimisticQuery(request: QueryRequest): Query {
 		active: request.active,
 		versionId: OPTIMISTIC_ID,
 		versionNumber: 1,
-		sections: request.sections.map((section, index) => ({
-			id: index,
-			...section,
-		})),
+		query: request.query,
+		queryHash: "",
+		defaultDisabledLines: request.defaultDisabledLines ?? [],
+		sections: [],
 		variables: request.variables.map((variable, index) => ({
 			id: index,
 			...variable,
@@ -60,10 +65,8 @@ function applyRequestToQuery(query: Query, request: QueryRequest): Query {
 		name: request.name,
 		description: request.description || null,
 		active: request.active,
-		sections: request.sections.map((section, index) => ({
-			id: query.sections[index]?.id ?? index,
-			...section,
-		})),
+		query: request.query,
+		defaultDisabledLines: request.defaultDisabledLines ?? [],
 		variables: request.variables.map((variable, index) => ({
 			id: query.variables[index]?.id ?? index,
 			...variable,
@@ -76,6 +79,42 @@ export const queriesListOptions = () =>
 	queryOptions({
 		queryKey: queryKeys.list(),
 		queryFn: listQueries,
+		staleTime: 60_000,
+	});
+
+export const queryVersionsOptions = (id: number | null) =>
+	queryOptions({
+		queryKey: queryKeys.versions(id ?? OPTIMISTIC_ID),
+		queryFn: async () => {
+			if (id === null) {
+				throw new Error("A saved query is required to load versions.");
+			}
+			return listQueryVersions(id);
+		},
+		enabled: id !== null && id !== OPTIMISTIC_ID,
+		staleTime: 30_000,
+	});
+
+export const queryVersionOptions = (
+	id: number | null,
+	versionId: number | null,
+) =>
+	queryOptions({
+		queryKey: queryKeys.version(
+			id ?? OPTIMISTIC_ID,
+			versionId ?? OPTIMISTIC_ID,
+		),
+		queryFn: async () => {
+			if (id === null || versionId === null) {
+				throw new Error("A saved query version is required.");
+			}
+			return getQueryVersion(id, versionId);
+		},
+		enabled:
+			id !== null &&
+			id !== OPTIMISTIC_ID &&
+			versionId !== null &&
+			versionId !== OPTIMISTIC_ID,
 		staleTime: 60_000,
 	});
 
@@ -105,12 +144,43 @@ export const usePersistQuery = createPersistListMutation<Query, QueryRequest>({
 	getId: (query) => query.id,
 	successMessage: "Query saved.",
 	errorMessage: "Unable to save query.",
-	onSettled: (_data, _error, variables) => {
+	onSettled: (data, _error, variables) => {
 		void refreshMetadata();
 		if (variables.id !== null) {
 			void queryClient.invalidateQueries({
 				queryKey: queryKeys.preview(variables.id),
 			});
+			if (data) {
+				queryClient.setQueryData(
+					queryKeys.versions(variables.id),
+					(current: Awaited<ReturnType<typeof listQueryVersions>> = []) => {
+						if (
+							current.some((version) => version.versionId === data.versionId)
+						) {
+							return current;
+						}
+						return [
+							{
+								versionId: data.versionId,
+								versionNumber: data.versionNumber,
+								createdAt: new Date().toISOString(),
+							},
+							...current,
+						];
+					},
+				);
+			}
+			void queryClient.invalidateQueries({
+				queryKey: queryKeys.versions(variables.id),
+			});
+		} else if (data) {
+			queryClient.setQueryData(queryKeys.versions(data.id), [
+				{
+					versionId: data.versionId,
+					versionNumber: data.versionNumber,
+					createdAt: new Date().toISOString(),
+				},
+			]);
 		}
 	},
 });

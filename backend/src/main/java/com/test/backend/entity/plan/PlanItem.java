@@ -57,6 +57,12 @@ public class PlanItem {
 	@Column(nullable = false)
 	private boolean enabled = true;
 
+	/**
+	 * Comma-separated 1-based line numbers disabled for this plan item's run overlay.
+	 */
+	@Column(name = "disabled_lines", length = 4000)
+	private String disabledLines = "";
+
 	@OneToMany(mappedBy = "planItem", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("variableName ASC")
 	private List<PlanItemVariable> variableBindings = new ArrayList<>();

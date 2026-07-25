@@ -10,5 +10,6 @@ public record PlanItemResponse(
 		Integer queryVersionNumber,
 		int sortOrder,
 		boolean enabled,
+		List<Integer> disabledLines,
 		List<PlanItemVariableBindingResponse> variableBindings) {
 }
