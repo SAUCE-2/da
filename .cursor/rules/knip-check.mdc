@@ -1,0 +1,18 @@
+---
+description: Always run Knip and fix unused code issues at the end of every plan or implementation
+alwaysApply: true
+---
+
+# Knip unused code check
+
+At the **end of every plan** (as a final plan step, after Biome) and after finishing implementation work that touches frontend files, always run Knip from `frontend/` and fix reported issues:
+
+```bash
+cd frontend && pnpm knip
+```
+
+- Fix unused files, exports, dependencies, and types that Knip reports.
+- Do not silence issues with `ignore` / `ignoreIssues` in `knip.json` unless the code is intentionally kept (e.g. generated UI primitives under `src/components/ui/**`).
+- Prefer deleting or wiring up unused code over leaving dead exports.
+- Fix any remaining reported errors before considering the work done.
+- Do not skip this step even for small frontend changes.

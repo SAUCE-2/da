@@ -2,19 +2,19 @@ import { FileMagnifyingGlassIcon } from "@phosphor-icons/react/FileMagnifyingGla
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { MasterDetailLayout } from "@/components/workspace/MasterDetailLayout";
-import { RouteQueryError } from "@/components/workspace/RouteQueryError";
-import { categoriesListOptions } from "@/features/categories/category-server-state";
-import { QueryList } from "@/features/queries/QueryList";
-import { queriesListOptions } from "@/features/queries/query-server-state";
+import { RouteErrorPanel } from "@/components/workspace/error-panel";
+import { ListDetailLayout } from "@/components/workspace/list/detail-layout";
+import { categoriesListOptions } from "@/features/categories/server-state";
+import { QueryList } from "@/features/queries/list";
+import { queriesListOptions } from "@/features/queries/server-state";
 
 function QueriesLayout() {
 	const { data: queries = [] } = useQuery(queriesListOptions());
 
 	return (
-		<MasterDetailLayout list={<QueryList queries={queries} />}>
+		<ListDetailLayout list={<QueryList queries={queries} />}>
 			<Outlet />
-		</MasterDetailLayout>
+		</ListDetailLayout>
 	);
 }
 
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/queries")({
 		]),
 	component: QueriesLayout,
 	errorComponent: ({ error }) => (
-		<RouteQueryError error={error} fallbackMessage="Unable to load queries." />
+		<RouteErrorPanel error={error} fallbackMessage="Unable to load queries." />
 	),
 	staticData: {
 		nav: {

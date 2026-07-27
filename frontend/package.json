@@ -8,8 +8,11 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"test": "vitest run",
+		"lint": "biome check .",
+		"knip": "knip",
 		"openapi:generate": "openapi-typescript ${OPENAPI_URL:-http://localhost:8080/v3/api-docs} -o src/lib/api-schema.d.ts"
 	},
+
 	"dependencies": {
 		"@dnd-kit/react": "^0.5.0",
 		"@fontsource-variable/inter": "^5.2.8",
@@ -46,6 +49,7 @@
 		"@types/react-dom": "^19.2.3",
 		"@vitejs/plugin-react": "^6.0.3",
 		"babel-plugin-react-compiler": "^1.0.0",
+		"knip": "^6.29.0",
 		"openapi-typescript": "^7.13.0",
 		"shadcn": "^4.12.0",
 		"tailwindcss": "^4.3.2",

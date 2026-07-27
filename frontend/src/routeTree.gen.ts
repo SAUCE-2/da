@@ -20,6 +20,7 @@ import { Route as QueriesNewRouteImport } from './routes/queries/new'
 import { Route as QueriesQueryIdRouteImport } from './routes/queries/$queryId'
 import { Route as PlansNewRouteImport } from './routes/plans/new'
 import { Route as PlansPlanIdRouteImport } from './routes/plans/$planId'
+import { Route as DevCodeBlockRouteImport } from './routes/dev/code-block'
 import { Route as CategoriesNewRouteImport } from './routes/categories/new'
 import { Route as CategoriesCategoryIdRouteImport } from './routes/categories/$categoryId'
 
@@ -78,6 +79,11 @@ const PlansPlanIdRoute = PlansPlanIdRouteImport.update({
   path: '/$planId',
   getParentRoute: () => PlansRouteRoute,
 } as any)
+const DevCodeBlockRoute = DevCodeBlockRouteImport.update({
+  id: '/dev/code-block',
+  path: '/dev/code-block',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriesNewRoute = CategoriesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/queries': typeof QueriesRouteRouteWithChildren
   '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/categories/new': typeof CategoriesNewRoute
+  '/dev/code-block': typeof DevCodeBlockRoute
   '/plans/$planId': typeof PlansPlanIdRoute
   '/plans/new': typeof PlansNewRoute
   '/queries/$queryId': typeof QueriesQueryIdRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/categories/new': typeof CategoriesNewRoute
+  '/dev/code-block': typeof DevCodeBlockRoute
   '/plans/$planId': typeof PlansPlanIdRoute
   '/plans/new': typeof PlansNewRoute
   '/queries/$queryId': typeof QueriesQueryIdRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/queries': typeof QueriesRouteRouteWithChildren
   '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/categories/new': typeof CategoriesNewRoute
+  '/dev/code-block': typeof DevCodeBlockRoute
   '/plans/$planId': typeof PlansPlanIdRoute
   '/plans/new': typeof PlansNewRoute
   '/queries/$queryId': typeof QueriesQueryIdRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/queries'
     | '/categories/$categoryId'
     | '/categories/new'
+    | '/dev/code-block'
     | '/plans/$planId'
     | '/plans/new'
     | '/queries/$queryId'
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/'
     | '/categories/$categoryId'
     | '/categories/new'
+    | '/dev/code-block'
     | '/plans/$planId'
     | '/plans/new'
     | '/queries/$queryId'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/queries'
     | '/categories/$categoryId'
     | '/categories/new'
+    | '/dev/code-block'
     | '/plans/$planId'
     | '/plans/new'
     | '/queries/$queryId'
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   CategoriesRouteRoute: typeof CategoriesRouteRouteWithChildren
   PlansRouteRoute: typeof PlansRouteRouteWithChildren
   QueriesRouteRoute: typeof QueriesRouteRouteWithChildren
+  DevCodeBlockRoute: typeof DevCodeBlockRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -263,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansPlanIdRouteImport
       parentRoute: typeof PlansRouteRoute
     }
+    '/dev/code-block': {
+      id: '/dev/code-block'
+      path: '/dev/code-block'
+      fullPath: '/dev/code-block'
+      preLoaderRoute: typeof DevCodeBlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categories/new': {
       id: '/categories/new'
       path: '/new'
@@ -333,6 +353,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoriesRouteRoute: CategoriesRouteRouteWithChildren,
   PlansRouteRoute: PlansRouteRouteWithChildren,
   QueriesRouteRoute: QueriesRouteRouteWithChildren,
+  DevCodeBlockRoute: DevCodeBlockRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

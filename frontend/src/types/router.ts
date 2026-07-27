@@ -15,7 +15,7 @@ type HiddenRouteNavMetadata = {
 	hidden: true;
 };
 
-export type RouteNavMetadata = VisibleRouteNavMetadata | HiddenRouteNavMetadata;
+type RouteNavMetadata = VisibleRouteNavMetadata | HiddenRouteNavMetadata;
 
 declare module "@tanstack/react-router" {
 	interface StaticDataRouteOption {

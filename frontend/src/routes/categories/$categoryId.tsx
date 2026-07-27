@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { CategoryEditor } from "@/features/categories/CategoryEditor";
+import { CategoryEditor } from "@/features/categories/editor";
 
 export const Route = createFileRoute("/categories/$categoryId")({
 	params: {

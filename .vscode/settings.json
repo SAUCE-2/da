@@ -1,4 +1,5 @@
 {
+	"workbench.editor.labelFormat": "medium",
 	"editor.defaultFormatter": "biomejs.biome",
 	"editor.formatOnSave": true,
 	"editor.codeActionsOnSave": {

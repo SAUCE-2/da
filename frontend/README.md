@@ -22,9 +22,23 @@ Three layers own state. Do not invent a fourth.
 |---------|--------|
 | Which entity is open (create vs edit) | **URL** — `/queries/new`, `/queries/$queryId`, same for plans/categories |
 | Server data (lists, saves, deletes) | **TanStack Query** — each feature’s `*-server-state.ts` |
-| Editor field values | **TanStack Form** — inside each `use-*-editor.ts` hook |
+| Editor field values | **TanStack Form** — inside each feature’s `use-editor.ts` hook |
 
 There is no selection context or “workspace provider.” Route files pass `entityId` into the editor.
+
+**Queries, plans, and categories are the same shape.** Learn one feature folder and you know all three — list + editor + form + API + server-state.
+
+## Read these five files first
+
+To understand how the app works, open them in order:
+
+1. [`routes/queries/route.tsx`](./src/routes/queries/route.tsx) — layout: list + detail outlet
+2. [`features/queries/list.tsx`](./src/features/queries/list.tsx) — the left sidebar list
+3. [`features/queries/editor.tsx`](./src/features/queries/editor.tsx) — the right-hand editor page
+4. [`features/queries/use-editor.ts`](./src/features/queries/use-editor.ts) — form, save, delete (composes version history)
+5. [`features/queries/server-state.ts`](./src/features/queries/server-state.ts) — TanStack Query cache + mutations
+
+Then glance at `form.ts` (form ↔ API mapping) and `api.ts` (HTTP) if you need the full save path.
 
 ## Layout map
 
@@ -34,14 +48,18 @@ src/
   routes/                       # Thin route files only (loaders, redirects, params)
     __root.tsx                  # App chrome (nav sidebar, theme)
     queries|plans|categories/
-      route.tsx                 # MasterDetailLayout + list + loader
+      route.tsx                 # ListDetailLayout + list + loader
       index.tsx                 # Redirects to …/new
       new.tsx                   # Create editor (entityId=null)
       $entityId.tsx             # Edit editor (entityId from params)
   features/
-    queries|plans|categories/   # All feature UI + form + API + server state
+    queries|plans|categories/   # Flat feature folders — UI + form + API + server state
   components/
-    workspace/                  # Shared master-detail + editor chrome
+    workspace/
+      error-panel.tsx           # Shared not-found / route-error UI
+      editor/                   # EditorPage, EditorActions, FormSection, …
+      list/                     # ListDetailLayout, ListSidebar, ListSidebarItem
+    sortable-list.tsx           # Generic drag-and-drop list
     ui/                         # shadcn primitives
   lib/
     api-types.ts                # Domain response types (from OpenAPI schemas)
@@ -55,31 +73,34 @@ src/
 ## Trace one feature (edit a query)
 
 1. Sidebar links to `/queries` → index redirects to `/queries/new`.
-2. `routes/queries/route.tsx` prefetches list data in a loader, then renders `MasterDetailLayout` + `QueryList` (the layout also `useQuery`s the same cache key so the list stays subscribed).
+2. `routes/queries/route.tsx` prefetches list data in a loader, then renders `ListDetailLayout` + `QueryList` (the layout also `useQuery`s the same cache key so the list stays subscribed).
 3. List item links to `/queries/$queryId`.
 4. `$queryId.tsx` renders `<QueryEditor entityId={queryId} />`.
-5. `use-query-editor.ts` reads the entity from the React Query list cache, owns the form (`query-form.ts`), validates with `query-schema.ts`, and saves via `query-server-state.ts` → `query-api.ts` → `http-client.ts`.
+5. `use-editor.ts` reads the entity from the React Query list cache, owns the form (`form.ts`), validates with `schema.ts`, and saves via `server-state.ts` → `api.ts` → `http-client.ts`. Version history lives in `use-versions.ts`.
 6. After a successful create, navigate to `/queries/$queryId`. After delete/back, navigate to `/queries/new`.
 
 Plans and categories follow the same skeleton with simpler editors.
 
 ## Naming rules
 
+- **Within a scoped folder, the filename does not repeat the folder/domain.** Export names still carry domain clarity. `EditorPage` → `components/workspace/editor/page.tsx`; `CategoryEditor` → `features/categories/editor.tsx`.
 - Feature folders own everything about that domain: UI, form mappers, Zod schemas, HTTP, and TanStack Query options/mutations.
-- Prefer direct imports (`@/features/queries/query-server-state`) over barrel files.
+- Prefer direct imports (`@/features/queries/server-state`) over barrel files.
 - Shared chrome lives in `components/workspace/`; shared infrastructure lives in `lib/`.
 - Route files stay thin — they should only wire URL params into feature components.
+- Do not invent a file that only wraps another component to add a className. Inline it, or push a trivial variant into the shadcn primitive.
 
 ## Where to make common changes
 
 | Change | Start here |
 |--------|------------|
-| Editor fields / tabs | `features/<name>/*Editor.tsx` and related tab/panel files |
-| Form ↔ API mapping | `features/<name>/*-form.ts` |
-| Validation messages | `features/<name>/*-schema.ts` |
-| List caching / save / delete | `features/<name>/*-server-state.ts` |
-| HTTP endpoints | `features/<name>/*-api.ts` |
-| Shared save/delete chrome | `components/workspace/EditorActions.tsx` |
+| Editor fields / tabs | `features/<name>/editor.tsx` and related `*-tab.tsx` / panel files |
+| Form ↔ API mapping | `features/<name>/form.ts` |
+| Validation messages | `features/<name>/schema.ts` |
+| List caching / save / delete | `features/<name>/server-state.ts` |
+| HTTP endpoints | `features/<name>/api.ts` |
+| Shared save/delete chrome | `components/workspace/editor/actions.tsx` |
+| Shared editor page shell | `components/workspace/editor/page.tsx` |
 | Domain response types | `lib/api-types.ts` |
 
 ## Generated files

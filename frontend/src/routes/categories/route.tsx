@@ -2,25 +2,25 @@ import { TagIcon } from "@phosphor-icons/react/Tag";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { MasterDetailLayout } from "@/components/workspace/MasterDetailLayout";
-import { RouteQueryError } from "@/components/workspace/RouteQueryError";
-import { CategoryList } from "@/features/categories/CategoryList";
-import { categoriesListOptions } from "@/features/categories/category-server-state";
-import { useCategoryQueryCounts } from "@/features/categories/use-category-query-counts";
-import { queriesListOptions } from "@/features/queries/query-server-state";
+import { RouteErrorPanel } from "@/components/workspace/error-panel";
+import { ListDetailLayout } from "@/components/workspace/list/detail-layout";
+import { CategoryList } from "@/features/categories/list";
+import { categoriesListOptions } from "@/features/categories/server-state";
+import { useCategoryQueryCounts } from "@/features/categories/use-query-counts";
+import { queriesListOptions } from "@/features/queries/server-state";
 
 function CategoriesLayout() {
 	const { data: categories = [] } = useQuery(categoriesListOptions());
 	const getQueryCount = useCategoryQueryCounts();
 
 	return (
-		<MasterDetailLayout
+		<ListDetailLayout
 			list={
 				<CategoryList categories={categories} getQueryCount={getQueryCount} />
 			}
 		>
 			<Outlet />
-		</MasterDetailLayout>
+		</ListDetailLayout>
 	);
 }
 
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/categories")({
 		]),
 	component: CategoriesLayout,
 	errorComponent: ({ error }) => (
-		<RouteQueryError
+		<RouteErrorPanel
 			error={error}
 			fallbackMessage="Unable to load categories."
 		/>

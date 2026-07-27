@@ -2,19 +2,19 @@ import { StackIcon } from "@phosphor-icons/react/Stack";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { MasterDetailLayout } from "@/components/workspace/MasterDetailLayout";
-import { RouteQueryError } from "@/components/workspace/RouteQueryError";
-import { PlanList } from "@/features/plans/PlanList";
-import { plansListOptions } from "@/features/plans/plan-server-state";
-import { queriesListOptions } from "@/features/queries/query-server-state";
+import { RouteErrorPanel } from "@/components/workspace/error-panel";
+import { ListDetailLayout } from "@/components/workspace/list/detail-layout";
+import { PlanList } from "@/features/plans/list";
+import { plansListOptions } from "@/features/plans/server-state";
+import { queriesListOptions } from "@/features/queries/server-state";
 
 function PlansLayout() {
 	const { data: plans = [] } = useQuery(plansListOptions());
 
 	return (
-		<MasterDetailLayout list={<PlanList plans={plans} />}>
+		<ListDetailLayout list={<PlanList plans={plans} />}>
 			<Outlet />
-		</MasterDetailLayout>
+		</ListDetailLayout>
 	);
 }
 
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/plans")({
 		]),
 	component: PlansLayout,
 	errorComponent: ({ error }) => (
-		<RouteQueryError error={error} fallbackMessage="Unable to load plans." />
+		<RouteErrorPanel error={error} fallbackMessage="Unable to load plans." />
 	),
 	staticData: {
 		nav: {

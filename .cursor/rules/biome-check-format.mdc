@@ -1,0 +1,17 @@
+---
+description: Always run Biome check and format at the end of every plan or implementation
+alwaysApply: true
+---
+
+# Biome check and format
+
+At the **end of every plan** (as the final plan step) and after finishing implementation work that touches frontend files, always run Biome check and format from `frontend/`:
+
+```bash
+cd frontend && npx biome check --write .
+```
+
+- Prefer `biome check --write .` so lint/fix issues are fixed in one pass.
+- If you only need to verify without writing: `npx biome check .` (same as `npm run lint`).
+- Fix any remaining reported errors before considering the work done.
+- Do not skip this step even for small frontend changes.
