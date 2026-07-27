@@ -1,10 +1,14 @@
 import { useForm, useStore } from "@tanstack/react-form";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { queriesListOptions } from "@/features/queries/server-state";
+import {
+	queriesListOptions,
+	queryDetailOptions,
+} from "@/features/queries/server-state";
 import { formatZodError } from "@/lib/format-zod-error";
+import { queryClient } from "@/lib/query-client";
 
 import {
 	addItemToForm,
@@ -17,7 +21,7 @@ import {
 } from "./form";
 import { planRequestSchema } from "./schema";
 import {
-	plansListOptions,
+	planDetailOptions,
 	usePersistPlan,
 	useRemovePlan,
 } from "./server-state";
@@ -34,14 +38,15 @@ export function usePlanEditor(entityId: number | null) {
 	const persistPlan = usePersistPlan();
 	const removePlan = useRemovePlan();
 
-	const { data: plans = [], isFetched } = useQuery(plansListOptions());
-	const { data: queries = [] } = useQuery(queriesListOptions());
+	const {
+		data: selectedPlan = null,
+		isFetched,
+		isError,
+	} = useQuery(planDetailOptions(entityId));
+	const { data: querySummaries = [] } = useQuery(queriesListOptions());
 
-	const selectedPlan =
-		entityId === null
-			? null
-			: (plans.find((plan) => plan.id === entityId) ?? null);
-	const isNotFound = isFetched && entityId !== null && selectedPlan === null;
+	const isNotFound =
+		entityId !== null && isFetched && (selectedPlan === null || isError);
 
 	// Stabilize defaultValues: planToFormValues mints new clientIds each call,
 	// and TanStack Form's update() resets untouched forms when defaults change —
@@ -95,6 +100,32 @@ export function usePlanEditor(entityId: number | null) {
 		},
 	});
 
+	const formItems = useStore(form.store, (state) => state.values.items);
+	const formQueryIds = useMemo(() => {
+		const ids = new Set<number>();
+		for (const item of selectedPlan?.items ?? []) {
+			ids.add(item.queryId);
+		}
+		for (const item of formItems) {
+			if (item.queryId !== null) {
+				ids.add(item.queryId);
+			}
+		}
+		return [...ids];
+	}, [formItems, selectedPlan]);
+
+	const queryDetailResults = useQueries({
+		queries: formQueryIds.map((id) => queryDetailOptions(id)),
+	});
+
+	const queriesForVariables = useMemo(
+		() =>
+			queryDetailResults
+				.map((result) => result.data)
+				.filter((query): query is NonNullable<typeof query> => Boolean(query)),
+		[queryDetailResults],
+	);
+
 	const submitError = useStore(form.store, (state) =>
 		readSubmitError(state.errorMap),
 	);
@@ -130,10 +161,19 @@ export function usePlanEditor(entityId: number | null) {
 		);
 	}
 
-	function handleQueryChange(clientId: string, queryId: number | null) {
+	async function handleQueryChange(clientId: string, queryId: number | null) {
+		if (queryId === null) {
+			form.setFieldValue(
+				"items",
+				changeItemQuery(form.getFieldValue("items"), clientId, null, undefined),
+			);
+			return;
+		}
+
+		const query = await queryClient.fetchQuery(queryDetailOptions(queryId));
 		form.setFieldValue(
 			"items",
-			changeItemQuery(form.getFieldValue("items"), clientId, queryId, queries),
+			changeItemQuery(form.getFieldValue("items"), clientId, queryId, query),
 		);
 	}
 
@@ -142,7 +182,8 @@ export function usePlanEditor(entityId: number | null) {
 		selectedPlanName: selectedPlan?.name ?? null,
 		isNotFound,
 		form,
-		queries,
+		querySummaries,
+		queries: queriesForVariables,
 		isSaving: persistPlan.isPending,
 		errorMessage: errorMessage ?? submitError,
 		handleDelete,

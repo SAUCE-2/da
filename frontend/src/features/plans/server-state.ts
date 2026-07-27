@@ -1,64 +1,51 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import type { Plan } from "@/lib/api-types";
+import type { Plan, PlanSummary } from "@/lib/api-types";
 import {
-	createPersistListMutation,
+	createPersistListDetailMutation,
 	createRemoveListMutation,
 	OPTIMISTIC_ID,
 } from "@/lib/query/optimistic-list-mutations";
 
-import { createPlan, deletePlan, listPlans, updatePlan } from "./api";
+import { createPlan, deletePlan, getPlan, listPlans, updatePlan } from "./api";
 import type { PlanRequest } from "./schema";
 
 const planKeys = {
 	all: ["plans"] as const,
 	list: () => [...planKeys.all, "list"] as const,
+	detail: (id: number) => [...planKeys.all, "detail", id] as const,
 };
 
-function buildOptimisticPlan(request: PlanRequest): Plan {
+function toPlanSummary(plan: Plan): PlanSummary {
+	return {
+		id: plan.id,
+		name: plan.name,
+		description: plan.description,
+		active: plan.active,
+		itemCount: plan.items.length,
+	};
+}
+
+function buildOptimisticSummary(request: PlanRequest): PlanSummary {
 	return {
 		id: OPTIMISTIC_ID,
 		name: request.name,
 		description: request.description || null,
 		active: request.active,
-		items: request.items.map((item, index) => ({
-			id: index,
-			queryId: item.queryId,
-			queryName: "",
-			sortOrder: item.sortOrder,
-			enabled: item.enabled,
-			queryVersionId: null,
-			queryVersionNumber: null,
-			disabledLines: item.disabledLines ?? [],
-			variableBindings: item.variableBindings.map((binding) => ({
-				name: binding.name,
-				value: binding.value ?? null,
-			})),
-		})),
+		itemCount: request.items.length,
 	};
 }
 
-function applyRequestToPlan(plan: Plan, request: PlanRequest): Plan {
+function applyRequestToSummary(
+	summary: PlanSummary,
+	request: PlanRequest,
+): PlanSummary {
 	return {
-		...plan,
+		...summary,
 		name: request.name,
 		description: request.description || null,
 		active: request.active,
-		items: request.items.map((item, index) => ({
-			id: plan.items[index]?.id ?? index,
-			queryId: item.queryId,
-			queryName: plan.items[index]?.queryName ?? "",
-			sortOrder: item.sortOrder,
-			enabled: item.enabled,
-			queryVersionId: plan.items[index]?.queryVersionId ?? null,
-			queryVersionNumber: plan.items[index]?.queryVersionNumber ?? null,
-			disabledLines:
-				item.disabledLines ?? plan.items[index]?.disabledLines ?? [],
-			variableBindings: item.variableBindings.map((binding) => ({
-				name: binding.name,
-				value: binding.value ?? null,
-			})),
-		})),
+		itemCount: request.items.length,
 	};
 }
 
@@ -69,19 +56,39 @@ export const plansListOptions = () =>
 		staleTime: 60_000,
 	});
 
-export const usePersistPlan = createPersistListMutation<Plan, PlanRequest>({
+export const planDetailOptions = (id: number | null) =>
+	queryOptions({
+		queryKey: planKeys.detail(id ?? OPTIMISTIC_ID),
+		queryFn: async () => {
+			if (id === null) {
+				throw new Error("A saved plan is required to load details.");
+			}
+			return getPlan(id);
+		},
+		enabled: id !== null && id !== OPTIMISTIC_ID,
+		staleTime: 30_000,
+	});
+
+export const usePersistPlan = createPersistListDetailMutation<
+	Plan,
+	PlanSummary,
+	PlanRequest
+>({
 	listKey: planKeys.list(),
+	detailKey: planKeys.detail,
 	mutationFn: ({ id, request }) =>
 		id === null ? createPlan(request) : updatePlan(id, request),
-	buildOptimistic: buildOptimisticPlan,
-	applyRequest: applyRequestToPlan,
-	getId: (plan) => plan.id,
+	buildOptimisticSummary,
+	applyRequestToSummary,
+	toSummary: toPlanSummary,
+	getId: (entity) => entity.id,
 	successMessage: "Plan saved.",
 	errorMessage: "Unable to save plan.",
 });
 
 export const useRemovePlan = createRemoveListMutation({
 	listKey: planKeys.list(),
+	detailKey: planKeys.detail,
 	mutationFn: deletePlan,
 	successMessage: "Plan deleted.",
 	errorMessage: "Unable to delete plan.",

@@ -1,6 +1,8 @@
 package com.test.backend.service.query;
 
-import com.test.backend.query.QueryDocumentParser;
+import com.test.backend.query.DisabledLines;
+import com.test.backend.query.SqlText;
+import com.test.backend.query.QueryVariables;
 import com.test.backend.dto.query.QueryRequest;
 import com.test.backend.dto.query.QueryVariableRequest;
 import com.test.backend.entity.query.QueryVariable;
@@ -20,12 +22,11 @@ public class QueryVersionUpdater {
 			QueryRequest request,
 			List<QueryVariable> previousVariables,
 			Map<String, QueryVariable> previousVariablesByName) {
-		String query = QueryDocumentParser.normalizeNewlines(request.query() == null ? "" : request.query());
+		String query = SqlText.normalize(request.query() == null ? "" : request.query());
 		version.setName(request.name());
 		version.setDescription(request.description());
 		version.setQueryText(query);
-		version.setQueryHash(QueryDocumentParser.queryHash(query));
-		version.setDefaultDisabledLines(QueryDocumentParser.formatDisabledLines(request.defaultDisabledLines()));
+		version.setDefaultDisabledLines(DisabledLines.of(request.defaultDisabledLines()).format());
 		version.replaceVariables(toReplacementVariables(
 				variableRequestsOrEmpty(request),
 				previousVariables,
@@ -105,7 +106,7 @@ public class QueryVersionUpdater {
 
 	public List<QueryVariable> sortedVariables(QueryVersion version) {
 		return version.getVariables().stream()
-				.sorted(com.test.backend.query.QuerySqlRenderer::compareVariables)
+				.sorted(QueryVariables.BY_SORT_ORDER)
 				.toList();
 	}
 }

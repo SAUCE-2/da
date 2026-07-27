@@ -10,8 +10,6 @@ public record QueryVersionResponse(
 		String name,
 		String description,
 		String query,
-		String queryHash,
 		List<Integer> defaultDisabledLines,
-		List<QuerySectionOutlineResponse> sections,
 		List<QueryVariableResponse> variables) {
 }

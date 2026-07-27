@@ -19,9 +19,7 @@ const sampleQuery: Query = {
 	versionId: 3,
 	versionNumber: 2,
 	query: "--# Main\nSELECT 1",
-	queryHash: "abc",
 	defaultDisabledLines: [1],
-	sections: [{ name: "Main", level: 1, startLine: 1, endLine: 2 }],
 	variables: [
 		{
 			id: 1,

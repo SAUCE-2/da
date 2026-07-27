@@ -2,6 +2,7 @@ package com.test.backend.mapper;
 
 import com.test.backend.dto.category.CategorySummaryResponse;
 import com.test.backend.dto.query.QueryResponse;
+import com.test.backend.dto.query.QuerySummaryResponse;
 import com.test.backend.entity.category.Category;
 import com.test.backend.entity.query.Query;
 import com.test.backend.entity.query.QueryVersion;
@@ -24,12 +25,17 @@ public abstract class QueryMapper {
 	@Mapping(target = "description", source = "currentVersion.description")
 	@Mapping(target = "versionId", source = "currentVersion.id")
 	@Mapping(target = "query", source = "currentVersion.queryText")
-	@Mapping(target = "queryHash", source = "currentVersion.queryHash")
 	@Mapping(target = "defaultDisabledLines", source = "currentVersion", qualifiedByName = "mapDefaultDisabledLines")
-	@Mapping(target = "sections", source = "currentVersion", qualifiedByName = "mapSections")
 	@Mapping(target = "variables", source = "currentVersion", qualifiedByName = "mapVariables")
 	@Mapping(target = "categories", source = "query.categories", qualifiedByName = "mapSortedCategories")
 	public abstract QueryResponse toResponse(Query query, QueryVersion currentVersion);
+
+	@Mapping(target = "id", source = "query.id")
+	@Mapping(target = "name", source = "currentVersion.name")
+	@Mapping(target = "description", source = "currentVersion.description")
+	@Mapping(target = "versionId", source = "currentVersion.id")
+	@Mapping(target = "categories", source = "query.categories", qualifiedByName = "mapSortedCategories")
+	public abstract QuerySummaryResponse toSummaryResponse(Query query, QueryVersion currentVersion);
 
 	@Named("mapSortedCategories")
 	protected List<CategorySummaryResponse> mapSortedCategories(Set<Category> categories) {

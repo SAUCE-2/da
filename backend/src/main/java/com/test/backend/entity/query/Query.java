@@ -38,9 +38,6 @@ public class Query {
 	@Column(nullable = false, length = 200)
 	private String name;
 
-	@Column(length = 1000)
-	private String description;
-
 	@Column(nullable = false)
 	private boolean active = true;
 
@@ -62,9 +59,8 @@ public class Query {
 	@OrderBy("name ASC")
 	private Set<Category> categories = new LinkedHashSet<>();
 
-	public Query(String name, String description, boolean active) {
+	public Query(String name, boolean active) {
 		this.name = name;
-		this.description = description;
 		this.active = active;
 	}
 

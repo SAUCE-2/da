@@ -1,9 +1,10 @@
 package com.test.backend.mapper;
 
-import com.test.backend.query.QueryDocumentParser;
+import com.test.backend.query.DisabledLines;
 import com.test.backend.dto.plan.PlanItemResponse;
 import com.test.backend.dto.plan.PlanItemVariableBindingResponse;
 import com.test.backend.dto.plan.PlanResponse;
+import com.test.backend.dto.plan.PlanSummaryResponse;
 import com.test.backend.entity.plan.Plan;
 import com.test.backend.entity.plan.PlanItem;
 import com.test.backend.entity.plan.PlanItemVariable;
@@ -19,16 +20,13 @@ public interface PlanMapper {
 	@Mapping(target = "name", source = "variableName")
 	PlanItemVariableBindingResponse toBindingResponse(PlanItemVariable binding);
 
-	@Mapping(target = "queryId", source = "item.query.id")
-	@Mapping(target = "queryName", source = "item.query.name")
-	@Mapping(target = "queryVersionId", source = "versionId")
-	@Mapping(target = "queryVersionNumber", source = "versionNumber")
-	@Mapping(target = "disabledLines", source = "item", qualifiedByName = "mapDisabledLines")
-	PlanItemResponse toItemResponse(PlanItem item, Long versionId, Integer versionNumber);
+	@Mapping(target = "queryId", source = "query.id")
+	@Mapping(target = "disabledLines", source = ".", qualifiedByName = "mapDisabledLines")
+	PlanItemResponse toItemResponse(PlanItem item);
 
 	@Named("mapDisabledLines")
 	default List<Integer> mapDisabledLines(PlanItem item) {
-		return QueryDocumentParser.parseDisabledLines(item.getDisabledLines());
+		return DisabledLines.parse(item.getDisabledLines()).toList();
 	}
 
 	default PlanResponse toResponse(Plan plan, List<PlanItemResponse> items) {
@@ -38,6 +36,15 @@ public interface PlanMapper {
 				plan.getDescription(),
 				plan.isActive(),
 				items);
+	}
+
+	default PlanSummaryResponse toSummaryResponse(Plan plan) {
+		return new PlanSummaryResponse(
+				plan.getId(),
+				plan.getName(),
+				plan.getDescription(),
+				plan.isActive(),
+				plan.getItems().size());
 	}
 
 	default List<PlanItem> sortedItems(Plan plan) {

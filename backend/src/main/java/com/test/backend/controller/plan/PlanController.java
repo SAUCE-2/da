@@ -2,6 +2,7 @@ package com.test.backend.controller.plan;
 
 import com.test.backend.dto.plan.PlanRequest;
 import com.test.backend.dto.plan.PlanResponse;
+import com.test.backend.dto.plan.PlanSummaryResponse;
 import com.test.backend.service.plan.PlanService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -25,7 +26,7 @@ public class PlanController {
 	private final PlanService planService;
 
 	@GetMapping
-	public List<PlanResponse> listPlans() {
+	public List<PlanSummaryResponse> listPlans() {
 		return planService.listPlans();
 	}
 

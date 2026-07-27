@@ -57,12 +57,9 @@ public class QueryVersion {
 	@Column(name = "query", nullable = false)
 	private String queryText = "";
 
-	@Column(name = "query_hash", nullable = false, length = 64)
-	private String queryHash = "";
-
 	/**
 	 * Comma-separated 1-based line numbers disabled by default for this version.
-	 * Runtime overlays (plan items / preview) may override this set.
+	 * Plan items may override this set.
 	 */
 	@Column(name = "default_disabled_lines", length = 4000)
 	private String defaultDisabledLines = "";

@@ -15,7 +15,7 @@ import {
 } from "./form";
 import { queryRequestSchema } from "./schema";
 import {
-	queriesListOptions,
+	queryDetailOptions,
 	usePersistQuery,
 	useRemoveQuery,
 } from "./server-state";
@@ -34,14 +34,15 @@ export function useQueryEditor(entityId: number | null) {
 	const persistQuery = usePersistQuery();
 	const removeQuery = useRemoveQuery();
 
-	const { data: queries = [], isFetched } = useQuery(queriesListOptions());
+	const {
+		data: selectedQuery = null,
+		isFetched,
+		isError,
+	} = useQuery(queryDetailOptions(entityId));
 	const { data: categories = [] } = useQuery(categoriesListOptions());
 
-	const selectedQuery =
-		entityId === null
-			? null
-			: (queries.find((query) => query.id === entityId) ?? null);
-	const isNotFound = isFetched && entityId !== null && selectedQuery === null;
+	const isNotFound =
+		entityId !== null && isFetched && (selectedQuery === null || isError);
 
 	const versions = useQueryVersions({ entityId, selectedQuery });
 

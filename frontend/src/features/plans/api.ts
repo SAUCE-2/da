@@ -1,4 +1,4 @@
-import type { Plan } from "@/lib/api-types";
+import type { Plan, PlanSummary } from "@/lib/api-types";
 import { httpClient, type paths, unwrapData } from "@/lib/http-client";
 
 type PlanCreateBody = NonNullable<
@@ -9,11 +9,18 @@ type PlanUpdateBody = NonNullable<
 	paths["/api/plans/{id}"]["put"]["requestBody"]
 >["content"]["application/json"];
 
-export async function listPlans(): Promise<Plan[]> {
+export async function listPlans(): Promise<PlanSummary[]> {
 	const data = await httpClient
 		.GET("/api/plans")
 		.then(({ data }) => unwrapData(data));
-	return data as Plan[];
+	return data as PlanSummary[];
+}
+
+export async function getPlan(id: number): Promise<Plan> {
+	const data = await httpClient
+		.GET("/api/plans/{id}", { params: { path: { id } } })
+		.then(({ data }) => unwrapData(data));
+	return data as Plan;
 }
 
 export async function createPlan(request: PlanCreateBody): Promise<Plan> {

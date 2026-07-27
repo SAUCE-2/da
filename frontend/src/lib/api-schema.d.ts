@@ -68,22 +68,6 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	"/api/queries/{id}/preview": {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		post: operations["previewQuery"];
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
 	"/api/plans": {
 		parameters: {
 			query?: never;
@@ -187,20 +171,9 @@ export interface components {
 			/** Format: int32 */
 			versionNumber?: number;
 			query?: string;
-			queryHash?: string;
 			defaultDisabledLines?: number[];
-			sections?: components["schemas"]["QuerySectionOutlineResponse"][];
 			variables?: components["schemas"]["QueryVariableResponse"][];
 			categories?: components["schemas"]["CategorySummaryResponse"][];
-		};
-		QuerySectionOutlineResponse: {
-			name?: string;
-			/** Format: int32 */
-			level?: number;
-			/** Format: int32 */
-			startLine?: number;
-			/** Format: int32 */
-			endLine?: number;
 		};
 		QueryVariableResponse: {
 			/** Format: int64 */
@@ -239,11 +212,6 @@ export interface components {
 			id?: number;
 			/** Format: int64 */
 			queryId?: number;
-			queryName?: string;
-			/** Format: int64 */
-			queryVersionId?: number;
-			/** Format: int32 */
-			queryVersionNumber?: number;
 			/** Format: int32 */
 			sortOrder?: number;
 			enabled?: boolean;
@@ -274,21 +242,17 @@ export interface components {
 			/** Format: int64 */
 			queryCount?: number;
 		};
-		QueryPreviewRequest: {
-			/** Format: int64 */
-			versionId?: number;
-			variables?: {
-				[key: string]: string;
-			};
-			disabledLines?: number[];
-		};
-		QueryPreviewResponse: {
+		QuerySummaryResponse: {
 			/** Format: int64 */
 			id?: number;
+			name?: string;
+			description?: string;
+			active?: boolean;
 			/** Format: int64 */
 			versionId?: number;
-			sql?: string;
-			unresolvedVariables?: string[];
+			/** Format: int32 */
+			versionNumber?: number;
+			categories?: components["schemas"]["CategorySummaryResponse"][];
 		};
 		QueryVersionSummaryResponse: {
 			/** Format: int64 */
@@ -308,31 +272,17 @@ export interface components {
 			name?: string;
 			description?: string;
 			query?: string;
-			queryHash?: string;
 			defaultDisabledLines?: number[];
-			sections?: components["schemas"]["QuerySectionOutlineResponse"][];
 			variables?: components["schemas"]["QueryVariableResponse"][];
 		};
-		QueryVersionDiffResponse: {
+		PlanSummaryResponse: {
 			/** Format: int64 */
-			fromVersionId?: number;
+			id?: number;
+			name?: string;
+			description?: string;
+			active?: boolean;
 			/** Format: int32 */
-			fromVersionNumber?: number;
-			/** Format: int64 */
-			toVersionId?: number;
-			/** Format: int32 */
-			toVersionNumber?: number;
-			fromQuery?: string;
-			toQuery?: string;
-			lines?: components["schemas"]["QueryVersionDiffLine"][];
-		};
-		QueryVersionDiffLine: {
-			op?: string;
-			text?: string;
-			/** Format: int32 */
-			fromLine?: number;
-			/** Format: int32 */
-			toLine?: number;
+			itemCount?: number;
 		};
 	};
 	responses: never;
@@ -540,7 +490,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					"*/*": components["schemas"]["QueryResponse"][];
+					"*/*": components["schemas"]["QuerySummaryResponse"][];
 				};
 			};
 		};
@@ -569,32 +519,6 @@ export interface operations {
 			};
 		};
 	};
-	previewQuery: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path: {
-				id: number;
-			};
-			cookie?: never;
-		};
-		requestBody?: {
-			content: {
-				"application/json": components["schemas"]["QueryPreviewRequest"];
-			};
-		};
-		responses: {
-			/** @description OK */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					"*/*": components["schemas"]["QueryPreviewResponse"];
-				};
-			};
-		};
-	};
 	listPlans: {
 		parameters: {
 			query?: never;
@@ -610,7 +534,7 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content: {
-					"*/*": components["schemas"]["PlanResponse"][];
+					"*/*": components["schemas"]["PlanSummaryResponse"][];
 				};
 			};
 		};

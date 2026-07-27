@@ -1,6 +1,6 @@
-import type { Category, Query } from "@/lib/api-types";
+import type { Category, QuerySummary } from "@/lib/api-types";
 
-export function buildDerivedQueryCounts(queries: Query[]) {
+export function buildDerivedQueryCounts(queries: QuerySummary[]) {
 	const counts = new Map<number, number>();
 
 	for (const query of queries) {

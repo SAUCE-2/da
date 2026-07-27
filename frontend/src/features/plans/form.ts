@@ -135,19 +135,15 @@ export function changeItemQuery(
 	items: ClientPlanItem[],
 	clientId: string,
 	queryId: number | null,
-	queries: Query[],
+	query: Query | undefined,
 ) {
 	return items.map((item) =>
 		item.clientId === clientId
 			? {
 					...item,
 					queryId,
-					disabledLines: seedDisabledLines(
-						queries.find((query) => query.id === queryId),
-					),
-					variableBindings: seedVariableBindings(
-						queries.find((query) => query.id === queryId),
-					),
+					disabledLines: seedDisabledLines(query),
+					variableBindings: seedVariableBindings(query),
 				}
 			: item,
 	);

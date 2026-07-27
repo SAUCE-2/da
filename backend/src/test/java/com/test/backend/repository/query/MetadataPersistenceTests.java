@@ -3,7 +3,6 @@ package com.test.backend.repository.query;
 import com.test.backend.entity.category.Category;
 import com.test.backend.entity.query.Query;
 import com.test.backend.entity.query.QueryVersion;
-import com.test.backend.query.QueryDocumentParser;
 import com.test.backend.repository.category.CategoryRepository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -37,13 +36,12 @@ class MetadataPersistenceTests {
 	@Test
 	void persistsQueryVersionsTextAndCategories() {
 		Category category = categoryRepository.save(new Category("Group Alpha", "Grouping metadata"));
-		Query query = new Query("Definition Alpha", "Persistence example", true);
+		Query query = new Query("Definition Alpha", true);
 		QueryVersion version = query.addVersion(1);
 		version.setName("Definition Alpha");
 		version.setDescription("Persistence example");
 		String queryText = "--# Block A\nFRAGMENT_A\n--# Block B\nFRAGMENT_B";
 		version.setQueryText(queryText);
-		version.setQueryHash(QueryDocumentParser.queryHash(queryText));
 		version.setDefaultDisabledLines("1,2");
 		query.replaceCategories(new LinkedHashSet<>(List.of(category)));
 

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { QueryEditor } from "@/features/queries/editor";
+import { queryDetailOptions } from "@/features/queries/server-state";
 
 export const Route = createFileRoute("/queries/$queryId")({
 	params: {
@@ -11,6 +12,8 @@ export const Route = createFileRoute("/queries/$queryId")({
 			queryId: String(params.queryId),
 		}),
 	},
+	loader: ({ context, params }) =>
+		context.queryClient.ensureQueryData(queryDetailOptions(params.queryId)),
 	component: EditQueryPage,
 });
 

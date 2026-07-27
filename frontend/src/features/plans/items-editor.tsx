@@ -19,12 +19,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { FormSection } from "@/components/workspace/editor/form-section";
-import type { Query } from "@/lib/api-types";
+import type { QuerySummary } from "@/lib/api-types";
 import type { PlanEditorForm } from "./use-editor";
 
 type PlanItemsEditorProps = {
 	form: PlanEditorForm;
-	queries: Query[];
+	queries: QuerySummary[];
 	onAddItem: () => void;
 	onRemoveItem: (clientId: string) => void;
 	onReorderItem: (fromIndex: number, toIndex: number) => void;

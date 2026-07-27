@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import type { Category, Query } from "@/lib/api-types";
+import type { Category, QuerySummary } from "@/lib/api-types";
 
 import { buildDerivedQueryCounts, getCategoryQueryCount } from "./utils";
 
-const queries: Query[] = [
+const queries: QuerySummary[] = [
 	{
 		id: 1,
 		name: "One",
@@ -12,11 +12,6 @@ const queries: Query[] = [
 		active: true,
 		versionId: 1,
 		versionNumber: 1,
-		query: "select 1",
-		queryHash: "a",
-		defaultDisabledLines: [],
-		sections: [],
-		variables: [],
 		categories: [
 			{ id: 4, name: "Users", description: null },
 			{ id: 5, name: "Billing", description: null },
@@ -29,11 +24,6 @@ const queries: Query[] = [
 		active: true,
 		versionId: 2,
 		versionNumber: 1,
-		query: "select 2",
-		queryHash: "b",
-		defaultDisabledLines: [],
-		sections: [],
-		variables: [],
 		categories: [{ id: 4, name: "Users", description: null }],
 	},
 ];

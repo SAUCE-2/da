@@ -5,7 +5,7 @@ import { EditorActions } from "@/components/workspace/editor/actions";
 import { FormSection } from "@/components/workspace/editor/form-section";
 import { NameDescriptionFields } from "@/components/workspace/editor/name-description-fields";
 import { EditorPage } from "@/components/workspace/editor/page";
-import type { Query } from "@/lib/api-types";
+import type { Query, QuerySummary } from "@/lib/api-types";
 
 import { PlanItemsEditor } from "./items-editor";
 import { type PlanEditorForm, usePlanEditor } from "./use-editor";
@@ -19,6 +19,7 @@ type PlanEditorTab = "details" | "queries" | "variables";
 
 type PlanEditorPanelsProps = {
 	form: PlanEditorForm;
+	querySummaries: QuerySummary[];
 	queries: Query[];
 	onAddItem: () => void;
 	onRemoveItem: (clientId: string) => void;
@@ -28,6 +29,7 @@ type PlanEditorPanelsProps = {
 
 function PlanEditorPanels({
 	form,
+	querySummaries,
 	queries,
 	onAddItem,
 	onRemoveItem,
@@ -62,7 +64,7 @@ function PlanEditorPanels({
 			<TabsContent value="queries" className="mt-0 min-h-0 flex-1">
 				<PlanItemsEditor
 					form={form}
-					queries={queries}
+					queries={querySummaries}
 					onAddItem={onAddItem}
 					onRemoveItem={onRemoveItem}
 					onReorderItem={onReorderItem}
@@ -84,6 +86,7 @@ export function PlanEditor({ entityId }: PlanEditorProps) {
 		isNotFound,
 		errorMessage,
 		form,
+		querySummaries,
 		queries,
 		isSaving,
 		handleDelete,
@@ -126,11 +129,14 @@ export function PlanEditor({ entityId }: PlanEditorProps) {
 			<PlanEditorPanels
 				key={String(selectedPlanId ?? "new")}
 				form={form}
+				querySummaries={querySummaries}
 				queries={queries}
 				onAddItem={addItem}
 				onRemoveItem={removeItem}
 				onReorderItem={reorderItem}
-				onQueryChange={handleQueryChange}
+				onQueryChange={(clientId, queryId) => {
+					void handleQueryChange(clientId, queryId);
+				}}
 			/>
 		</EditorPage>
 	);

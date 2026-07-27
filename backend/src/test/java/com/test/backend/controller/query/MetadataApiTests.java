@@ -34,7 +34,7 @@ class MetadataApiTests {
 	}
 
 	@Test
-	void createUpdateListAndPreviewAuditQueries() throws Exception {
+	void createUpdateListAndGetAuditQueries() throws Exception {
 		MvcResult categoryResult = mockMvc.perform(post("/api/categories")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
@@ -74,8 +74,8 @@ class MetadataApiTests {
 						""".formatted(categoryId)))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.name").value("Definition Delta"))
-				.andExpect(jsonPath("$.sections[0].name").value("Block A"))
 				.andExpect(jsonPath("$.query").exists())
+				.andExpect(jsonPath("$.defaultDisabledLines[0]").value(1))
 				.andExpect(jsonPath("$.categories[0].name").value("Group Beta"))
 				.andReturn();
 		long queryId = ((Number) JsonPath.read(queryResult.getResponse().getContentAsString(), "$.id")).longValue();
@@ -94,25 +94,24 @@ class MetadataApiTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Definition Delta Updated"))
 				.andExpect(jsonPath("$.active").value(false))
-				.andExpect(jsonPath("$.sections.length()").value(2))
 				.andExpect(jsonPath("$.defaultDisabledLines[0]").value(1));
 
 		mockMvc.perform(get("/api/queries"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].name").value("Definition Delta Updated"))
-				.andExpect(jsonPath("$[0].active").value(false));
+				.andExpect(jsonPath("$[0].active").value(false))
+				.andExpect(jsonPath("$[0].query").doesNotExist())
+				.andExpect(jsonPath("$[0].categories[0].name").value("Group Beta"));
+
+		mockMvc.perform(get("/api/queries/{id}", queryId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("Definition Delta Updated"))
+				.andExpect(jsonPath("$.query").exists())
+				.andExpect(jsonPath("$.defaultDisabledLines[0]").value(1));
 
 		mockMvc.perform(get("/api/categories"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].name").value("Group Beta"))
 				.andExpect(jsonPath("$[0].queryCount").value(1));
-
-		mockMvc.perform(post("/api/queries/{id}/preview", queryId)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("{}"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(queryId))
-				.andExpect(jsonPath("$.versionId").exists())
-				.andExpect(jsonPath("$.sql").value("FRAGMENT_B_UPDATED"));
 	}
 }

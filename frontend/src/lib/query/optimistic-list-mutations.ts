@@ -9,7 +9,7 @@ import { queryClient } from "@/lib/query-client";
 
 /**
  * Temporary id used while a create mutation is in flight.
- * The UI hides Delete for this id; preview queries are disabled for it.
+ * The UI hides Delete for this id; detail queries are disabled for it.
  */
 export const OPTIMISTIC_ID = 0;
 
@@ -18,12 +18,14 @@ type PersistVariables<TRequest> = {
 	request: TRequest;
 };
 
-type PersistListMutationConfig<TEntity, TRequest> = {
+type PersistListDetailMutationConfig<TEntity, TSummary, TRequest> = {
 	listKey: QueryKey;
+	detailKey: (id: number) => QueryKey;
 	mutationFn: (variables: PersistVariables<TRequest>) => Promise<TEntity>;
-	buildOptimistic: (request: TRequest) => TEntity;
-	applyRequest: (entity: TEntity, request: TRequest) => TEntity;
-	getId: (entity: TEntity) => number;
+	buildOptimisticSummary: (request: TRequest) => TSummary;
+	applyRequestToSummary: (summary: TSummary, request: TRequest) => TSummary;
+	toSummary: (entity: TEntity) => TSummary;
+	getId: (entity: TEntity | TSummary) => number;
 	successMessage: string;
 	errorMessage: string;
 	onSettled?: (
@@ -35,14 +37,15 @@ type PersistListMutationConfig<TEntity, TRequest> = {
 
 type RemoveListMutationConfig = {
 	listKey: QueryKey;
+	detailKey?: (id: number) => QueryKey;
 	mutationFn: (id: number) => Promise<void>;
 	successMessage: string;
 	errorMessage: string;
 	onSettled?: () => void;
 };
 
-export function createPersistListMutation<TEntity, TRequest>(
-	config: PersistListMutationConfig<TEntity, TRequest>,
+export function createPersistListDetailMutation<TEntity, TSummary, TRequest>(
+	config: PersistListDetailMutationConfig<TEntity, TSummary, TRequest>,
 ) {
 	return (
 		options?: Omit<
@@ -55,46 +58,68 @@ export function createPersistListMutation<TEntity, TRequest>(
 			mutationFn: config.mutationFn,
 			onMutate: async ({ id, request }) => {
 				await queryClient.cancelQueries({ queryKey: config.listKey });
-				const previous = queryClient.getQueryData<TEntity[]>(config.listKey);
+				if (id !== null) {
+					await queryClient.cancelQueries({
+						queryKey: config.detailKey(id),
+					});
+				}
+
+				const previousList = queryClient.getQueryData<TSummary[]>(
+					config.listKey,
+				);
+				const previousDetail =
+					id === null
+						? undefined
+						: queryClient.getQueryData<TEntity>(config.detailKey(id));
 
 				if (id === null) {
-					const optimistic = config.buildOptimistic(request);
-					queryClient.setQueryData<TEntity[]>(
+					const optimistic = config.buildOptimisticSummary(request);
+					queryClient.setQueryData<TSummary[]>(
 						config.listKey,
 						(current = []) => [...current, optimistic],
 					);
 				} else {
-					queryClient.setQueryData<TEntity[]>(config.listKey, (current = []) =>
-						current.map((entity) =>
-							config.getId(entity) === id
-								? config.applyRequest(entity, request)
-								: entity,
+					queryClient.setQueryData<TSummary[]>(config.listKey, (current = []) =>
+						current.map((summary) =>
+							config.getId(summary) === id
+								? config.applyRequestToSummary(summary, request)
+								: summary,
 						),
 					);
 				}
 
-				return { previous };
+				return { previousList, previousDetail, id };
 			},
 			onSuccess: (saved, { id }) => {
+				const summary = config.toSummary(saved);
+				const savedId = config.getId(saved);
+
 				if (id === null) {
-					queryClient.setQueryData<TEntity[]>(config.listKey, (current = []) =>
+					queryClient.setQueryData<TSummary[]>(config.listKey, (current = []) =>
 						current.map((entity) =>
-							config.getId(entity) === OPTIMISTIC_ID ? saved : entity,
+							config.getId(entity) === OPTIMISTIC_ID ? summary : entity,
 						),
 					);
 				} else {
-					queryClient.setQueryData<TEntity[]>(config.listKey, (current = []) =>
+					queryClient.setQueryData<TSummary[]>(config.listKey, (current = []) =>
 						current.map((entity) =>
-							config.getId(entity) === id ? saved : entity,
+							config.getId(entity) === id ? summary : entity,
 						),
 					);
 				}
 
+				queryClient.setQueryData(config.detailKey(savedId), saved);
 				toast.success(config.successMessage);
 			},
-			onError: (error, _variables, context) => {
-				if (context?.previous) {
-					queryClient.setQueryData(config.listKey, context.previous);
+			onError: (error, variables, context) => {
+				if (context?.previousList) {
+					queryClient.setQueryData(config.listKey, context.previousList);
+				}
+				if (variables.id !== null && context?.previousDetail !== undefined) {
+					queryClient.setQueryData(
+						config.detailKey(variables.id),
+						context.previousDetail,
+					);
 				}
 				toast.error(
 					error instanceof Error && error.message
@@ -106,6 +131,36 @@ export function createPersistListMutation<TEntity, TRequest>(
 				config.onSettled?.(data, error, variables);
 			},
 		});
+}
+
+/** List-only persist helper for entities without a separate detail cache. */
+export function createPersistListMutation<TEntity, TRequest>(config: {
+	listKey: QueryKey;
+	mutationFn: (variables: PersistVariables<TRequest>) => Promise<TEntity>;
+	buildOptimistic: (request: TRequest) => TEntity;
+	applyRequest: (entity: TEntity, request: TRequest) => TEntity;
+	getId: (entity: TEntity) => number;
+	successMessage: string;
+	errorMessage: string;
+	onSettled?: (
+		data: TEntity | undefined,
+		error: Error | null,
+		variables: PersistVariables<TRequest>,
+	) => void;
+}) {
+	return createPersistListDetailMutation<TEntity, TEntity, TRequest>({
+		listKey: config.listKey,
+		detailKey: (id) =>
+			[...(config.listKey as unknown[]), "detail", id] as QueryKey,
+		mutationFn: config.mutationFn,
+		buildOptimisticSummary: config.buildOptimistic,
+		applyRequestToSummary: config.applyRequest,
+		toSummary: (entity) => entity,
+		getId: config.getId,
+		successMessage: config.successMessage,
+		errorMessage: config.errorMessage,
+		onSettled: config.onSettled,
+	});
 }
 
 export function createRemoveListMutation(config: RemoveListMutationConfig) {
@@ -120,6 +175,11 @@ export function createRemoveListMutation(config: RemoveListMutationConfig) {
 			mutationFn: config.mutationFn,
 			onMutate: async (id) => {
 				await queryClient.cancelQueries({ queryKey: config.listKey });
+				if (config.detailKey) {
+					await queryClient.cancelQueries({
+						queryKey: config.detailKey(id),
+					});
+				}
 				const previous = queryClient.getQueryData<unknown[]>(config.listKey);
 
 				queryClient.setQueryData<unknown[]>(config.listKey, (current = []) =>
@@ -131,6 +191,10 @@ export function createRemoveListMutation(config: RemoveListMutationConfig) {
 						return entity.id !== id;
 					}),
 				);
+
+				if (config.detailKey) {
+					queryClient.removeQueries({ queryKey: config.detailKey(id) });
+				}
 
 				return { previous };
 			},

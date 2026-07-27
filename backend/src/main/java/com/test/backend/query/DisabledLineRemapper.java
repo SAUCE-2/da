@@ -7,38 +7,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Diffs query text and remaps disabled line overlays across versions via LCS alignment.
+ * Remaps disabled-line overlays across query document versions via LCS alignment.
  */
-public final class QueryLineRemapper {
+public final class DisabledLineRemapper {
 
-	private QueryLineRemapper() {
+	private DisabledLineRemapper() {
 	}
 
-	public enum DiffOp {
+	private enum DiffOp {
 		EQUAL,
 		INSERT,
 		DELETE
 	}
 
-	public record DiffLine(DiffOp op, String text, Integer fromLine, Integer toLine) {
+	private record DiffLine(DiffOp op, String text, Integer fromLine, Integer toLine) {
 	}
 
-	public record RemapResult(List<Integer> remappedDisabledLines, int unmappedCount) {
-	}
-
-	public static List<DiffLine> diffQueries(String fromQuery, String toQuery) {
-		List<String> fromLines = QueryDocumentParser.splitLines(QueryDocumentParser.normalizeNewlines(
-				fromQuery == null ? "" : fromQuery));
-		List<String> toLines = QueryDocumentParser.splitLines(QueryDocumentParser.normalizeNewlines(
-				toQuery == null ? "" : toQuery));
-		return diffLines(fromLines, toLines);
-	}
-
-	public static RemapResult remapDisabledLines(
-			String fromQuery,
-			String toQuery,
-			List<Integer> fromDisabledLines) {
-		List<DiffLine> diff = diffQueries(fromQuery, toQuery);
+	public static DisabledLines remap(String fromText, String toText, DisabledLines fromDisabledLines) {
+		List<DiffLine> diff = diffLines(
+				SqlText.lines(SqlText.normalize(fromText == null ? "" : fromText)),
+				SqlText.lines(SqlText.normalize(toText == null ? "" : toText)));
 		Map<Integer, Integer> fromToMapping = new HashMap<>();
 		for (DiffLine line : diff) {
 			if (line.op() == DiffOp.EQUAL && line.fromLine() != null && line.toLine() != null) {
@@ -47,23 +35,17 @@ public final class QueryLineRemapper {
 		}
 
 		LinkedHashSet<Integer> remapped = new LinkedHashSet<>();
-		int unmapped = 0;
-		List<Integer> source = fromDisabledLines == null ? List.of() : fromDisabledLines;
-		for (Integer fromLine : source) {
-			if (fromLine == null || fromLine <= 0) {
-				continue;
-			}
+		DisabledLines source = fromDisabledLines == null ? DisabledLines.EMPTY : fromDisabledLines;
+		for (Integer fromLine : source.lines()) {
 			Integer toLine = fromToMapping.get(fromLine);
-			if (toLine == null) {
-				unmapped++;
-			} else {
+			if (toLine != null) {
 				remapped.add(toLine);
 			}
 		}
-		return new RemapResult(List.copyOf(remapped), unmapped);
+		return DisabledLines.of(remapped);
 	}
 
-	static List<DiffLine> diffLines(List<String> fromLines, List<String> toLines) {
+	private static List<DiffLine> diffLines(List<String> fromLines, List<String> toLines) {
 		int m = fromLines.size();
 		int n = toLines.size();
 		int[][] lcs = new int[m + 1][n + 1];

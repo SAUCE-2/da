@@ -1,13 +1,8 @@
 package com.test.backend.service.query;
 
-import com.test.backend.query.QueryDocumentParser;
-import com.test.backend.query.QueryLineRemapper;
-import com.test.backend.query.QuerySqlRenderer;
-import com.test.backend.dto.query.QueryPreviewRequest;
-import com.test.backend.dto.query.QueryPreviewResponse;
 import com.test.backend.dto.query.QueryRequest;
 import com.test.backend.dto.query.QueryResponse;
-import com.test.backend.dto.query.QueryVersionDiffResponse;
+import com.test.backend.dto.query.QuerySummaryResponse;
 import com.test.backend.dto.query.QueryVersionResponse;
 import com.test.backend.dto.query.QueryVersionSummaryResponse;
 import com.test.backend.entity.category.Category;
@@ -46,9 +41,9 @@ public class QueryService {
 	private final QueryVersionMapper queryVersionMapper;
 
 	@Transactional(readOnly = true)
-	public List<QueryResponse> listQueries() {
+	public List<QuerySummaryResponse> listQueries() {
 		return queryRepository.findAllWithCategoriesByOrderByNameAsc().stream()
-				.map(this::toResponse)
+				.map(this::toSummaryResponse)
 				.toList();
 	}
 
@@ -59,7 +54,7 @@ public class QueryService {
 
 	@Transactional
 	public QueryResponse createQuery(QueryRequest request) {
-		Query query = new Query(request.name(), request.description(), activeOrDefault(request.active()));
+		Query query = new Query(request.name(), activeOrDefault(request.active()));
 		QueryVersion version = query.addVersion(1);
 		versionUpdater.populateVersion(version, request, List.of(), Map.of());
 		query.replaceCategories(resolveCategories(request.categoryIds()));
@@ -80,7 +75,6 @@ public class QueryService {
 		List<QueryVariable> previousVariables = versionUpdater.sortedVariables(previousVersion);
 
 		query.setName(request.name());
-		query.setDescription(request.description());
 		if (request.active() != null) {
 			query.setActive(request.active());
 		}
@@ -129,47 +123,6 @@ public class QueryService {
 		return queryVersionMapper.toVersionResponse(version);
 	}
 
-	@Transactional(readOnly = true)
-	public QueryVersionDiffResponse diffVersions(Long queryId, Long fromVersionId, Long toVersionId) {
-		QueryVersion from = versionResolver.requireVersion(queryId, fromVersionId);
-		QueryVersion to = versionResolver.requireVersion(queryId, toVersionId);
-		List<QueryVersionDiffResponse.DiffLine> lines = QueryLineRemapper.diffQueries(
-						from.getQueryText(),
-						to.getQueryText())
-				.stream()
-				.map(line -> new QueryVersionDiffResponse.DiffLine(
-						line.op().name(),
-						line.text(),
-						line.fromLine(),
-						line.toLine()))
-				.toList();
-		return new QueryVersionDiffResponse(
-				from.getId(),
-				from.getVersionNumber(),
-				to.getId(),
-				to.getVersionNumber(),
-				from.getQueryText(),
-				to.getQueryText(),
-				lines);
-	}
-
-	@Transactional(readOnly = true)
-	public QueryPreviewResponse previewQuery(Long id, QueryPreviewRequest request) {
-		Query query = getQueryEntity(id);
-		Long versionId = request == null ? null : request.versionId();
-		QueryVersion version = versionResolver.requireVersion(query, versionId);
-		Map<String, String> variables = request == null || request.variables() == null ? Map.of() : request.variables();
-		List<Integer> disabledLines = request == null || request.disabledLines() == null
-				? QueryDocumentParser.parseDisabledLines(version.getDefaultDisabledLines())
-				: request.disabledLines();
-		QuerySqlRenderer.PreviewSql preview = QuerySqlRenderer.renderPreviewSql(version, disabledLines, variables);
-		return new QueryPreviewResponse(
-				query.getId(),
-				version.getId(),
-				preview.sql(),
-				preview.unresolvedVariables());
-	}
-
 	private Set<Category> resolveCategories(List<Long> categoryIds) {
 		if (categoryIds == null || categoryIds.isEmpty()) {
 			return Set.of();
@@ -198,5 +151,10 @@ public class QueryService {
 	private QueryResponse toResponse(Query query) {
 		QueryVersion currentVersion = versionResolver.requireCurrentVersion(query);
 		return queryMapper.toResponse(query, currentVersion);
+	}
+
+	private QuerySummaryResponse toSummaryResponse(Query query) {
+		QueryVersion currentVersion = versionResolver.requireCurrentVersion(query);
+		return queryMapper.toSummaryResponse(query, currentVersion);
 	}
 }

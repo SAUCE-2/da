@@ -4,15 +4,12 @@ import com.test.backend.dto.category.CategorySummaryResponse;
 
 import java.util.List;
 
-public record QueryResponse(
+public record QuerySummaryResponse(
 		Long id,
 		String name,
 		String description,
 		boolean active,
 		Long versionId,
 		int versionNumber,
-		String query,
-		List<Integer> defaultDisabledLines,
-		List<QueryVariableResponse> variables,
 		List<CategorySummaryResponse> categories) {
 }

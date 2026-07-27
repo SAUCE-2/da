@@ -49,7 +49,7 @@ public class QueryVersionResolver {
 		return version;
 	}
 
-	public void initializeGraph(QueryVersion version) {
+	private void initializeGraph(QueryVersion version) {
 		version.getQueryText();
 		version.getVariables().size();
 	}

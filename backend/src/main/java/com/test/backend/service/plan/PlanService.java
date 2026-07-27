@@ -1,13 +1,14 @@
 package com.test.backend.service.plan;
 
-import com.test.backend.query.QueryDocumentParser;
-import com.test.backend.query.QueryLineRemapper;
-import com.test.backend.query.QuerySqlRenderer;
+import com.test.backend.query.DisabledLineRemapper;
+import com.test.backend.query.DisabledLines;
+import com.test.backend.query.QueryVariables;
 import com.test.backend.dto.plan.PlanItemRequest;
 import com.test.backend.dto.plan.PlanItemResponse;
 import com.test.backend.dto.plan.PlanItemVariableBindingRequest;
 import com.test.backend.dto.plan.PlanRequest;
 import com.test.backend.dto.plan.PlanResponse;
+import com.test.backend.dto.plan.PlanSummaryResponse;
 import com.test.backend.entity.plan.Plan;
 import com.test.backend.entity.plan.PlanItem;
 import com.test.backend.entity.plan.PlanItemVariable;
@@ -16,7 +17,6 @@ import com.test.backend.entity.query.QueryVersion;
 import com.test.backend.mapper.PlanMapper;
 import com.test.backend.repository.plan.PlanRepository;
 import com.test.backend.repository.query.QueryRepository;
-import com.test.backend.repository.query.QueryVersionRepository;
 import com.test.backend.service.query.QueryVersionResolver;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,14 +38,13 @@ public class PlanService {
 
 	private final PlanRepository planRepository;
 	private final QueryRepository queryRepository;
-	private final QueryVersionRepository queryVersionRepository;
 	private final QueryVersionResolver versionResolver;
 	private final PlanMapper planMapper;
 
 	@Transactional(readOnly = true)
-	public List<PlanResponse> listPlans() {
+	public List<PlanSummaryResponse> listPlans() {
 		return planRepository.findAllByOrderByNameAsc().stream()
-				.map(this::toResponse)
+				.map(planMapper::toSummaryResponse)
 				.toList();
 	}
 
@@ -114,38 +113,37 @@ public class PlanService {
 				request.enabled() == null || request.enabled());
 		item.setQueryVersion(version);
 
-		List<Integer> disabledLines = resolveDisabledLines(request, version, previousByQueryId);
-		item.setDisabledLines(QueryDocumentParser.formatDisabledLines(disabledLines));
+		DisabledLines disabledLines = resolveDisabledLines(request, version, previousByQueryId);
+		item.setDisabledLines(disabledLines.format());
 
 		List<PlanItemVariable> bindings = seedVariableBindings(version, request.variableBindings());
 		item.replaceVariableBindings(bindings);
 		return item;
 	}
 
-	private List<Integer> resolveDisabledLines(
+	private DisabledLines resolveDisabledLines(
 			PlanItemRequest request,
 			QueryVersion version,
 			Map<Long, PlanItem> previousByQueryId) {
 		if (request.disabledLines() != null) {
-			return request.disabledLines();
+			return DisabledLines.of(request.disabledLines());
 		}
 
 		PlanItem previous = previousByQueryId == null ? null : previousByQueryId.get(request.queryId());
 		if (previous == null) {
-			return QueryDocumentParser.parseDisabledLines(version.getDefaultDisabledLines());
+			return DisabledLines.parse(version.getDefaultDisabledLines());
 		}
 
 		QueryVersion previousVersion = previous.getQueryVersion();
-		List<Integer> previousDisabled = QueryDocumentParser.parseDisabledLines(previous.getDisabledLines());
+		DisabledLines previousDisabled = DisabledLines.parse(previous.getDisabledLines());
 		if (previousVersion == null || Objects.equals(previousVersion.getId(), version.getId())) {
 			return previousDisabled;
 		}
 
-		QueryLineRemapper.RemapResult remapped = QueryLineRemapper.remapDisabledLines(
+		return DisabledLineRemapper.remap(
 				previousVersion.getQueryText(),
 				version.getQueryText(),
 				previousDisabled);
-		return remapped.remappedDisabledLines();
 	}
 
 	private List<PlanItemVariable> seedVariableBindings(
@@ -161,7 +159,7 @@ public class PlanService {
 								LinkedHashMap::new));
 
 		return version.getVariables().stream()
-				.sorted(QuerySqlRenderer::compareVariables)
+				.sorted(QueryVariables.BY_SORT_ORDER)
 				.map(variable -> {
 					String value = valuesByName.containsKey(variable.getName())
 							? valuesByName.get(variable.getName())
@@ -178,21 +176,9 @@ public class PlanService {
 
 	private PlanResponse toResponse(Plan plan) {
 		List<PlanItemResponse> items = planMapper.sortedItems(plan).stream()
-				.map(this::toItemResponse)
+				.map(planMapper::toItemResponse)
 				.toList();
 		return planMapper.toResponse(plan, items);
-	}
-
-	private PlanItemResponse toItemResponse(PlanItem item) {
-		Query query = item.getQuery();
-		QueryVersion version = item.getQueryVersion();
-		Long versionId = version == null ? query.getCurrentVersionId() : version.getId();
-		Integer versionNumber = version == null ? null : version.getVersionNumber();
-		if (version == null && versionId != null) {
-			version = queryVersionRepository.findById(versionId).orElse(null);
-			versionNumber = version == null ? null : version.getVersionNumber();
-		}
-		return planMapper.toItemResponse(item, version == null ? versionId : version.getId(), versionNumber);
 	}
 
 	private static String defaultString(String value) {

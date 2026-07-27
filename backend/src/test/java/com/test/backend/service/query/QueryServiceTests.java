@@ -6,18 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.test.backend.dto.query.QueryPreviewRequest;
-import com.test.backend.dto.query.QueryPreviewResponse;
 import com.test.backend.dto.query.QueryRequest;
 import com.test.backend.dto.query.QueryResponse;
-import com.test.backend.dto.query.QueryVersionDiffResponse;
 import com.test.backend.dto.query.QueryVersionResponse;
 import com.test.backend.dto.query.QueryVariableRequest;
 
@@ -29,7 +25,7 @@ class QueryServiceTests {
 	private QueryService queryService;
 
 	@Test
-	void createStoresQueryAndDerivedSections() {
+	void createStoresQueryDocument() {
 		QueryResponse created = queryService.createQuery(new QueryRequest(
 				"Definition Alpha",
 				"Default behavior example",
@@ -45,9 +41,8 @@ class QueryServiceTests {
 		assertTrue(created.active());
 		assertEquals(1, created.versionNumber());
 		assertTrue(created.query().contains("--# Block A"));
-		assertEquals(1, created.sections().size());
-		assertEquals("Block A", created.sections().getFirst().name());
-		assertEquals(64, created.queryHash().length());
+		assertEquals("Definition Alpha", created.name());
+		assertEquals("Default behavior example", created.description());
 	}
 
 	@Test
@@ -88,89 +83,6 @@ class QueryServiceTests {
 		assertEquals(1, firstVersion.versionNumber());
 		assertTrue(firstVersion.query().contains("Block A"));
 		assertEquals(List.of(1, 2), firstVersion.defaultDisabledLines());
-	}
-
-	@Test
-	void previewDropsDisabledLinesAndStripsHeaders() {
-		QueryResponse created = queryService.createQuery(new QueryRequest(
-				"Definition Gamma",
-				"Preview ordering example",
-				true,
-				"""
-						--# Block A
-						FRAGMENT_A
-						  DETAIL_A
-						--# Block B
-						FRAGMENT_B
-						--# Block C
-						FRAGMENT_C
-						""",
-				List.of(6, 7),
-				List.of(),
-				List.of()));
-
-		QueryPreviewResponse preview = queryService.previewQuery(created.id(), null);
-
-		assertEquals("FRAGMENT_A\n  DETAIL_A\nFRAGMENT_B", preview.sql());
-	}
-
-	@Test
-	void previewSubstitutesVariablesUsingTypedEmitters() {
-		QueryResponse created = queryService.createQuery(new QueryRequest(
-				"Definition Delta",
-				"Variable preview example",
-				true,
-				"""
-						--# Filter
-						WHERE status = {{status}}
-						  AND created_at >= {{startDate}}
-						""",
-				List.of(),
-				List.of(
-						new QueryVariableRequest("status", QueryVariableType.STRING, "OPEN", true, 0),
-						new QueryVariableRequest("startDate", QueryVariableType.DATE, "2024-01-01", true, 1)),
-				List.of()));
-
-		QueryPreviewResponse preview = queryService.previewQuery(
-				created.id(),
-				new QueryPreviewRequest(null, Map.of("status", "O'Brien"), null));
-
-		assertEquals("WHERE status = 'O''Brien'\n  AND created_at >= DATE '2024-01-01'", preview.sql());
-	}
-
-	@Test
-	void diffVersionsReturnsLineOps() {
-		QueryResponse created = queryService.createQuery(new QueryRequest(
-				"Definition Epsilon",
-				"Diff example",
-				true,
-				"select 1",
-				List.of(),
-				List.of(),
-				List.of()));
-
-		QueryResponse updated = queryService.updateQuery(created.id(), new QueryRequest(
-				"Definition Epsilon",
-				"Diff example",
-				true,
-				"select 1\nfrom dual",
-				List.of(),
-				List.of(),
-				List.of()));
-
-		Long fromVersionId = created.versionId();
-		Long toVersionId = updated.versionId();
-		assertTrue(fromVersionId != null);
-		assertTrue(toVersionId != null);
-
-		QueryVersionDiffResponse diff = queryService.diffVersions(
-				created.id(),
-				fromVersionId,
-				toVersionId);
-
-		assertEquals(fromVersionId, diff.fromVersionId());
-		assertEquals(toVersionId, diff.toVersionId());
-		assertTrue(diff.lines().stream().anyMatch(line -> "INSERT".equals(line.op())));
 	}
 
 	@Test
@@ -244,5 +156,42 @@ class QueryServiceTests {
 		assertEquals("Original description", first.description());
 		assertEquals("Renamed", second.name());
 		assertEquals("New description", second.description());
+	}
+
+	@Test
+	void listReturnsSummariesWithoutDocumentBody() {
+		QueryResponse created = queryService.createQuery(new QueryRequest(
+				"Listed Query",
+				"Listed description",
+				true,
+				"--# Base\nselect 1",
+				List.of(),
+				List.of(new QueryVariableRequest("status", QueryVariableType.STRING, "OPEN", true, 0)),
+				List.of()));
+
+		var summaries = queryService.listQueries();
+		assertEquals(1, summaries.size());
+		assertEquals(created.id(), summaries.getFirst().id());
+		assertEquals("Listed Query", summaries.getFirst().name());
+		assertEquals("Listed description", summaries.getFirst().description());
+		assertEquals(created.versionId(), summaries.getFirst().versionId());
+	}
+
+	@Test
+	void getQueryReturnsFullDocument() {
+		QueryResponse created = queryService.createQuery(new QueryRequest(
+				"Detailed Query",
+				"Detail description",
+				true,
+				"--# Base\nselect {{status}}",
+				List.of(1),
+				List.of(new QueryVariableRequest("status", QueryVariableType.STRING, "OPEN", true, 0)),
+				List.of()));
+
+		QueryResponse loaded = queryService.getQuery(created.id());
+		assertEquals(created.query(), loaded.query());
+		assertEquals(List.of(1), loaded.defaultDisabledLines());
+		assertEquals(1, loaded.variables().size());
+		assertEquals("status", loaded.variables().getFirst().name());
 	}
 }

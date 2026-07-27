@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { PlanEditor } from "@/features/plans/editor";
+import { planDetailOptions } from "@/features/plans/server-state";
 
 export const Route = createFileRoute("/plans/$planId")({
 	params: {
@@ -11,6 +12,8 @@ export const Route = createFileRoute("/plans/$planId")({
 			planId: String(params.planId),
 		}),
 	},
+	loader: ({ context, params }) =>
+		context.queryClient.ensureQueryData(planDetailOptions(params.planId)),
 	component: EditPlanPage,
 });
 

@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { ListSidebar } from "@/components/workspace/list/sidebar";
 import { ListSidebarItem } from "@/components/workspace/list/sidebar-item";
-import type { Plan } from "@/lib/api-types";
+import type { PlanSummary } from "@/lib/api-types";
 
 type PlanListProps = {
-	plans: Plan[];
+	plans: PlanSummary[];
 };
 
 export function PlanList({ plans }: PlanListProps) {
@@ -25,7 +25,7 @@ export function PlanList({ plans }: PlanListProps) {
 					description={plan.description || "No description"}
 					badge={
 						<Badge variant="secondary" className="shrink-0">
-							{plan.items.length} queries
+							{plan.itemCount} queries
 						</Badge>
 					}
 				/>

@@ -20,22 +20,16 @@ const samplePlan: Plan = {
 		{
 			id: 1,
 			queryId: 7,
-			queryName: "Active users",
 			sortOrder: 0,
 			enabled: true,
-			queryVersionId: 3,
-			queryVersionNumber: 2,
 			disabledLines: [2],
 			variableBindings: [{ name: "status", value: "active" }],
 		},
 		{
 			id: 2,
 			queryId: 8,
-			queryName: "Skipped",
 			sortOrder: 1,
 			enabled: false,
-			queryVersionId: null,
-			queryVersionNumber: null,
 			disabledLines: [],
 			variableBindings: [],
 		},
@@ -50,9 +44,7 @@ const sampleQuery: Query = {
 	versionId: 3,
 	versionNumber: 2,
 	query: "select 1",
-	queryHash: "x",
 	defaultDisabledLines: [],
-	sections: [],
 	variables: [
 		{
 			id: 1,

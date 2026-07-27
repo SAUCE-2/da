@@ -1,4 +1,9 @@
-import type { Query, QueryVersion, QueryVersionSummary } from "@/lib/api-types";
+import type {
+	Query,
+	QuerySummary,
+	QueryVersion,
+	QueryVersionSummary,
+} from "@/lib/api-types";
 import { httpClient, type paths, unwrapData } from "@/lib/http-client";
 
 type QueryCreateBody = NonNullable<
@@ -9,11 +14,18 @@ type QueryUpdateBody = NonNullable<
 	paths["/api/queries/{id}"]["put"]["requestBody"]
 >["content"]["application/json"];
 
-export async function listQueries(): Promise<Query[]> {
+export async function listQueries(): Promise<QuerySummary[]> {
 	const data = await httpClient
 		.GET("/api/queries")
 		.then(({ data }) => unwrapData(data));
-	return data as Query[];
+	return data as QuerySummary[];
+}
+
+export async function getQuery(id: number): Promise<Query> {
+	const data = await httpClient
+		.GET("/api/queries/{id}", { params: { path: { id } } })
+		.then(({ data }) => unwrapData(data));
+	return data as Query;
 }
 
 export async function createQuery(request: QueryCreateBody): Promise<Query> {

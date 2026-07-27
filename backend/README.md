@@ -141,14 +141,14 @@ Use `@Mapping` for non-obvious field names. Lombok and MapStruct run together vi
 
 ### Work with query versions
 
-Each `PUT /api/queries/{id}` creates a **new immutable version** (incremented `versionNumber`) storing `name`, `description`, the SQL **query**, `queryHash`, and `defaultDisabledLines`. Section outline is derived from `--#` / `--##` comment headers in the query. The parent `queries` row keeps denormalized current `name`/`description` for list/sort; `currentVersionId` points at the latest version.
+Each `PUT /api/queries/{id}` creates a **new immutable version** (incremented `versionNumber`) storing `name`, `description`, the SQL **query**, and `defaultDisabledLines`. The parent `queries` row keeps a denormalized current `name` for list/sort; `currentVersionId` points at the latest version.
 
+- `GET /api/queries` — list summaries (no document body)
+- `GET /api/queries/{id}` — full current query including document and variables
 - `GET /api/queries/{id}/versions` — list history
 - `GET /api/queries/{id}/versions/{versionId}` — full version including name/description
-- `GET /api/queries/{id}/versions/{a}/diff/{b}` — line diff between two versions
-- `POST /api/queries/{id}/preview` — render SQL by dropping disabled lines, stripping section markers, and substituting `{{variables}}`
 
-Oracle schema changes for this model live in `scripts/oracle-query-document-rework.sql`, `scripts/oracle-rename-body-to-query.sql`, and `scripts/oracle-version-name-description.sql`.
+Oracle schema changes for this model live in `scripts/oracle-drop-unused-columns.sql` (drops unused `query_hash` / `queries.description`).
 
 ### Inspect local data
 

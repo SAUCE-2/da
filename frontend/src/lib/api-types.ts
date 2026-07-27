@@ -6,13 +6,6 @@ export type QueryVariableType = NonNullable<
 	Schemas["QueryVariableResponse"]["type"]
 >;
 
-type QuerySectionOutline = Required<
-	Pick<
-		Schemas["QuerySectionOutlineResponse"],
-		"name" | "level" | "startLine" | "endLine"
-	>
->;
-
 type QueryVariable = Required<
 	Pick<
 		Schemas["QueryVariableResponse"],
@@ -32,21 +25,24 @@ export type Category = CategorySummary & {
 	queryCount?: number;
 };
 
+export type QuerySummary = Required<
+	Pick<
+		Schemas["QuerySummaryResponse"],
+		"id" | "name" | "active" | "versionId" | "versionNumber"
+	>
+> & {
+	description: string | null;
+	categories: CategorySummary[];
+};
+
 export type Query = Required<
 	Pick<
 		Schemas["QueryResponse"],
-		| "id"
-		| "name"
-		| "active"
-		| "versionId"
-		| "versionNumber"
-		| "query"
-		| "queryHash"
+		"id" | "name" | "active" | "versionId" | "versionNumber" | "query"
 	>
 > & {
 	description: string | null;
 	defaultDisabledLines: number[];
-	sections: QuerySectionOutline[];
 	variables: QueryVariable[];
 	categories: CategorySummary[];
 };
@@ -61,12 +57,11 @@ export type QueryVersionSummary = Required<
 export type QueryVersion = Required<
 	Pick<
 		Schemas["QueryVersionResponse"],
-		"versionId" | "versionNumber" | "createdAt" | "name" | "query" | "queryHash"
+		"versionId" | "versionNumber" | "createdAt" | "name" | "query"
 	>
 > & {
 	description: string | null;
 	defaultDisabledLines: number[];
-	sections: QuerySectionOutline[];
 	variables: QueryVariable[];
 };
 
@@ -77,15 +72,16 @@ type PlanItemVariableBinding = Required<
 };
 
 type PlanItem = Required<
-	Pick<
-		Schemas["PlanItemResponse"],
-		"id" | "queryId" | "queryName" | "sortOrder" | "enabled"
-	>
+	Pick<Schemas["PlanItemResponse"], "id" | "queryId" | "sortOrder" | "enabled">
 > & {
-	queryVersionId: number | null;
-	queryVersionNumber: number | null;
 	disabledLines: number[];
 	variableBindings: PlanItemVariableBinding[];
+};
+
+export type PlanSummary = Required<
+	Pick<Schemas["PlanSummaryResponse"], "id" | "name" | "active" | "itemCount">
+> & {
+	description: string | null;
 };
 
 export type Plan = Required<

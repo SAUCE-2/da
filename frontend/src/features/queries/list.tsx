@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { ListSidebar } from "@/components/workspace/list/sidebar";
 import { ListSidebarItem } from "@/components/workspace/list/sidebar-item";
-import type { Query } from "@/lib/api-types";
+import type { QuerySummary } from "@/lib/api-types";
 
 type QueryListProps = {
-	queries: Query[];
+	queries: QuerySummary[];
 };
 
 export function QueryList({ queries }: QueryListProps) {
